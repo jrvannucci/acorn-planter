@@ -11,6 +11,27 @@ what a release involves.
 
 ## [Unreleased]
 
+### Added
+
+- **Several versions of one package can go in a bundle.** `packages =
+  ["pandas==2.1.4", "pandas==2.2.3"]` now works: the flat wheelhouse holds
+  both side by side, so a profile pinned to the old version and one on the
+  new install from the same share. pip refuses two constraints on the same
+  distribution in a single invocation (and an unpinned spec beside a pinned
+  one is its "Double requirement given"), so the builder deals the specs into
+  the fewest conflict-free sets and runs one resolver pass per set --
+  everything single-version resolves together in the first, and only the
+  extra versions cost another pass.
+
+### Fixed
+
+- **Windows paths in three docs pages had a literal tab where `	` belonged**
+  (`S:<TAB>ools` instead of `S:	ools`), from an earlier scripted edit that
+  interpreted the escape. 23 occurrences across OFFLINE, LICENSING and the
+  offline-utilities command page -- every one of them in a command a reader
+  would copy.
+
+
 ### Fixed
 
 - **The upload token leaked into `seed summary` and the daily log.** It was

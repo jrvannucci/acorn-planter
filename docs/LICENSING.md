@@ -156,7 +156,7 @@ resolve every package's licence from its own metadata, with no network and
 nothing installed:
 
 ```
-seed whl-licenses S:	ools\wheels     # before it goes on the share
+seed whl-licenses S:\tools\wheels     # before it goes on the share
 seed venv-licenses                     # what a machine is running
 seed forge-licenses                    # the conda-forge half
 ```

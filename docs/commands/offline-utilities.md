@@ -77,11 +77,11 @@ for you).
 This is the one an admin runs **before** copying a bundle to a share:
 
 ```
-seed whl-licenses S:	ools\wheels
+seed whl-licenses S:\tools\wheels
 ```
 
 ```
-Licences in S:	ools\wheels  (170 packages)
+Licences in S:\tools\wheels  (170 packages)
 
   copyleft               2   recipients get source and the same rights; matters when distributing outside your organization
   copyleft-weak          7   publish changes if you MODIFY the library itself

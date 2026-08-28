@@ -1250,3 +1250,52 @@ def test_no_unpacker_for_an_explicitly_requested_zip(tmp_path):
     archive = build_offline.archive_bundle(out, "zip")
     assert build_offline.write_unpacker(archive, out.name) is None
 
+
+# --- several versions of one package ---------------------------------------
+
+@pytest.mark.parametrize("packages,expected", [
+    (["a", "b"], [["a", "b"]]),
+    (["pandas==2.1.4", "pandas==2.2.3"], [["pandas==2.1.4"], ["pandas==2.2.3"]]),
+    # an unpinned spec beside a pinned one is pip's "Double requirement given"
+    (["ruff", "ruff==0.5.0"], [["ruff"], ["ruff==0.5.0"]]),
+    # names are normalized, so these are the same distribution
+    (["ruff_lsp==1.0", "Ruff-LSP==2.0"], [["ruff_lsp==1.0"], ["Ruff-LSP==2.0"]]),
+])
+def test_conflict_free_groups(packages, expected):
+    assert build_offline.conflict_free_groups(packages) == expected
+
+
+def test_grouping_puts_everything_single_version_in_the_first_pass():
+    """Only the EXTRA versions cost a pass -- a bundle with one duplicate
+    shouldn't resolve its other 200 packages twice."""
+    packages = ["hatchling", "pip", "numpy==1.26", "numpy==2.0", "pandas"]
+    groups = build_offline.conflict_free_groups(packages)
+    assert groups[0] == ["hatchling", "pip", "numpy==1.26", "pandas"]
+    assert groups[1] == ["numpy==2.0"]
+
+
+def test_build_wheels_runs_one_pass_per_version_set_per_interpreter(tmp_path):
+    """pip takes one constraint per distribution at a time, so two pinned
+    versions of pandas across two mirrored interpreters is four passes -- all
+    into the same flat wheelhouse, which holds both happily."""
+    calls = []
+
+    def fake(uv, packages, dest, py_version, cache, tags=None):
+        calls.append((py_version, list(packages)))
+        return True
+
+    original = build_offline._download_wheels_for
+    build_offline._download_wheels_for = fake
+    try:
+        ok = build_offline.build_wheels(
+            Path("uv"), ["pip", "pandas==2.1.4", "pandas==2.2.3"],
+            tmp_path / "wheels", ["3.12", "3.11"], tmp_path / "cache")
+    finally:
+        build_offline._download_wheels_for = original
+
+    assert ok
+    assert calls == [
+        ("3.12", ["pip", "pandas==2.1.4"]), ("3.12", ["pandas==2.2.3"]),
+        ("3.11", ["pip", "pandas==2.1.4"]), ("3.11", ["pandas==2.2.3"]),
+    ]
+

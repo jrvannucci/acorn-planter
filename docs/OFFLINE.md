@@ -41,10 +41,10 @@ an offline install of it.
 Then **copy the folder to the share** and re-check the copy that arrived:
 
 ```
-GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd --verify-only -o "S:	ools"
+GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd --verify-only -o "S:\tools"
 ```
 
-Users run `GET_STARTED/install.cmd` from `S:	ools\seedling\`. Same command for
+Users run `GET_STARTED/install.cmd` from `S:\tools\seedling\`. Same command for
 everyone; each person gets the profiles distributed to them.
 
 Afterwards: edit a profile on the share, users run `seed update-commands`
@@ -103,6 +103,18 @@ can't reach — so it can neither vendor them nor resolve their dependencies.
 Whatever a repo needs from the wheelhouse (including its extras' dependencies)
 goes in `packages` above, named by the person who knows the repo. Nothing can
 derive it, so nothing pretends to check it.
+
+**Several versions of one package are allowed.** Pin each one and the flat
+wheelhouse holds them side by side, so a profile pinned to the old version and
+one on the new install from the same share:
+
+```toml
+packages = ["pandas==2.1.4", "pandas==2.2.3"]
+```
+
+pip takes one constraint per distribution at a time, so each extra version
+costs one more resolver pass — everything single-version resolves together in
+the first.
 
 `hatchling`, `ipython`, `ruff`, `ipykernel` and `pip` are always downloaded
 and never need declaring — seedling itself is built with the first, and the
@@ -456,7 +468,7 @@ answers a review rather than deferring to one.
 Check it yourself at any point, on either side of the gap:
 
 ```
-seed whl-licenses S:	ools\wheels
+seed whl-licenses S:\tools\wheels
 ```
 
 ```

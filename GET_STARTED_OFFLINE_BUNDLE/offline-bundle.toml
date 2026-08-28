@@ -54,6 +54,16 @@ pythons = ["3.12"]
 #
 # hatchling, ipython, ruff, ipykernel and pip are always bundled and never
 # need listing. `spyder` and other editors-that-are-PyPI-apps DO belong here.
+#
+# SEVERAL VERSIONS of one package are allowed -- pin each one, and the flat
+# wheelhouse holds them side by side, so a profile pinned to the old version
+# and one on the new install from the same share:
+#
+#     packages = ["pandas==2.1.4", "pandas==2.2.3"]
+#
+# pip only takes one constraint per distribution at a time, so each extra
+# version costs one more resolver pass; everything single-version resolves
+# together in the first.
 packages = [
     "pandas",
     "numpy",

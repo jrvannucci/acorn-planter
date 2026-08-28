@@ -90,7 +90,10 @@ GIT_WIN_LATEST_API = "https://api.github.com/repos/git-for-windows/git/releases/
 # holding these, so if the two lists ever disagreed, a profile would be told
 # a package is present that nothing downloaded.
 from seedling import licenses as licences  # noqa: E402
-from seedling.bundle import ALWAYS_PRESENT as REQUIRED_PACKAGES  # noqa: E402
+from seedling.bundle import (  # noqa: E402
+    ALWAYS_PRESENT as REQUIRED_PACKAGES,
+    requirement_name,
+)
 
 SRC_PYPROJECT = REPO_ROOT / "src" / "pyproject.toml"
 
@@ -773,6 +776,36 @@ def _download_wheels_for(uv_exe: Path, packages: list[str], wheels_dir: Path,
     return True
 
 
+def conflict_free_groups(packages: list[str]) -> list[list[str]]:
+    """Split specs into groups that pip can resolve in one call each.
+
+    pip refuses two constraints on the same distribution in a single
+    invocation -- `pip download pandas==2.1.4 pandas==2.2.3` fails with
+    "Cannot install ... because these package versions have conflicting
+    dependencies", and an unpinned spec alongside a pinned one ("Double
+    requirement given") fails the same way. But a flat wheelhouse is perfectly
+    happy holding both versions, and an offline fleet legitimately needs that:
+    the legacy service pinned to pandas 2.1 and the new one on 2.2 install
+    from the same share.
+
+    So the specs are dealt out into as few groups as possible, one spec per
+    distribution per group -- everything single-version lands in the first
+    group, and only the extra versions cost an additional pass."""
+    groups: list[list[str]] = []
+    seen: list[set[str]] = []
+    for spec in packages:
+        name = requirement_name(spec)
+        for group, names in zip(groups, seen):
+            if name not in names:
+                group.append(spec)
+                names.add(name)
+                break
+        else:
+            groups.append([spec])
+            seen.append({name})
+    return groups
+
+
 def build_wheels(uv_exe: Path, packages: list[str], wheels_dir: Path,
                  py_versions: list[str], cache: Path,
                  foreign: list[tuple[str, list[str]]] | None = None) -> bool:
@@ -807,19 +840,31 @@ def build_wheels(uv_exe: Path, packages: list[str], wheels_dir: Path,
              + (" (one pass each -- compiled dependencies are "
                 "version-specific)" if len(targets) > 1 else ""))
 
+    groups = conflict_free_groups(packages)
+    if len(groups) > 1:
+        extra = ", ".join(sorted({requirement_name(s) for g in groups[1:]
+                                  for s in g}))
+        info(f"Several versions requested of: {extra} "
+             f"({len(groups)} resolver passes -- pip takes one constraint per "
+             f"distribution at a time)")
+
     failed: list[str] = []
     for version in targets or [None]:
         if len(targets) > 1:
             info(f"  -> Python {version} ...")
-        if not _download_wheels_for(uv_exe, packages, wheels_dir, version, cache):
-            failed.append(version or "default")
+        for n, group in enumerate(groups, 1):
+            label = f"{version or 'default'}" + (f" [set {n}]" if len(groups) > 1 else "")
+            if not _download_wheels_for(uv_exe, group, wheels_dir, version, cache):
+                failed.append(label)
 
     for name, tags in foreign or []:
         info(f"  -> {name} (cross-platform wheels) ...")
         for version in targets or [None]:
-            if not _download_wheels_for(uv_exe, packages, wheels_dir, version,
-                                        cache, tags=tags):
-                failed.append(f"{name} / Python {version or 'default'}")
+            for n, group in enumerate(groups, 1):
+                if not _download_wheels_for(uv_exe, group, wheels_dir, version,
+                                            cache, tags=tags):
+                    failed.append(f"{name} / Python {version or 'default'}"
+                                  + (f" [set {n}]" if len(groups) > 1 else ""))
 
     if failed:
         warn("Wheel download failed for: " + ", ".join(failed))
