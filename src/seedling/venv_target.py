@@ -1,18 +1,18 @@
 """
 Which venv does a command act on?
 
-`seed which` and `seed run` both have to answer that before they can do
+`acorn which` and `acorn run` both have to answer that before they can do
 anything, and they must answer it the *same* way every other seedling
-command does -- it would be its own bug class if `seed run -- pip list`
-targeted a different environment than `seed install` just did.
+command does -- it would be its own bug class if `acorn run -- pip list`
+targeted a different environment than `acorn install` just did.
 
-The precedence is the one `seed spyder` already documents:
+The precedence is the one `acorn spyder` already documents:
 
   1. An explicit name, when the caller says outright. An explicit request
      that can't be honored is an error, never a silent fallback to some
      other environment.
   2. VIRTUAL_ENV -- the venv active in THIS shell. Honored even when it
-     points outside ~/seedling, because `seed install` installs into
+     points outside ~/seedling, because `acorn install` installs into
      whatever is active and these two must not disagree with it about what
      "the current environment" is.
   3. `default_venv` -- so this still works from a shell with nothing
@@ -21,8 +21,8 @@ The precedence is the one `seed spyder` already documents:
 Resolution never prints, and never decides policy. It returns a Target, or
 a Failure carrying both a message and a machine-readable `reason` -- the
 caller decides what that means and where the message belongs. The reason
-code exists because the callers genuinely disagree: `seed run` treats any
-failure as fatal, while `seed spyder` treats only an explicitly-named venv
+code exists because the callers genuinely disagree: `acorn run` treats any
+failure as fatal, while `acorn spyder` treats only an explicitly-named venv
 as fatal and otherwise opens the editor anyway (see `lenient` on resolve).
 Neither may write diagnostics to stdout, which is reserved for the resolved
 path and the child's own output.
@@ -69,7 +69,7 @@ class Failure:
 def _broken(path: Path) -> str:
     return (f"venv at {path} has no python interpreter at "
             f"{paths.venv_python_path(path)} -- recreate it with "
-            f"`seed venv {path.name}`")
+            f"`acorn venv {path.name}`")
 
 
 def resolve(explicit: str | None = None,
@@ -77,11 +77,11 @@ def resolve(explicit: str | None = None,
     """Returns (target, None) or (None, failure). Exactly one is set.
 
     `lenient` changes what a BROKEN link does, not the precedence. Strict
-    (the default) stops: `seed run` and `seed which` must never quietly act
+    (the default) stops: `acorn run` and `acorn which` must never quietly act
     on a different environment than the one the caller is pointing at, so a
     dangling VIRTUAL_ENV or a stale default_venv is an error. Lenient keeps
     walking down the precedence and, failing that, reports
-    REASON_NONE_CONFIGURED -- which is what `seed spyder` wants: an editor
+    REASON_NONE_CONFIGURED -- which is what `acorn spyder` wants: an editor
     that refuses to open because `default_venv` names a deleted venv is
     worse than one that opens and says it has no environment.
 
@@ -94,7 +94,7 @@ def resolve(explicit: str | None = None,
             return None, Failure(
                 REASON_NOT_FOUND, SOURCE_ARGUMENT,
                 f"no venv named '{explicit}' in {paths.VENVS_DIR} -- create "
-                f"it with `seed venv {explicit}`, or see `seed venv-list`")
+                f"it with `acorn venv {explicit}`, or see `acorn venv-list`")
         interpreter = paths.venv_python(venv_path)
         if interpreter is None:
             return None, Failure(REASON_BROKEN, SOURCE_ARGUMENT,
@@ -126,12 +126,12 @@ def resolve(explicit: str | None = None,
             return None, Failure(
                 REASON_BROKEN, SOURCE_DEFAULT_VENV,
                 f"default_venv is set to '{default_venv}', but {venv_path} "
-                f"isn't a usable venv -- fix it with `seed venv "
+                f"isn't a usable venv -- fix it with `acorn venv "
                 f"{default_venv}`, or point it elsewhere with "
-                "`seed venv-default <name>`")
+                "`acorn venv-default <name>`")
 
     return None, Failure(
         REASON_NONE_CONFIGURED, None,
         "no venv to use: none was named, none is active (VIRTUAL_ENV isn't "
         "set), and no default_venv is configured -- name one explicitly or "
-        "run `seed venv-default <name>`")
+        "run `acorn venv-default <name>`")

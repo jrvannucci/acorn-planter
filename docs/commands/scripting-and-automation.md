@@ -5,46 +5,46 @@ written for everything else — Makefiles, CI steps, provisioning scripts, and
 AI coding agents — collected in one place because that audience arrives
 looking for it, not for a particular noun.
 
-![What each automation-facing capability does: seed-cli on PATH, seed which / seed run, --json output, non-interactive flags, per-venv locking, seed apply, and exit codes.](../diagrams/commands-scripting-and-automation.svg)
+![What each automation-facing capability does: acorn-cli on PATH, acorn which / acorn run, --json output, non-interactive flags, per-venv locking, acorn apply, and exit codes.](../diagrams/commands-scripting-and-automation.svg)
 
-**Find `seed` without a profile.** `seed` is a shell function (bash/zsh/
+**Find `acorn` without a profile.** `acorn` is a shell function (bash/zsh/
 PowerShell), defined by dot-sourcing the hook install.sh/install.ps1 add to
 your shell profile — which a script, CI job, or an AI agent's shell tool
 often doesn't load (many spawn a fresh, non-interactive process that skips
 `$PROFILE`/`.bashrc` entirely). The install also adds `system/bin` (holding
-`seed-cli`, `uv`, and `micromamba`) to your **persistent user PATH**, so
-`seed-cli` — the same program the function calls, just without its
+`acorn-cli`, `uv`, and `micromamba`) to your **persistent user PATH**, so
+`acorn-cli` — the same program the function calls, just without its
 shell-mutating extras (see below) — is a bare command everywhere, profile
 or not. A fresh terminal or process picks it up automatically; something
 already running when you installed needs a restart to see it, the same as
 any other CLI tool's installer. An existing install that predates this adds
-it on the next `seed update-commands`, no reinstall needed. `seed purge`
+it on the next `acorn update-commands`, no reinstall needed. `acorn purge`
 removes this PATH entry along with everything else.
 
-**Get an interpreter without a shell.** `seed activate` mutates the calling
+**Get an interpreter without a shell.** `acorn activate` mutates the calling
 shell, which is useless to a caller that gets a fresh process each time. Use
-[`seed which`](venvs-and-packages.md#seed-which-name---json) to resolve the interpreter, or
-[`seed run`](venvs-and-packages.md#seed-run--n-venv----command-args) to execute in the venv
+[`acorn which`](venvs-and-packages.md#acorn-which-name---json) to resolve the interpreter, or
+[`acorn run`](venvs-and-packages.md#acorn-run--n-venv----command-args) to execute in the venv
 directly:
 
 ```sh
-"$(seed which myproject)" -m mytool     # explicit interpreter
-seed run -n myproject -- pytest -q      # or let seed set up the env
+"$(acorn which myproject)" -m mytool     # explicit interpreter
+acorn run -n myproject -- pytest -q      # or let acorn set up the env
 ```
 
-`seed run` passes the child's exit code through verbatim and leaves its
+`acorn run` passes the child's exit code through verbatim and leaves its
 stdout and stderr byte-exact — the child writes to the real file
 descriptors, so its output never passes through seedling's logging tee.
 
-**Install into a specific venv without activating it.** `seed install` (and
+**Install into a specific venv without activating it.** `acorn install` (and
 `uninstall`/`package-list`/`show`) reads `VIRTUAL_ENV` from its own
 environment rather than taking a venv name — there's no `-n` flag on the
-passthrough commands themselves. Nest the call inside `seed run` instead:
-it sets `VIRTUAL_ENV` for the child process, and a nested `seed install`
+passthrough commands themselves. Nest the call inside `acorn run` instead:
+it sets `VIRTUAL_ENV` for the child process, and a nested `acorn install`
 inherits it, so the package lands in exactly the venv you named:
 
 ```sh
-seed run -n myproject -- seed install requests
+acorn run -n myproject -- acorn install requests
 ```
 
 **Read state as data.** `--json` is available on every read command, and the
@@ -52,12 +52,12 @@ shapes agree with each other:
 
 | Command | Payload |
 |---|---|
-| `seed summary --json` | everything: tooling, interpreters, venvs, repos, settings |
-| `seed venv-list --json` | the `venvs` array, identical to summary's |
-| `seed python-list --json` | the `pythons` array, identical to summary's |
-| `seed which <name> --json` | one venv, plus which rule resolved it |
-| `seed health-check --json` | every check as `{status, area, detail}` |
-| `seed package-list --json` | uv's own `pip list --format json`, unwrapped |
+| `acorn summary --json` | everything: tooling, interpreters, venvs, repos, settings |
+| `acorn venv-list --json` | the `venvs` array, identical to summary's |
+| `acorn python-list --json` | the `pythons` array, identical to summary's |
+| `acorn which <name> --json` | one venv, plus which rule resolved it |
+| `acorn health-check --json` | every check as `{status, area, detail}` |
+| `acorn package-list --json` | uv's own `pip list --format json`, unwrapped |
 
 Every payload carries a `schema` integer. It bumps only when a field
 **changes meaning or is removed** — never when one is added — so pinning to
@@ -86,10 +86,10 @@ unsafely. See [DESIGN.md](../DESIGN.md#concurrent-commands).
 
 **Set up an environment declaratively.** A [deployment
 profile](../PROFILES.md) lists the interpreters, venvs, packages and repos a
-machine should end up with, and `seed apply` reaches that state
+machine should end up with, and `acorn apply` reaches that state
 idempotently — the right primitive for provisioning a fresh machine or
 bringing a stale one back in line.
 
-**Exit codes.** `0` success, `1` failure, `127` from `seed run` when the
-command isn't in the venv, `130` on interrupt. `seed health-check` exits `1`
+**Exit codes.** `0` success, `1` failure, `127` from `acorn run` when the
+command isn't in the venv, `130` on interrupt. `acorn health-check` exits `1`
 when any check FAILs (warnings don't count).

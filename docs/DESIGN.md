@@ -26,13 +26,13 @@ permission-denied failures, rather than just calling
 
 1. **The calling process's own working directory being inside the folder
    being deleted.** Windows refuses to delete a directory that is any
-   running process's cwd — including `seed-cli` itself. This is easy to hit
+   running process's cwd — including `acorn-cli` itself. This is easy to hit
    in practice: activate a venv, `cd` into its project directory (or the
    venv folder itself), then run a remove/purge command from right there.
    The fix moves the process out to the user's home directory first, if
    its cwd is inside (or is) the target.
 2. **A process that was just force-closed** (a blocked delete closes
-   whatever is holding the files, see `seed kill-processes`) not having
+   whatever is holding the files, see `acorn kill-processes`) not having
    released its file handles instantly. The fix retries deletion a few
    times with a short delay instead of failing on the first pass.
 3. **Read-only files.** Windows refuses to delete them outright, and git
@@ -40,13 +40,13 @@ permission-denied failures, rather than just calling
    git checkout (every cloned repo) would otherwise fail on hundreds of
    files at once. The error handler clears the read-only bit and retries
    each failed file individually.
-4. **A program can't delete its own running executable.** `seed purge` and
-   `seed remove-user` run *as* `seed-cli.exe` (plus the tool venv's
+4. **A program can't delete its own running executable.** `acorn purge` and
+   `acorn remove-user` run *as* `acorn-cli.exe` (plus the tool venv's
    `python.exe` underneath it), which live inside the very tree being
    deleted. When those are the only survivors, the command hands them to a
    small invisible helper that finishes the deletion a moment after
-   `seed-cli` exits — and says so, instead of reporting an error. The
-   `seed` shell function (still loaded in your session) then waits for the
+   `acorn-cli` exits — and says so, instead of reporting an error. The
+   `acorn` shell function (still loaded in your session) then waits for the
    helper and prints an explicit confirmation — "Confirmed: ~/seedling has
    been fully removed" — or a warning with the leftover path if something
    is still holding files open, so the outcome is never silent.
@@ -94,21 +94,21 @@ alone; and a process named nothing like Python — a PyQt/PySide app's
 `QtWebEngineProcess.exe`, or a `node`/`ffmpeg` binary bundled in a venv — is
 still caught, because it lives inside the tree being deleted.
 
-`seed kill-processes` is the manual equivalent, and follows the same
+`acorn kill-processes` is the manual equivalent, and follows the same
 principle: it closes **only seedling's processes by default**, and needs an
 explicit `--system` for the machine-wide sweep.
 
 ```
-seed kill-processes             # only seedling's own processes (default)
-seed kill-processes --system    # every python + VS Code on the machine
-seed kill-processes <name>      # every process with that name
+acorn kill-processes             # only seedling's own processes (default)
+acorn kill-processes --system    # every python + VS Code on the machine
+acorn kill-processes <name>      # every process with that name
 ```
 
 
 ### Unsaved work in cloned repos
 
-The commands that can delete cloned repos — `seed purge`, `seed remove-repo`
-and `seed remove-user` — check each repo first for work that exists nowhere
+The commands that can delete cloned repos — `acorn purge`, `acorn remove-repo`
+and `acorn remove-user` — check each repo first for work that exists nowhere
 else, and name what's at risk:
 
 ```
@@ -125,7 +125,7 @@ It reports rather than blocks. `-y` still proceeds — scripted teardowns keep
 working — but the warning is printed either way, so it lands in the terminal
 and in seedling's run log. `--preview` shows it too.
 
-`seed purge --keep-repos` and `seed purge-and-reinstall` don't warn: they move
+`acorn purge --keep-repos` and `acorn purge-and-reinstall` don't warn: they move
 repos to safety and restore them, so nothing is at risk.
 
 Two things it cannot see, and does not claim to: **unsaved editor buffers**
@@ -141,7 +141,7 @@ compare against). Treat a clean result as "git found nothing", not as
 Every destructive command — the `remove-*` family, `purge`/`purge-and-reinstall`,
 `kill-processes`, `forge-remove`, `tool-remove`, and the `admin-*` family (see
 [Command reference](COMMANDS.md)) — shares the same `danger` argparse parent
-(`cli.py`), which grants three shared flags. (`seed apply` uses the same
+(`cli.py`), which grants three shared flags. (`acorn apply` uses the same
 parent too, for `--preview` only — it isn't destructive, so `-y`/
 `--non-interactive` are accepted but have nothing to confirm.)
 
@@ -158,7 +158,7 @@ parent too, for `--preview` only — it isn't destructive, so `-y`/
 
 ## Concurrent commands
 
-Two `seed install` runs against the same venv have uv unpacking wheels into
+Two `acorn install` runs against the same venv have uv unpacking wheels into
 one `site-packages` at once, and the loser can leave a half-written
 distribution behind — one that imports but is missing modules. It is a quiet
 failure with a confusing symptom, and it stops being hypothetical the moment
@@ -170,7 +170,7 @@ So the commands that mutate a venv (`install`, `uninstall`, `venv`,
 
 - **Per-venv, keyed by absolute path.** Installing into `web` while `ml`
   builds is normal and must not serialize. Path rather than name because
-  `seed install` follows `VIRTUAL_ENV` wherever it points, including outside
+  `acorn install` follows `VIRTUAL_ENV` wherever it points, including outside
   `~/seedling`, and two unrelated `.venv` directories mustn't queue behind
   each other for sharing a leaf name.
 - **OS file locks, not PID files.** A PID file has to answer "is the holder
@@ -190,7 +190,7 @@ So the commands that mutate a venv (`install`, `uninstall`, `venv`,
   zero-byte file couldn't be written is worse, and it matches how seedling
   already treats its logs.
 
-The lock is advisory and seedling-scoped: it serializes `seed` commands
+The lock is advisory and seedling-scoped: it serializes `acorn` commands
 against each other, and cannot stop someone running `uv pip install --python
 <that venv>` by hand. Lock files live in `~/seedling/system/locks/`, are
 empty, and are never deleted — only unlocked. Removing one is a race in its
@@ -199,8 +199,8 @@ unlink and recreate.
 
 ## Command logging
 
-Every `seed` invocation appends to a daily log file under
-`~/seedling/system/logs/` (e.g. `seed-2026-07-05.log`):
+Every `acorn` invocation appends to a daily log file under
+`~/seedling/system/logs/` (e.g. `acorn-2026-07-05.log`):
 
 - the exact command line and a timestamp,
 - everything the command printed — stdout *and* stderr, including the
@@ -215,10 +215,10 @@ command carries on unlogged. Set `SEEDLING_NO_LOG=1` to disable logging for
 a given call (the shell integration uses this itself for its startup
 `default_venv` query, so opening a terminal doesn't spam the log).
 
-One deliberate exception: `seed run` logs the invocation but **not** the
+One deliberate exception: `acorn run` logs the invocation but **not** the
 child's output. The command it launches inherits the real file descriptors
 rather than seedling's tee, which is what keeps its stdout byte-exact and
-pipeable — a JSON-emitting tool run under `seed run` must not have seedling
+pipeable — a JSON-emitting tool run under `acorn run` must not have seedling
 in the middle of it.
 
 ---

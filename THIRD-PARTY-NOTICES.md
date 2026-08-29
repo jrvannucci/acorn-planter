@@ -57,7 +57,7 @@ These are used to build or develop seedling and are **not** distributed with
 it or downloaded by it at runtime:
 
 - [Hatchling](https://github.com/pypa/hatch) (MIT) — the build backend that
-  produces the `seed-cli` distribution.
+  produces the `acorn-cli` distribution.
 - The documentation site is built with [Sphinx](https://www.sphinx-doc.org)
   (BSD-2-Clause), [MyST-Parser](https://github.com/executablebooks/MyST-Parser)
   (MIT), and the [Read the Docs theme](https://github.com/readthedocs/sphinx_rtd_theme)

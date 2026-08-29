@@ -4,7 +4,7 @@ orphan: true
 
 # Contributing to seedling
 
-This guide is for people working on seedling **itself** — changing the `seed`
+This guide is for people working on seedling **itself** — changing the `acorn`
 commands, the installers, or the shell integration. For using seedling, see
 [Using seedling](GUIDE.md) and the [command reference](COMMANDS.md); for
 deploying it to other people, see the [deployment guide](DEPLOYMENT.md) and
@@ -15,25 +15,25 @@ deploying it to other people, see the [deployment guide](DEPLOYMENT.md) and
 ## The edit → update loop
 
 seedling installs from a private copy of its source at `~/seedling/system/src`
-and never touches that copy except through `seed update-commands` (see
+and never touches that copy except through `acorn update-commands` (see
 [The update model](GUIDE.md#the-update-model)). That would normally make
 iterating awkward — but installing from a **local checkout** wires the loop up
 for you.
 
 When you run the installer from inside a checkout of this repo, seedling records
-that checkout directory as the `update_source` setting. `seed update-commands`
+that checkout directory as the `update_source` setting. `acorn update-commands`
 then re-copies from your working tree, so the loop is:
 
 1. Install once from your checkout:
    - **macOS/Linux:** `sh ./GET_STARTED/install.cmd`
    - **Windows:** `GET_STARTED\install.cmd`
 2. Edit the source in your checkout (or `git pull`).
-3. Run `seed update-commands`. Your changes are copied into the install and
-   `seed-cli` is reinstalled from them — no re-running the installer.
-4. Open a new terminal (or re-source the printed `seed.sh`/`seed.ps1`) to pick
-   up any change to the `seed` shell function itself.
+3. Run `acorn update-commands`. Your changes are copied into the install and
+   `acorn-cli` is reinstalled from them — no re-running the installer.
+4. Open a new terminal (or re-source the printed `acorn.sh`/`acorn.ps1`) to pick
+   up any change to the `acorn` shell function itself.
 
-`seed update-commands` re-copies the whole tree **minus `.git` and `vendor/`**,
+`acorn update-commands` re-copies the whole tree **minus `.git` and `vendor/`**,
 and overwrites `~/seedling/system/src` wholesale — so edit in your checkout, not
 in the installed copy (edits there don't survive an update).
 
@@ -49,7 +49,7 @@ When `update_source` is a **git URL** (your fork, or a self-hosted host), update
 from a specific branch or tag instead of the remote's default branch:
 
 ```
-seed update-commands --from-branch dev
+acorn update-commands --from-branch dev
 ```
 
 This adds `--branch <name>` to the shallow clone, so it works for either a
@@ -59,7 +59,7 @@ none) it's ignored with a note, since a directory has no branches.
 
 To point an install at a fork's URL in the first place, set it at install time
 (`SEEDLING_REPO=https://github.com/you/seedling.git`) or afterward with
-`seed config set update_source <git-url>`.
+`acorn config set update_source <git-url>`.
 
 ---
 
@@ -72,14 +72,14 @@ GET_STARTED/          the files a person actually runs
   uninstall.cmd         uninstaller entry point (same dual-platform trick)
   global.conf           deployment config: install/update source URL (or directory) + install-time settings
 GET_STARTED_OFFLINE_BUNDLE/   everything for building an air-gapped bundle
-  offline-bundler.cmd   dual-platform launcher (NOT a seed command)
+  offline-bundler.cmd   dual-platform launcher (NOT a acorn command)
   offline-bundler.sh    the POSIX half of it (finds Python, runs build_offline.py)
   offline-bundle.toml   what the share will hold, and every build setting
 installation-profile/   the profiles distributed to users; each says who gets it
 installers/
   install.sh          the real POSIX installer (also what the curl one-liner runs)
   install.ps1         the real Windows installer (also what the irm one-liner runs)
-  uninstall.sh / uninstall.ps1   full removal, including the shell hook (same end state as `seed purge`)
+  uninstall.sh / uninstall.ps1   full removal, including the shell hook (same end state as `acorn purge`)
   build_offline.py    the offline bundle builder (downloads uv + interpreters + wheels, writes GET_STARTED/global.conf)
 docs/
   DOCUMENTATION.md    the documentation map (routes to the two tracks below)
@@ -100,10 +100,10 @@ src/
     __main__.py       `python -m seedling` entry point
     cli.py            argparse dispatcher
     paths.py          single source of truth for the ~/seedling folder layout
-    config.py         JSON config (default base, default venv, update source, etc.) + `seed config`'s KNOWN_KEYS
+    config.py         JSON config (default base, default venv, update source, etc.) + `acorn config`'s KNOWN_KEYS
     confirm.py        shared -y / --preview / --non-interactive handling for destructive commands
-    profile.py        parses deployment profiles (`seed apply`, PROFILES.md)
-    custom_commands.py  parses custom-commands.toml (`seed custom`, CUSTOM-COMMANDS.md)
+    profile.py        parses deployment profiles (`acorn apply`, PROFILES.md)
+    custom_commands.py  parses custom-commands.toml (`acorn custom`, CUSTOM-COMMANDS.md)
     venv_target.py    shared venv resolution: explicit name -> VIRTUAL_ENV -> default_venv
     runlog.py         tees stdout/stderr into ~/seedling/system/logs/, one file per day
     download.py       SHA-256-verifying download helper (MinGit, VS Code, micromamba)
@@ -111,17 +111,17 @@ src/
     git_tool.py       locates git, bootstraps portable MinGit on Windows, tags streamed output `[git]`
     conda_tool.py     locates + invokes micromamba for conda-forge tools, builds offline channels
     fsutil.py         retrying, cwd-aware directory deletion (see "Why deletion is so defensive")
-    lock.py           per-venv cross-process lock, so concurrent `seed` commands queue safely
+    lock.py           per-venv cross-process lock, so concurrent `acorn` commands queue safely
     pkgspec.py        parses `name[extras]` package/repo specs shared by install/repo-install
     admin.py          best-effort elevated-privilege check, for the shared multi-user admin-* family
-    shell_integration.py  re-renders seed.ps1/seed.sh from their templates (`seed update-commands`)
+    shell_integration.py  re-renders acorn.ps1/acorn.sh from their templates (`acorn update-commands`)
     winlocks.py       Windows file-lock diagnostics for a deletion that's stuck
     colors.py         minimal ANSI color helper (NO_COLOR/non-tty aware)
-    commands/         one module per `seed` command (python, venv, activate, repo,
+    commands/         one module per `acorn` command (python, venv, activate, repo,
                       vscode, kill, update, summary, health-check, config, remove, purge, ...)
     shell/
-      seed.sh.template   copied to ~/seedling/system/shell/seed.sh at install time
-      seed.ps1.template  copied to ~/seedling/system/shell/seed.ps1 at install time
+      acorn.sh.template   copied to ~/seedling/system/shell/acorn.sh at install time
+      acorn.ps1.template  copied to ~/seedling/system/shell/acorn.ps1 at install time
 ```
 
 ---
@@ -159,8 +159,8 @@ the repo root (deliberately there, not in `src/pyproject.toml`, so it covers
 
 The version lives in **one** place: `__version__` in
 `src/seedling/__init__.py`. `src/pyproject.toml` reads it from there
-(`dynamic = ["version"]`), so the built distribution, `seed --version`, and the
-`seed help` footer can never disagree. A test enforces that pyproject stays
+(`dynamic = ["version"]`), so the built distribution, `acorn --version`, and the
+`acorn help` footer can never disagree. A test enforces that pyproject stays
 dynamic — don't add a literal `version =` back.
 
 Keep [`CHANGELOG.md`](https://github.com/jrvannucci/seedling/blob/main/CHANGELOG.md)
@@ -176,7 +176,7 @@ To cut a release:
    fresh empty `## [Unreleased]` above it.
 3. Commit, then tag: `git tag -a v0.2.0 -m "v0.2.0"`.
 
-This matters more than it looks. `seed update-commands` pulls from a share or a
+This matters more than it looks. `acorn update-commands` pulls from a share or a
 git URL, so an install can sit at a different version than the source it was
 built from — the changelog is how a user finds out what an update changed.
 

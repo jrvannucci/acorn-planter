@@ -1,4 +1,4 @@
-"""`seed custom` dispatch (seedling/commands/custom_cmd.py): running a `run`
+"""`acorn custom` dispatch (seedling/commands/custom_cmd.py): running a `run`
 entry (ambient and venv-routed), running a `script` entry, argv passthrough,
 the `toplevel` short-circuit in cli.py, and collision handling with built-in
 commands.
@@ -101,7 +101,7 @@ def test_run_inside_a_venv(home, tmp_path, monkeypatch, capfd):
 def test_run_command_not_found_in_venv_is_an_error(run_cli, home, tmp_path):
     """Distinct from an unknown venv: the venv resolves fine, but `run`'s
     program isn't installed in it -- custom_cmd.py's own copy of this
-    message (run_cmd.py has an identical one for `seed run`, tested
+    message (run_cmd.py has an identical one for `acorn run`, tested
     separately)."""
     make_venv_dirs(home, "dev")
     _write_toml(tmp_path, '''
@@ -219,10 +219,10 @@ def test_builtin_always_wins_over_a_toplevel_collision(home, tmp_path, capfd):
 
     code = cli.main(["venv"])
     out = capfd.readouterr().out
-    # The REAL `seed venv` (no name given) prints its own usage --
+    # The REAL `acorn venv` (no name given) prints its own usage --
     # never the custom script's output.
     assert "collision guard failed" not in out
-    assert "Usage: seed venv" in out
+    assert "Usage: acorn venv" in out
     assert code == 1
 
     # The custom entry is still reachable via the namespaced form.
@@ -250,7 +250,7 @@ def test_help_rows_reflects_run_and_script_entries(home, tmp_path):
 
     rows = {name: (hint, desc) for name, hint, desc in custom_cmd.help_rows()}
     assert rows["custom lint"] == ("[args...]", "Lint it")
-    assert "(also: seed greet)" in rows["custom greet"][1]
+    assert "(also: acorn greet)" in rows["custom greet"][1]
 
 
 def test_help_group_omitted_when_nothing_configured(run_cli, home):
@@ -265,7 +265,7 @@ def test_help_group_shown_when_configured(run_cli, home, tmp_path):
     assert "custom lint" in out
 
 
-# --- known_names (used by `seed config set startup_commands`) ----------
+# --- known_names (used by `acorn config set startup_commands`) ----------
 
 def test_known_names(home, tmp_path):
     assert custom_cmd.known_names() == set()
@@ -287,8 +287,8 @@ def test_known_names_never_raises_on_bad_toml(home, tmp_path):
     assert custom_cmd.known_names() == set()
 
 
-# --- run_startup (the `seed custom --startup` fast path) ----------------
-# Collapses N seed-cli spawns (one per configured startup_commands name)
+# --- run_startup (the `acorn custom --startup` fast path) ----------------
+# Collapses N acorn-cli spawns (one per configured startup_commands name)
 # into one process that loops internally -- see custom_cmd.run_startup().
 
 def test_run_startup_runs_every_configured_name_in_order(home, tmp_path, capfd):
@@ -417,7 +417,7 @@ def test_parse_startup_chain():
 def test_custom_dash_dash_startup_flag_dispatches_through_the_cli(
         home, tmp_path, capfd):
     """The end-to-end path the shell hook actually invokes:
-    `seed custom --startup`."""
+    `acorn custom --startup`."""
     (tmp_path / "one.py").write_text("print('from cli')\n")
     _write_toml(tmp_path, '[[command]]\nname = "one"\nscript = "one.py"\n')
     config.set_value("startup_commands", ["one"])

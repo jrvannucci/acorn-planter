@@ -1,6 +1,6 @@
 """The removal escalation ladder: delete, then identify and close only what
 blocks, then the sledgehammer. The point is that destructive rungs are reached
-on evidence rather than suspicion -- `seed remove-venv` used to close every
+on evidence rather than suspicion -- `acorn remove-venv` used to close every
 editor window on the machine before establishing anything was wrong."""
 
 from __future__ import annotations

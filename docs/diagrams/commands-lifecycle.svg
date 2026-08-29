@@ -58,20 +58,20 @@
   <text x="40" y="79" class="body fmute" font-size="13.5" font-style="italic">Cleanup, updates, and full-machine teardown.</text>
 
 <rect x="40" y="128" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed kill-processes [name] [--system]</text>
+<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn kill-processes [name] [--system]</text>
 <text x="364" y="146" class="body" font-size="12.5" fill="#52796F">Force-closes stuck processes -- scoped to seedling by default; --system or a name widens it to the whole machine.</text>
 <rect x="40" y="170" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="190" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed update-commands</text>
-<text x="364" y="180" class="body" font-size="12.5" fill="#52796F">Updates seed itself from its recorded source, and reports any global.conf drift since install -- never touches venvs,</text>
+<text x="52" y="190" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn update-commands</text>
+<text x="364" y="180" class="body" font-size="12.5" fill="#52796F">Updates acorn itself from its recorded source, and reports any global.conf drift since install -- never touches venvs,</text>
 <text x="364" y="197" class="body" font-size="12.5" fill="#52796F">packages, or repos.</text>
 <text x="40" y="246" class="body" font-size="12.5" font-weight="700" fill="#9C4A3C" letter-spacing="0.4">DANGER ZONE</text>
 <rect x="40" y="258" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="278" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed remove-user</text>
+<text x="52" y="278" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn remove-user</text>
 <text x="364" y="276" class="body" font-size="12.5" fill="#52796F">Deletes ~/seedling entirely -- keeps the shell hook.</text>
 <rect x="40" y="298" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="318" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed purge</text>
-<text x="364" y="316" class="body" font-size="12.5" fill="#52796F">Everything remove-user does, plus removes the shell hook itself -- seed stops existing as a command.</text>
+<text x="52" y="318" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn purge</text>
+<text x="364" y="316" class="body" font-size="12.5" fill="#52796F">Everything remove-user does, plus removes the shell hook itself -- acorn stops existing as a command.</text>
 <rect x="40" y="338" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="358" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed purge-and-reinstall</text>
+<text x="52" y="358" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn purge-and-reinstall</text>
 <text x="364" y="356" class="body" font-size="12.5" fill="#52796F">Purge, then reinstalls from the recorded source -- cloned repos are always preserved and restored.</text>
 </svg>

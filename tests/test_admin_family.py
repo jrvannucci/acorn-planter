@@ -79,7 +79,7 @@ def test_help_hides_admin_by_default(shared_install, capsys):
     _run("help")
     out = capsys.readouterr().out
     assert "admin-" not in out
-    assert "seed help --admin" in out
+    assert "acorn help --admin" in out
 
 
 def test_help_admin_reveals_family(shared_install, capsys):

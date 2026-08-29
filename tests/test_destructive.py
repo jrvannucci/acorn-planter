@@ -125,7 +125,7 @@ def test_purge_confirmation_screen_lists_guidance(run_cli, home, answer):
     code, out = run_cli("purge")
     assert code == 1  # aborted
     assert "smaller hammers" in out
-    assert "seed remove-venv <name>" in out
+    assert "acorn remove-venv <name>" in out
     assert "--keep-repos" in out
     assert "To reinstall seedling later" in out
     assert home.exists()
@@ -182,9 +182,9 @@ def test_purge_strips_hook_lines_old_and_new_layouts(run_cli, home, monkeypatch,
     profile = profile_dir / "Microsoft.PowerShell_profile.ps1"
     profile.write_text(
         "unrelated line\n"
-        f'. "{home}\\shell\\seed.ps1"\n'          # old layout
+        f'. "{home}\\shell\\acorn.ps1"\n'          # old layout
         "# seedling\n"
-        f'. "{home}\\system\\shell\\seed.ps1"\n'  # current layout
+        f'. "{home}\\system\\shell\\acorn.ps1"\n'  # current layout
     )
     import pathlib
     monkeypatch.setattr(pathlib.Path, "home", staticmethod(lambda: fake_userhome))
@@ -192,7 +192,7 @@ def test_purge_strips_hook_lines_old_and_new_layouts(run_cli, home, monkeypatch,
     code, out = run_cli("purge", "-y")
     assert code == 0
     remaining = profile.read_text()
-    assert "seed.ps1" not in remaining
+    assert "acorn.ps1" not in remaining
     assert "unrelated line" in remaining
 
 

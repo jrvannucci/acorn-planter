@@ -79,8 +79,8 @@ def build_install_flow() -> None:
         (260, ["seedling sets up everything", "Python needs, automatically"], ICE, NAVY, NAVY, False),
         (190, ["Open a new", "terminal"], ICE, NAVY, NAVY, False),
         (330, ["python just works",
-               "seed install requests adds packages",
-               "seed vscode opens the editor"], NAVY, WHITE, NAVY, True),
+               "acorn install requests adds packages",
+               "acorn vscode opens the editor"], NAVY, WHITE, NAVY, True),
     ]
     gap = 34
     total_w = sum(b[0] for b in boxes) + gap * (len(boxes) - 1)
@@ -124,11 +124,11 @@ def build_lifecycle() -> None:
 
     svg.append(_wrap_box(install_x, row_y, box_w, box_h, ["Install", "one-liner"],
                          fill=NAVY, text_fill=WHITE, stroke=NAVY, bold_first=True))
-    svg.append(_wrap_box(use_x, row_y, box_w, box_h, ["Use", "seed venv / install / vscode"],
+    svg.append(_wrap_box(use_x, row_y, box_w, box_h, ["Use", "acorn venv / install / vscode"],
                          fill=ICE, text_fill=NAVY, stroke=NAVY, bold_first=True))
-    svg.append(_wrap_box(uninstall_x, row_y, box_w, box_h, ["Uninstall", "seed purge → gone, cleanly"],
+    svg.append(_wrap_box(uninstall_x, row_y, box_w, box_h, ["Uninstall", "acorn purge → gone, cleanly"],
                          fill=DANGER, text_fill=WHITE, stroke=DANGER, bold_first=True))
-    svg.append(_wrap_box(update_x, update_y, box_w, box_h, ["Update (optional)", "seed update-commands"],
+    svg.append(_wrap_box(update_x, update_y, box_w, box_h, ["Update (optional)", "acorn update-commands"],
                          fill=ICE, text_fill=NAVY, stroke=NAVY, bold_first=True))
 
     svg.append("</svg>")

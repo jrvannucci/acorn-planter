@@ -1,10 +1,10 @@
 """
-`seed custom [name] [args...]` -- run an organization's own custom command.
+`acorn custom [name] [args...]` -- run an organization's own custom command.
 
 Every command comes from one place, `custom_commands.py` (one `[[command]]`
 entry per command, `run = [...]` or `script = "..."`) -- this module is just
 the dispatcher: look a name up, execute it, and expose the two things
-`cli.py` needs for `seed help` and the `toplevel` short-circuit. It has no
+`cli.py` needs for `acorn help` and the `toplevel` short-circuit. It has no
 opinion about built-in seedling command names -- collision detection against
 those lives in `cli.py`, which is the one place that already has the full
 built-in list.
@@ -18,10 +18,10 @@ import sys
 from .. import config, custom_commands, paths, venv_target
 from . import run_cmd
 
-USAGE = "Usage: seed custom <name> [args...]"
+USAGE = "Usage: acorn custom <name> [args...]"
 
 # Launcher for a script command, by its own extension -- .py runs with
-# seed-cli's own interpreter (always present, no dependency on a system
+# acorn-cli's own interpreter (always present, no dependency on a system
 # python3); .sh/.ps1 use the platform's own shell.
 _LAUNCHERS = {
     ".py": lambda path: [sys.executable, str(path)],
@@ -90,7 +90,7 @@ def _print_available(index: dict, warnings: list[str]) -> None:
     print("Custom commands:")
     for name in sorted(index):
         cmd = index[name]
-        suffix = "  (also: seed " + name + ")" if cmd.toplevel else ""
+        suffix = "  (also: acorn " + name + ")" if cmd.toplevel else ""
         print(f"  {name:<20} {cmd.description}{suffix}")
 
 
@@ -107,9 +107,9 @@ def parse_startup_chain(entry: str) -> list[str]:
 
 
 def run_startup() -> int:
-    """`seed custom --startup` -- run every configured `startup_commands`
+    """`acorn custom --startup` -- run every configured `startup_commands`
     entry, IN ONE PROCESS, in order. This exists purely as a fast path: the
-    shell hook used to spawn one `seed custom <name>` (a full seed-cli cold
+    shell hook used to spawn one `acorn custom <name>` (a full acorn-cli cold
     start) per configured name, per new shell; this collapses that to one
     spawn total, regardless of how many names/chains are configured.
 
@@ -181,10 +181,10 @@ def run(args) -> int:
 
 
 def help_rows() -> list[tuple[str, str, str]]:
-    """`seed help`'s Custom commands group, same shape as
+    """`acorn help`'s Custom commands group, same shape as
     `editors.help_rows()` (`src/seedling/commands/editors.py:150-170`).
     Silently empty (no group shown at all) when nothing is configured or the
-    file can't be read -- `seed custom` is where load problems are
+    file can't be read -- `acorn custom` is where load problems are
     surfaced, not the general help screen."""
     index, _warnings = _load_all()
     rows = []
@@ -192,13 +192,13 @@ def help_rows() -> list[tuple[str, str, str]]:
         cmd = index[name]
         desc = cmd.description
         if cmd.toplevel:
-            desc = (desc + "  (also: seed " + name + ")").strip()
+            desc = (desc + "  (also: acorn " + name + ")").strip()
         rows.append(("custom " + name, "[args...]", desc))
     return rows
 
 
 def known_names() -> set[str]:
-    """Every declared custom command name. Used by `seed config set
+    """Every declared custom command name. Used by `acorn config set
     startup_commands` to warn about a name that isn't declared anywhere --
     never raises, since a config edit must not depend on custom-commands.toml
     being valid at that moment."""
@@ -208,14 +208,14 @@ def known_names() -> set[str]:
 
 def toplevel_map() -> dict[str, "custom_commands.CustomCommand"]:
     """The toplevel=True entries, keyed by name -- for cli.py's pre-argparse
-    `seed <name>` short-circuit. Never raises."""
+    `acorn <name>` short-circuit. Never raises."""
     index, _warnings = _load_all()
     return {name: cmd for name, cmd in index.items() if cmd.toplevel}
 
 
 def run_direct(cmd: "custom_commands.CustomCommand", trailing: list[str]) -> int:
     """Entry point for cli.py's top-level short-circuit -- same execution
-    path as `seed custom <name>`, just reached via `seed <name>` instead."""
+    path as `acorn custom <name>`, just reached via `acorn <name>` instead."""
     paths.ensure_layout()
     config.apply_runtime_env()
     return _run(cmd, trailing)

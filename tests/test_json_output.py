@@ -1,6 +1,6 @@
 """The machine-readable surface: every read command's `--json` must put a
 parseable document on stdout and nothing else, and must agree with
-`seed summary --json` about what a venv or a base Python looks like."""
+`acorn summary --json` about what a venv or a base Python looks like."""
 
 from __future__ import annotations
 

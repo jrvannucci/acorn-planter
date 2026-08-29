@@ -14,7 +14,7 @@ seedling is being installed on your own machine with its default settings.
 
 - [How installation works](#how-installation-works)
 - [The folder layout](#the-folder-layout)
-- [Why `seed` is a shell function](#why-seed-is-a-shell-function)
+- [Why `acorn` is a shell function](#why-acorn-is-a-shell-function)
 - [Help output & color](#help-output--color)
 - [The update model](#the-update-model)
 - [Uninstalling](#uninstalling)
@@ -32,15 +32,15 @@ copy (MinGit) into `~/seedling/extensions/git` automatically if none is
 found, so even a stock box needs nothing; on macOS/Linux git must already be
 present (there's no official portable build to bootstrap there). Installing
 from a **local checkout** or a **directory/share** (origins 2 and 3) uses no
-git at all. Separately, `seed repo-clone` (a feature *of* seedling, used
+git at all. Separately, `acorn repo-clone` (a feature *of* seedling, used
 after it's installed) needs git the same way — reusing that same
 auto-bootstrapped portable copy on Windows; see
-[`seed repo-clone`](commands/repos.md#seed-repo-clone-git-url) for details.
+[`acorn repo-clone`](commands/repos.md#acorn-repo-clone-git-url) for details.
 
 ### Where an install comes from
 
 Whichever origin you use is saved as the `update_source` setting, so
-`seed update-commands` keeps pointing back at it. Origins 1 and 2 need no
+`acorn update-commands` keeps pointing back at it. Origins 1 and 2 need no
 configuration; 3 and 4 are set once in
 [`global.conf`](DEPLOYMENT.md#deployment-configuration-globalconf) so your
 users pass no flags of their own.
@@ -74,7 +74,7 @@ the installer from inside it:
 - **Windows:** `GET_STARTED\install.cmd` (double-clicking it also works)
 
 This records the checkout directory as `update_source`, so later
-`seed update-commands` re-copies from that same checkout. Developing seedling
+`acorn update-commands` re-copies from that same checkout. Developing seedling
 itself? The **[contributor guide](CONTRIBUTING.md)** covers the
 edit → update loop; see also [The update model](#the-update-model).
 
@@ -85,7 +85,7 @@ on another network) or a plain directory path (e.g. a network drive
 holding a copy of this repo — no git hosting needed at all). When it's a
 directory, the installer copies from it instead of cloning. Either way
 the source is recorded as the `update_source` setting so
-`seed update-commands` keeps working from it too.
+`acorn update-commands` keeps working from it too.
 
 ```sh
 SEEDLING_REPO=https://github.com/someone/fork.git sh ./GET_STARTED/install.cmd
@@ -102,10 +102,10 @@ It locates the source (a repo folder it's run from, else a shallow clone or a
 copy of the directory you pointed it at), lays out `~/seedling/`, and copies
 the source into `system/src` **minus any `.git`** — no git checkout lives
 inside seedling, and the origin is recorded as `update_source` instead. That
-private copy, not wherever you downloaded from, is what `seed-cli` is built
+private copy, not wherever you downloaded from, is what `acorn-cli` is built
 and run from; see [the update model](#the-update-model).
 
-It then installs `uv` into `system/bin`, builds `seed-cli` from the copied
+It then installs `uv` into `system/bin`, builds `acorn-cli` from the copied
 source, writes the shell hook, and — unless `SEEDLING_AUTO_SETUP=false` —
 installs the newest Python and creates the auto-activating `dev` venv. A
 `vendor/` folder in the source (uv, portable git, a pre-seeded editor for an
@@ -130,12 +130,12 @@ it:
 - Run manually: `powershell -ExecutionPolicy Bypass -File .\installers\install.ps1`
 
 **After a successful `GET_STARTED\install.cmd` run**, it opens a brand-new, ordinary
-PowerShell window (profile loads normally, so `seed` is available right
+PowerShell window (profile loads normally, so `acorn` is available right
 away) with a short welcome banner listing the first few commands to try,
 and leaves it open at an interactive prompt. This isn't just a convenience:
 `GET_STARTED\install.cmd` itself runs in plain `cmd.exe`, and even drives `installers\install.ps1`
 with `-NoProfile`, so there's no window at any point in that original
-invocation where `seed` — a PowerShell function defined in `$PROFILE` —
+invocation where `acorn` — a PowerShell function defined in `$PROFILE` —
 could actually work. On failure, this window is skipped and the original
 `cmd.exe` window instead pauses on the error so you can read it.
 
@@ -147,32 +147,32 @@ could actually work. On failure, this window is skipped and the original
 ~/seedling/
 ├── system/                    everything seedling needs to run itself,
 │   │                          kept out of the way of what you actually use
-│   ├── bin/                      uv, and the seed-cli shim
-│   ├── tool/                     the isolated uv-managed venv seed-cli runs in
+│   ├── bin/                      uv, and the acorn-cli shim
+│   ├── tool/                     the isolated uv-managed venv acorn-cli runs in
 │   ├── src/                      seedling's own source -- see "update model"
 │   ├── config/
-│   │   └── settings.json         seedling's own config -- see `seed config`
+│   │   └── settings.json         seedling's own config -- see `acorn config`
 │   ├── logs/
-│   │   └── seed-YYYY-MM-DD.log   every command + its output, one file per day
+│   │   └── acorn-YYYY-MM-DD.log   every command + its output, one file per day
 │   ├── cache/
 │   │   └── uv/                   uv's package/interpreter download cache --
 │   │                             kept in here instead of ~/.cache / %LOCALAPPDATA%
 │   ├── conda/                    micromamba root: conda-forge tool envs and
-│   │                             their PATH launchers (`seed forge-install`)
-│   ├── shims/                    launchers for PyPI apps (`seed tool-install`)
+│   │                             their PATH launchers (`acorn forge-install`)
+│   ├── shims/                    launchers for PyPI apps (`acorn tool-install`)
 │   ├── certs/
 │   │   └── ca-bundle.pem         corporate CA bundle, only on org installs
 │   │                             that ship one in vendor/certs/ (see OFFLINE.md)
 │   └── shell/
-│       ├── seed.sh                sourced by bash/zsh
-│       └── seed.ps1                dot-sourced by PowerShell
+│       ├── acorn.sh                sourced by bash/zsh
+│       └── acorn.ps1                dot-sourced by PowerShell
 ├── python/
 │   ├── base/
 │   │   ├── 312/                   (nothing here directly -- see alias below)
 │   │   ├── 312.alias.json         points "312" -> the real versioned dir uv made
 │   │   └── cpython-3.12.x-.../    the actual interpreter uv installed
 │   └── venvs/
-│       └── <name>/                one folder per `seed venv <name>`
+│       └── <name>/                one folder per `acorn venv <name>`
 ├── extensions/
 │   ├── vscode/
 │   │   └── app/                   portable VS Code
@@ -180,9 +180,9 @@ could actually work. On failure, this window is skipped and the original
 │   ├── spyder-config/             Spyder's own settings, kept in here rather
 │   │                              than ~/.config or %APPDATA%
 │   └── apps/
-│       └── <name>/                one uv-managed env per `seed tool-install`
+│       └── <name>/                one uv-managed env per `acorn tool-install`
 └── repo/
-    └── <name>/                    one folder per `seed repo-clone <url>`
+    └── <name>/                    one folder per `acorn repo-clone <url>`
 ```
 
 Only `system/` holds seedling's own internals; `python/`, `extensions/`,
@@ -193,29 +193,29 @@ directory named after the exact resolved version and platform (e.g.
 `cpython-3.12.4-linux-x86_64-gnu`), not a short `312`. seedling writes a
 small JSON pointer file (`312.alias.json`) instead of relying on a symlink,
 because creating symlinks requires elevated privileges on Windows by
-default. `seed venv`/anything else that resolves a base tag reads this file
+default. `acorn venv`/anything else that resolves a base tag reads this file
 first.
 
 ---
 
-## Why `seed` is a shell function
+## Why `acorn` is a shell function
 
-`seed activate <name>` and `seed deactivate` need to change environment
+`acorn activate <name>` and `acorn deactivate` need to change environment
 variables (`PATH`, `VIRTUAL_ENV`, your prompt) in **your current terminal
 session**. A subprocess can never do that to its parent shell — this is the
 same reason `conda activate` and `source venv/bin/activate` work the way
 they do, rather than being plain executables.
 
-So the installer writes `seed` as a shell **function** (bash/zsh) or
+So the installer writes `acorn` as a shell **function** (bash/zsh) or
 PowerShell function, not just a path to a binary:
 
-- `seed activate <name>` → calls `seed-cli activate <name> --print-path`
+- `acorn activate <name>` → calls `acorn-cli activate <name> --print-path`
   (a hidden flag) to get the venv's activation script path, then **sources**
   that script directly into the current shell.
-- `seed deactivate` → calls the `deactivate` function that a venv's own
+- `acorn deactivate` → calls the `deactivate` function that a venv's own
   activation script defines (bash: via `declare -f`/`command -v`;
   PowerShell: via `Get-Command`), if one exists in the current shell.
-- `seed repo-cd [name]` → same trick as activate: the CLI resolves the
+- `acorn repo-cd [name]` → same trick as activate: the CLI resolves the
   repo's path (`--print-path`), and the function `cd`s the current shell
   there.
 - **After every command**, the function checks whether the venv this shell
@@ -224,59 +224,59 @@ PowerShell function, not just a path to a binary:
   deactivates it automatically (printing `(deactivated: the venv this
   shell had active no longer exists)`) instead of leaving a dangling
   prompt pointing at a folder that's gone.
-- After `seed purge`/`seed remove-user`, the function also waits for the
+- After `acorn purge`/`acorn remove-user`, the function also waits for the
   invisible self-deletion helper and prints the final confirmation — see
   [Why deletion is so defensive](DESIGN.md#why-deletion-is-so-defensive).
 - Every other subcommand is forwarded straight through to the real
-  `seed-cli` binary as a normal subprocess.
+  `acorn-cli` binary as a normal subprocess.
 
-If you invoke `seed-cli activate <name>` or `seed-cli deactivate` directly
+If you invoke `acorn-cli activate <name>` or `acorn-cli deactivate` directly
 (bypassing the shell function — e.g. by calling the binary path explicitly),
-you'll get a message explaining that this only works through the `seed`
+you'll get a message explaining that this only works through the `acorn`
 shell function, since a subprocess has no way to affect your shell.
 
 ---
 
 ## Help output & color
 
-`seed help` groups commands the way you'd look for one rather than
-alphabetically, and `seed help --admin` reveals the elevated shared-root
+`acorn help` groups commands the way you'd look for one rather than
+alphabetically, and `acorn help --admin` reveals the elevated shared-root
 family. Color is on when the output is a terminal and off when it's piped or
 redirected, so captured logs stay plain text; `NO_COLOR=1` turns it off
 everywhere.
 
 ## The update model
 
-seedling is deliberately designed so that **nothing updates the `seed`
+seedling is deliberately designed so that **nothing updates the `acorn`
 command without you explicitly asking it to.**
 
-This section is entirely about the `seed` command's own code. If what's out
+This section is entirely about the `acorn` command's own code. If what's out
 of date is your *environment* instead — venvs, packages, or repos drifting
 from an organization's [deployment profile](PROFILES.md) — that's
-[`seed apply`](commands/status.md#seed-apply-profile---preview---force), a
+[`acorn apply`](commands/status.md#acorn-apply-profile---preview---force), a
 separate command covered on its own page. Neither updates the other.
 
-The installer doesn't install `seed-cli` from wherever you ran it from — it
+The installer doesn't install `acorn-cli` from wherever you ran it from — it
 clones/copies the source into `~/seedling/system/src` first, and installs
 from *that* private copy. Concretely:
 
 - Deleting, moving, or renaming your original download or clone does
-  nothing to your working `seed` install — it already has its own copy.
+  nothing to your working `acorn` install — it already has its own copy.
 - New commits landing on the GitHub repo you installed from have zero
   effect on your install until you act.
 - The only command that ever touches `~/seedling/system/src` (and
-  therefore what `seed` does) after the initial install is
-  `seed update-commands`.
+  therefore what `acorn` does) after the initial install is
+  `acorn update-commands`.
 
 This means re-running the original `curl | sh` one-liner is not how you
-update seedling day-to-day — `seed update-commands` is.
+update seedling day-to-day — `acorn update-commands` is.
 
 `~/seedling/system/src` is a plain copy of the source — deliberately NOT
 a git checkout (no `.git` folder lives inside seedling). Instead, the
 installer records where the source came from in the `update_source`
-setting, and `seed update-commands` re-fetches from there: a fresh shallow
-`git clone` for a URL, a re-copy for a directory path (see `seed config`).
-The update covers the shell side too — the rendered `seed` function in
+setting, and `acorn update-commands` re-fetches from there: a fresh shallow
+`git clone` for a URL, a re-copy for a directory path (see `acorn config`).
+The update covers the shell side too — the rendered `acorn` function in
 `~/seedling/system/shell/` is rebuilt from the refreshed templates.
 
 If no source is recorded, it just reinstalls from whatever's currently in
@@ -286,9 +286,9 @@ hand-edits there don't survive an update (edit and reinstall from a real
 checkout instead if you're developing seedling itself).
 
 After refreshing, it also re-reads the now-current `global.conf` and
-reports (never applies) any *setting* it would now seed differently than
+reports (never applies) any *setting* it would now acorn differently than
 what's actually configured — see
-[`seed update-commands`](commands/lifecycle.md#seed-update-commands) for the
+[`acorn update-commands`](commands/lifecycle.md#acorn-update-commands) for the
 full explanation. Settings are otherwise seeded once, at install time,
 and never re-applied on their own.
 
@@ -299,7 +299,7 @@ automatically, so machines on networks without github.com stay updatable.
 
 Installing from a **local checkout** (running the installer from inside the
 repo) records that checkout directory as `update_source`, so
-`seed update-commands` re-copies from your working tree — the basis of the
+`acorn update-commands` re-copies from your working tree — the basis of the
 edit → update loop for anyone **developing seedling itself**, covered in the
 [contributor guide](CONTRIBUTING.md). (Set `SEEDLING_REPO`/`SEEDLING_REPO_URL`
 to a URL at install time to re-clone from a remote instead.)
@@ -308,32 +308,32 @@ to a URL at install time to re-clone from a remote instead.)
 
 ## Uninstalling
 
-**The normal way to uninstall is `seed purge`.** It removes the `seed`
+**The normal way to uninstall is `acorn purge`.** It removes the `acorn`
 shell hook from your profile **and** deletes the whole install directory,
 for a full clean removal — and because it runs from inside seedling, it
 already knows its own install location (including `{user}` multi-user and
 custom `SEEDLING_HOME_DIR` layouts), handles the Windows self-deletion of
 its own running executable, and prints the right reinstall instructions
-afterward. It needs nothing but a working `seed`, and no leftover installer
+afterward. It needs nothing but a working `acorn`, and no leftover installer
 files.
 
 ```
-seed purge
+acorn purge
 ```
 
 To wipe and immediately rebuild instead of just removing, use
-[`seed purge-and-reinstall`](commands/lifecycle.md#seed-purge-and-reinstall--y) — it purges and
+[`acorn purge-and-reinstall`](commands/lifecycle.md#acorn-purge-and-reinstall--y) — it purges and
 then reinstalls from the recorded source, preserving your cloned repos.
 
 Two narrower / fallback options:
 
-- `seed remove-user` — removes everything *seedling manages* (Python
+- `acorn remove-user` — removes everything *seedling manages* (Python
   installs, venvs, VS Code, cloned repos, uv, its own source) but **leaves
-  the `seed` shell hook** in your profile, so a later reinstall picks back
+  the `acorn` shell hook** in your profile, so a later reinstall picks back
   up cleanly.
 - `GET_STARTED/uninstall.cmd` (Windows) / `sh ./GET_STARTED/uninstall.cmd` (macOS/Linux) — the
-  **standalone fallback for when `seed` itself is broken** and `seed purge`
-  can't run. Run from your copy of the repo; it needs no working seed-cli
+  **standalone fallback for when `acorn` itself is broken** and `acorn purge`
+  can't run. Run from your copy of the repo; it needs no working acorn-cli
   (pure shell/PowerShell). It resolves the install location the same way
   the installer did — `SEEDLING_HOME` env override, else `global.conf`'s
   `SEEDLING_HOME_DIR` with `~`/`{user}` expansion — so relocated and
@@ -341,7 +341,7 @@ Two narrower / fallback options:
   installs on a shared machine, that's the elevated
   [`admin-*` family](DEPLOYMENT.md#admin-commands-shared-root-teardown) instead.)
 
-If you have *neither* a working `seed` *nor* the repo, you can pipe the
+If you have *neither* a working `acorn` *nor* the repo, you can pipe the
 uninstaller straight from GitHub — the same one-liner shape as the
 installer (pipe the underlying `installers/uninstall.*`, not `GET_STARTED/uninstall.cmd`):
 
@@ -375,23 +375,23 @@ when running the `irm ... | iex` one-liner — you're running a stale cached
 copy of the install script; re-fetch it (or download the repo and run
 `GET_STARTED\install.cmd` instead).
 
-**`seed: command not found` after installing** — open a new terminal (the
+**`acorn: command not found` after installing** — open a new terminal (the
 shell hook only takes effect in new shells), or manually run
-`. ~/seedling/system/shell/seed.sh` (bash/zsh) /
-`. ~/seedling/system/shell/seed.ps1` (PowerShell) in your current one.
+`. ~/seedling/system/shell/acorn.sh` (bash/zsh) /
+`. ~/seedling/system/shell/acorn.ps1` (PowerShell) in your current one.
 
-**`No base Python found`** when running `seed venv` — install one first
-with `seed python <version>`.
+**`No base Python found`** when running `acorn venv` — install one first
+with `acorn python <version>`.
 
 **`uv was not found in ~/seedling/system/bin or on PATH`** — re-run the
 installer; this means the uv bootstrap step didn't complete.
 
-**A venv or VS Code window is stuck / won't close** — `seed kill-processes`
-(or `seed kill-processes <name>` targeting a specific process name)
+**A venv or VS Code window is stuck / won't close** — `acorn kill-processes`
+(or `acorn kill-processes <name>` targeting a specific process name)
 force-closes it, after confirmation. `--system` widens the sweep to every
 Python/VS Code process on the machine, not just seedling's own — see
 [known limits](#known-limits) below. Every `remove-*` command and
-`seed purge` also do this automatically before deleting anything.
+`acorn purge` also do this automatically before deleting anything.
 
 **`git isn't installed, and seedling can't bundle a portable copy on
 <macOS/Linux>`** — install git through your OS's package manager (the error
@@ -405,18 +405,18 @@ into.
 
 ## Known limits
 
-- `seed vscode`/`seed vscode-repo` on macOS unpack the official `.app` bundle
+- `acorn vscode`/`acorn vscode-repo` on macOS unpack the official `.app` bundle
   and launch its embedded CLI binary; this is the least-tested of the
   three platforms.
-- `seed python` version resolution assumes CPython (uv's default); PyPy and
+- `acorn python` version resolution assumes CPython (uv's default); PyPy and
   other implementations aren't wired up.
-- `seed kill-processes --system` is machine-wide rather than
+- `acorn kill-processes --system` is machine-wide rather than
   seedling-scoped, by design — see
-  [the command reference](commands/lifecycle.md#seed-kill-processes-name---system--y---preview---non-interactive).
-- `seed repo-clone`/`repo-install` need git; only Windows is auto-bootstrapped
+  [the command reference](commands/lifecycle.md#acorn-kill-processes-name---system--y---preview---non-interactive).
+- `acorn repo-clone`/`repo-install` need git; only Windows is auto-bootstrapped
   (via portable MinGit) — macOS/Linux still need system git already present,
   since neither has an equivalent official portable build.
-- `seed repo-install` only recognizes `pyproject.toml` and
+- `acorn repo-install` only recognizes `pyproject.toml` and
   `requirements.txt` — repos using other dependency files (e.g. Poetry's
   `poetry.lock` without a PEP 621 `pyproject.toml` section, or Pipenv) may
   need manual installation.

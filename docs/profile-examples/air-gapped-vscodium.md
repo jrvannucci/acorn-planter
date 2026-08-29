@@ -52,7 +52,7 @@ them:
 
 pythons = ["3.12"]
 
-# Everything any profile may name, plus what users may `seed install` later.
+# Everything any profile may name, plus what users may `acorn install` later.
 # hatchling/ipython/ruff/ipykernel/pip are always bundled -- no need to list.
 packages = ["pandas", "numpy", "requests", "pytest", "httpx", "openpyxl"]
 
@@ -102,7 +102,7 @@ SEEDLING_VSCODE_EXTENSIONS="ms-python.python,ms-toolsai.jupyter,charliermarsh.ru
   on an isolated network can't add one later. `--check-profile` proves the
   profile is a subset — a package it names that the share won't carry fails
   the build on the connected machine, and
-  [`seed profile-check`](../commands/status.md#seed-profile-check-profile---bundle-path)
+  [`acorn profile-check`](../commands/status.md#acorn-profile-check-profile---bundle-path)
   answers the same question for a profile written later, from inside.
 - Nothing here mentions the share's paths: those live in `global.conf`
   (`SEEDLING_PACKAGE_INDEX` and friends), which is install-time configuration
@@ -131,7 +131,7 @@ metadata:
 MPL is weak copyleft: it only asks something of you if you *modify* the
 library, which installing never does. Nothing here needs a decision — which is
 the answer a review wants, stated rather than assumed. Re-check any time with
-`seed whl-licenses S:\seedling\wheels`.
+`acorn whl-licenses S:\seedling\wheels`.
 
 **What the bundle looks like**
 
@@ -142,7 +142,7 @@ offline-bundle/
 │   ├── GET_STARTED/                 install.cmd, and global.conf written
 │   │                                with your --deploy-root paths
 │   ├── GET_STARTED_OFFLINE_BUNDLE/  offline-bundle.toml -- what the share
-│   │                                holds, read back by seed profile-check
+│   │                                holds, read back by acorn profile-check
 │   ├── installation-profile/        the profile above
 │   └── vendor/
 │       ├── uv/                  uv.exe, uvx.exe

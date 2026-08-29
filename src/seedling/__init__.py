@@ -1,5 +1,5 @@
 # The single source of truth for seedling's version: pyproject.toml reads it
-# from here (dynamic = ["version"]), `seed --version` prints it, and the
+# from here (dynamic = ["version"]), `acorn --version` prints it, and the
 # installers stamp nothing of their own. Bump this line and both follow.
 __version__ = "0.12.0"
 
@@ -7,7 +7,7 @@ __version__ = "0.12.0"
 #
 # Almost nothing should reach for these: an installed copy records where it
 # came from as the `update_source` setting, and every runtime path (notably
-# `seed update-commands` and `purge-and-reinstall`) reads THAT, so private
+# `acorn update-commands` and `purge-and-reinstall`) reads THAT, so private
 # forks, self-hosted git, and network-share deployments all work without
 # knowing this project exists. These constants are only the last resort for
 # a copy with no recorded source, and the yardstick for recognizing a

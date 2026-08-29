@@ -81,7 +81,7 @@ def test_repo_install_picks_pyproject_over_requirements(run_cli, home, monkeypat
 
 
 def test_repo_install_reports_a_failed_uv_run(run_cli, home, monkeypatch):
-    """The exit code has to carry a failed install out: `seed apply` names
+    """The exit code has to carry a failed install out: `acorn apply` names
     the step that didn't finish and carries on with the rest of the profile,
     which it can't do if uv's failure escapes as an exception."""
     repo = home / "repo" / "proj"
@@ -95,7 +95,7 @@ def test_repo_install_reports_a_failed_uv_run(run_cli, home, monkeypatch):
 
 
 class TestRepoInstallExtras:
-    """`seed repo-install proj[gui]` -- extras spelled exactly as on a
+    """`acorn repo-install proj[gui]` -- extras spelled exactly as on a
     package spec, and passed through to uv on the editable path."""
 
     def _repo(self, home, manifest="pyproject.toml"):
@@ -137,7 +137,7 @@ class TestRepoInstallExtras:
 
 class TestRepoInstallVenv:
     """`--venv` names the environment outright, so the install can't depend
-    on what happens to be active -- what lets `seed apply` put one repo into
+    on what happens to be active -- what lets `acorn apply` put one repo into
     several venvs in a row."""
 
     def _repo(self, home):

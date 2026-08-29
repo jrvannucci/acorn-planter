@@ -7,7 +7,7 @@
 **Go from nothing to writing Python in one command.** No prior setup, no
 tools to install first, nothing to learn about how Python is packaged. Run one
 line, open a terminal, type `python`. Everything lives in a single folder you
-can delete — `seed purge` leaves your machine exactly as it was.
+can delete — `acorn purge` leaves your machine exactly as it was.
 
 ---
 
@@ -23,7 +23,7 @@ here:
 - **You don't need Python to install it.** The one-liner brings its own.
 - **An environment is already waiting.** Open a terminal and `python` works,
   in a venv, with common packages in it.
-- **An editor comes with it.** `seed vscode` — or `seed spyder` — already
+- **An editor comes with it.** `acorn vscode` — or `acorn spyder` — already
   wired to the environment you're in.
 - **It's one folder, and it's undoable.** Nothing touches the registry,
   `%APPDATA%`, or `~/.local`. One command removes all of it.
@@ -67,16 +67,16 @@ short:
 
 ```sh
 python                     # the newest Python, in a venv, ready
-seed install requests      # add packages to the environment you're in
-seed venv myproject        # a separate environment for a separate project
-seed activate myproject    # switch to it (new terminals remember the default)
-seed run -- pytest         # run something in a venv without switching
+acorn install requests      # add packages to the environment you're in
+acorn venv myproject        # a separate environment for a separate project
+acorn activate myproject    # switch to it (new terminals remember the default)
+acorn run -- pytest         # run something in a venv without switching
 ```
 
-That's the whole day-to-day. The rest is there when you need it: `seed vscode`
-opens the bundled editor, `seed repo-clone <url>` pulls a project into
-`~/seedling/repo`, `seed summary` shows everything installed, and
-`seed health-check` verifies it.
+That's the whole day-to-day. The rest is there when you need it: `acorn vscode`
+opens the bundled editor, `acorn repo-clone <url>` pulls a project into
+`~/seedling/repo`, `acorn summary` shows everything installed, and
+`acorn health-check` verifies it.
 
 Names are predictable: a bare noun does the thing (`python` installs, `venv`
 creates), `noun-list` shows them, and **anything that deletes is `remove-*`**.
@@ -86,11 +86,11 @@ list; click any one to open its full documentation.
 
 ### It changes only when you ask
 
-![Install with the one-liner, use seed to manage venvs and packages, update only when you ask, and uninstall cleanly with seed purge.](docs/diagrams/lifecycle.svg)
+![Install with the one-liner, use acorn to manage venvs and packages, update only when you ask, and uninstall cleanly with acorn purge.](docs/diagrams/lifecycle.svg)
 
 seedling runs from its own private copy of the source in `~/seedling`. New
-commits upstream change nothing until you run `seed update-commands`. When
-you're done with it, `seed purge` removes the folder and the shell hook.
+commits upstream change nothing until you run `acorn update-commands`. When
+you're done with it, `acorn purge` removes the folder and the shell hook.
 
 ---
 
@@ -131,7 +131,7 @@ including on networks where the usual Python setup path doesn't work at all.
 | [Deployment guide](docs/DEPLOYMENT.md) | `global.conf`, shared machines, rollout, security review |
 | [Deployment profiles](docs/PROFILES.md) | The file describing what users end up with, and who gets it |
 | [Profile examples](docs/PROFILE-EXAMPLES.md) | Complete profiles: research group, software team, classroom, air-gapped fleet |
-| [Custom commands](docs/CUSTOM-COMMANDS.md) | Add your organization's own verbs to `seed` |
+| [Custom commands](docs/CUSTOM-COMMANDS.md) | Add your organization's own verbs to `acorn` |
 | [Offline networks](docs/OFFLINE.md) | Running with no internet at all |
 | [Licensing](docs/LICENSING.md) | What seedling downloads, and under what terms |
 
@@ -140,7 +140,7 @@ routes you from what you're trying to do to the right page.
 
 **Working on seedling itself?** The
 [contributor guide](docs/CONTRIBUTING.md) covers the edit →
-`seed update-commands` loop, the source layout, and the tests (`uvx pytest`
+`acorn update-commands` loop, the source layout, and the tests (`uvx pytest`
 from the repo root).
 
 ---

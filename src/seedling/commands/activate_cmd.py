@@ -22,7 +22,7 @@ def _activate_script(venv_path):
 
 def run(args) -> int:
     if not args.name:
-        print("Usage: seed activate <name>")
+        print("Usage: acorn activate <name>")
         return 1
 
     target = paths.venv_dir(args.name)
@@ -36,13 +36,13 @@ def run(args) -> int:
         return 1
 
     if getattr(args, "print_path", False):
-        # Used by the `seed` shell function, which sources this path directly
+        # Used by the `acorn` shell function, which sources this path directly
         # so activation actually affects the caller's shell.
         print(str(script))
         return 0
 
     print(
-        "This only works when 'seed' is the shell function installed by the "
+        "This only works when 'acorn' is the shell function installed by the "
         "seedling installer (it's what lets activation affect your current "
         "shell). If you're seeing this, re-run the installer or open a new "
         "terminal.\n"

@@ -6,7 +6,7 @@ organization wants its users to end up with.
 the shell installers. A profile answers "what should be set up once seedling
 works" -- interpreters, venvs and their packages, repos to clone, settings --
 and is read only here, by Python. That split is deliberate: install.sh and
-install.ps1 stay dumb (they bootstrap seed-cli and then call `seed apply`),
+install.ps1 stay dumb (they bootstrap acorn-cli and then call `acorn apply`),
 so no structured format has to be parsed twice in two shell dialects.
 
 TOML rather than JSON because this is a hand-edited admin file and TOML has
@@ -27,13 +27,13 @@ from pathlib import Path
 
 from . import config, pkgspec
 
-# Bumped only when an older seed-cli could MISREAD a newer profile. Additive
+# Bumped only when an older acorn-cli could MISREAD a newer profile. Additive
 # keys don't need it; changed meanings do.
 SCHEMA = 1
 
-# Keys `seed apply` may write via [config]. Deliberately a subset of
+# Keys `acorn apply` may write via [config]. Deliberately a subset of
 # config.KNOWN_KEYS: the install-source and TLS settings belong to
-# global.conf (they must be right *before* seed-cli runs), and letting a
+# global.conf (they must be right *before* acorn-cli runs), and letting a
 # profile rewrite them would give two sources of truth for the same value.
 SETTABLE_KEYS = {
     "default_base",
@@ -55,7 +55,7 @@ class Venv:
     python: str | None = None
     packages: list[str] = field(default_factory=list)
     default: bool = False
-    # None means "inherit venv_default_packages", matching `seed venv`.
+    # None means "inherit venv_default_packages", matching `acorn venv`.
     # False is an explicit "this venv gets only what it lists".
     default_packages: bool | None = None
 
@@ -97,15 +97,15 @@ class Profile:
     repos: list[Repo] = field(default_factory=list)
     tools: list[str] = field(default_factory=list)
     # Which bundled editor this deployment standardizes on ("vscode",
-    # "spyder"). None means the profile doesn't say, and `seed apply`
+    # "spyder"). None means the profile doesn't say, and `acorn apply`
     # Which bundled editors this deployment standardizes on. Empty means the
-    # profile doesn't say, and `seed apply` installs none -- the install-time
+    # profile doesn't say, and `acorn apply` installs none -- the install-time
     # SEEDLING_AUTO_VSCODE setting keeps deciding that, so a profile written
     # before this existed behaves exactly as before.
     #
     # Plural because the underlying system genuinely supports several at once:
     # the editors live in separate trees with separate commands, and nothing
-    # about `seed vscode` and `seed spyder` conflicts. A mixed team -- engineers
+    # about `acorn vscode` and `acorn spyder` conflicts. A mixed team -- engineers
     # on VS Code, analysts on Spyder -- is the case this exists for.
     editors: list[str] = field(default_factory=list)
     settings: dict = field(default_factory=dict)
@@ -127,7 +127,7 @@ class Profile:
     def tool_set(self) -> list[str]:
         """The conda-forge tools this profile declares, de-duplicated. Used by
         the offline bundler to build the bundled conda channel, and by
-        `seed apply` to install them -- one source of truth, like packages."""
+        `acorn apply` to install them -- one source of truth, like packages."""
         return list(dict.fromkeys(self.tools))
 
     def package_set(self) -> list[str]:
@@ -182,7 +182,7 @@ def _repo_targets(value, url: str) -> list[RepoTarget]:
 
     Extras hang off the target rather than the repo because the same clone is
     routinely wanted with different optional dependencies in different venvs.
-    They are spelled exactly as on the command line (`seed repo-install
+    They are spelled exactly as on the command line (`acorn repo-install
     plotpress[gui]`) and as in a requirements file, so there is one bracket
     syntax to know rather than a profile-only one.
 
@@ -263,7 +263,7 @@ def parse(text: str, *, path: Path | None = None) -> Profile:
     _require(schema <= SCHEMA,
              f"profile declares schema {schema}, but this seedling "
              f"understands up to {SCHEMA}. Update seedling first "
-             f"(`seed update-commands`).")
+             f"(`acorn update-commands`).")
 
     profile = Profile(path=path)
     profile.pythons = _str_list(raw.get("python", []), "python")
@@ -474,7 +474,7 @@ def distributed_to(folder: Path, user: str | None = None) -> list[Path]:
 def find_all(explicit: str | None = None) -> list[Path]:
     """The profiles to apply, resolving a folder into the set this user gets.
 
-    `seed apply` accepts either: a single file (applied as named) or a
+    `acorn apply` accepts either: a single file (applied as named) or a
     directory (every profile in it that this user is distributed). The
     installers record the FOLDER, so a fleet's per-team profiles arrive
     without anyone naming them."""

@@ -1,5 +1,5 @@
 """
-`seed profile-check` -- will this profile actually apply here?
+`acorn profile-check` -- will this profile actually apply here?
 
 The air-gapped half of the bundle story. `build-offline` validates the
 profiles it ships before it downloads anything, but the profiles that matter
@@ -38,7 +38,7 @@ def check(args) -> int:
     root = _bundle_root(getattr(args, "bundle", None))
     if root is None:
         print("Couldn't work out which bundle to check against.")
-        print("  Pass one:  seed profile-check <profile.toml> --bundle <path>")
+        print("  Pass one:  acorn profile-check <profile.toml> --bundle <path>")
         print("  (it's found automatically when package_index is a directory "
               "of wheels inside a bundle)")
         return 1
@@ -54,7 +54,7 @@ def check(args) -> int:
     try:
         prof = profile_mod.load(profile_path)
     except profile_mod.ProfileError as e:
-        # Exit 2 for "the profile itself is wrong", matching `seed apply` --
+        # Exit 2 for "the profile itself is wrong", matching `acorn apply` --
         # a broken file and an unsatisfiable one are different problems with
         # different fixes.
         print(f"error: {profile_path}: {e}")

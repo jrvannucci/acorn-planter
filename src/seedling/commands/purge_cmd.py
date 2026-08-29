@@ -1,17 +1,17 @@
 """
-`seed purge` -- the nuclear option. Unlike `seed remove-user` (which only
-deletes what's under ~/seedling but leaves the `seed` shell hook installed,
-so a fresh `seed update-commands`/reinstall can pick back up cleanly),
-`seed purge` also strips the shell hook from every shell profile it can
-find. After this, `seed` stops existing as a command entirely -- this is
+`acorn purge` -- the nuclear option. Unlike `acorn remove-user` (which only
+deletes what's under ~/seedling but leaves the `acorn` shell hook installed,
+so a fresh `acorn update-commands`/reinstall can pick back up cleanly),
+`acorn purge` also strips the shell hook from every shell profile it can
+find. After this, `acorn` stops existing as a command entirely -- this is
 the same end state as running uninstall.sh/uninstall.ps1, just reachable
-from inside `seed` itself.
+from inside `acorn` itself.
 
-`seed purge-and-reinstall` runs that same wipe, then reinstalls seedling
+`acorn purge-and-reinstall` runs that same wipe, then reinstalls seedling
 from the source the original install recorded (`update_source`). Because a
 program can't delete-then-relaunch its own executable, this command only
 writes a self-contained reinstall script to a temp path (surviving the
-wipe); the `seed` shell FUNCTION -- still loaded in the user's terminal --
+wipe); the `acorn` shell FUNCTION -- still loaded in the user's terminal --
 runs it once the wipe is confirmed. Cloned repos are always moved aside
 first and restored into the fresh install. Both entry points share run().
 """
@@ -30,7 +30,7 @@ from .. import (PUBLIC_RAW_BASE, PUBLIC_REPO, colors, config, confirm, fsutil,
 
 _BACKUP_NAME_RE = re.compile(r"^seedling-repo-backup(-\d+)?$")
 
-# Shown before confirming and again after a successful purge -- once `seed`
+# Shown before confirming and again after a successful purge -- once `acorn`
 # is gone, this screen is the last place the user will see these. Derived
 # from the project-level constants so a fork or a repo rename never leaves
 # this screen pointing users at somebody else's install script.
@@ -76,12 +76,12 @@ def _print_reinstall(update_source) -> None:
         print(f"    macOS/Linux:  sh {source}{sep}install.cmd")
 
 _PARTIAL_REMOVE_LINES = [
-    "  seed remove-venv <name>    delete one venv",
-    "  seed remove-venv-all       delete all venvs",
-    "  seed remove-python <tag>   delete a base Python and the venvs built from it",
-    "  seed remove-repo <name>    delete one cloned repo",
-    "  seed remove-user           delete everything under ~/seedling, but keep the",
-    "                             `seed` command hook so a reinstall picks right back up",
+    "  acorn remove-venv <name>    delete one venv",
+    "  acorn remove-venv-all       delete all venvs",
+    "  acorn remove-python <tag>   delete a base Python and the venvs built from it",
+    "  acorn remove-repo <name>    delete one cloned repo",
+    "  acorn remove-user           delete everything under ~/seedling, but keep the",
+    "                             `acorn` command hook so a reinstall picks right back up",
 ]
 
 
@@ -101,7 +101,7 @@ def _candidate_profiles() -> list[Path]:
 
 
 def _is_hook_line(line: str) -> bool:
-    """Any line that dot-sources a seed shell script from under the seedling
+    """Any line that dot-sources a acorn shell script from under the seedling
     home -- deliberately matching on the home dir plus the script name
     rather than the exact current hook text, so hooks written by OLDER
     seedling layouts (e.g. ~/seedling/shell/ before it moved under
@@ -109,7 +109,7 @@ def _is_hook_line(line: str) -> bool:
     shell greets the user with a 'file not found' error after a purge."""
     if line.strip() == "# seedling":
         return True
-    return str(paths.HOME) in line and ("seed.ps1" in line or "seed.sh" in line)
+    return str(paths.HOME) in line and ("acorn.ps1" in line or "acorn.sh" in line)
 
 
 def _strip_hook(profile: Path) -> bool:
@@ -149,15 +149,15 @@ def _broadcast_environment_change() -> None:
 
 def _windows_path_bin_entry(*, remove: bool) -> str | None:
     """The system\\bin entry in the registry-stored user PATH that
-    install.ps1 adds (see installers/install.ps1) -- what makes `seed-cli`
+    install.ps1 adds (see installers/install.ps1) -- what makes `acorn-cli`
     reachable as a bare command from a script, CI job, or AI agent's shell,
-    none of which source the `seed` function's profile hook. Read-only
+    none of which source the `acorn` function's profile hook. Read-only
     (remove=False, for --preview) or actually stripped (remove=True, so a
-    purge really does leave `seed` unreachable everywhere). None on
+    purge really does leave `acorn` unreachable everywhere). None on
     non-Windows, or when there's nothing to remove.
 
     POSIX has no equivalent step: there, the same PATH addition lives
-    INSIDE seed.sh itself (see seed.sh.template), so `_strip_hook` already
+    INSIDE acorn.sh itself (see acorn.sh.template), so `_strip_hook` already
     undoes it by deleting the whole hook line."""
     if os.name != "nt":
         return None
@@ -210,7 +210,7 @@ def _move_repos_to_safety() -> Path:
 
 
 def _existing_backups() -> list[Path]:
-    """Backup folders left behind by previous `seed purge --keep-repos` runs
+    """Backup folders left behind by previous `acorn purge --keep-repos` runs
     (~/seedling-repo-backup, -1, -2, ...). Without --keep-repos this time,
     the user has said they don't want cloned repos kept around at all, so
     these stale backups get cleaned up too instead of accumulating forever."""
@@ -223,7 +223,7 @@ def _existing_backups() -> list[Path]:
 
 def _reinstall_marker() -> Path:
     """Fixed temp path the reinstall script is written to -- the same
-    convention the `seed` shell function looks for after a wipe. Kept in the
+    convention the `acorn` shell function looks for after a wipe. Kept in the
     system temp dir (tempfile.gettempdir(), matching the deferred-delete
     marker in fsutil) so it survives deleting ~/seedling itself. Platform
     picks the flavor the matching shell function knows how to run."""
@@ -247,7 +247,7 @@ def _write_reinstall_script(source: str, repo_backup: Path | None) -> Path:
         backup = str(repo_backup).replace("'", "''") if repo_backup else ""
         dest_ps = dest.replace("'", "''")
         lines = [
-            "# Generated by `seed purge-and-reinstall`. Reinstalls seedling,",
+            "# Generated by `acorn purge-and-reinstall`. Reinstalls seedling,",
             "# then restores cloned repos. Safe to delete.",
             "$ErrorActionPreference = 'Stop'",
             f"$Src = '{src}'",
@@ -286,7 +286,7 @@ def _write_reinstall_script(source: str, repo_backup: Path | None) -> Path:
         dest_sh = dest.replace("'", "'\\''")
         lines = [
             "#!/bin/sh",
-            "# Generated by `seed purge-and-reinstall`. Reinstalls seedling,",
+            "# Generated by `acorn purge-and-reinstall`. Reinstalls seedling,",
             "# then restores cloned repos. Safe to delete.",
             "set -e",
             f"SRC='{src}'",
@@ -343,7 +343,7 @@ def run(args) -> int:
                 f"repo ({_public_repo_label()})?"):
             print("Aborted. Nothing was removed.")
             print("Record where to reinstall from first, then re-run:")
-            print("  seed config set update_source <git-url-or-directory>")
+            print("  acorn config set update_source <git-url-or-directory>")
             return 1
         reinstall_source = _PUBLIC_REPO
 
@@ -366,7 +366,7 @@ def run(args) -> int:
                 notes.append(f"{paths.REPO_DIR} would be moved to safety first, "
                              "then restored into the fresh install")
         else:
-            notes.append("after a real run, `seed` stops working entirely")
+            notes.append("after a real run, `acorn` stops working entirely")
             if keep_repos and _has_repos():
                 notes.append(f"{paths.REPO_DIR} would be moved to safety first "
                              "(--keep-repos), not deleted")
@@ -385,7 +385,7 @@ def run(args) -> int:
         print()
         print(f"  - delete {colors.bold('everything')} under {home}")
         print("    (base pythons, venvs, VS Code, uv, and seedling's own source)")
-        print("  - remove, then re-add, the `seed` shell hook in your shell profile")
+        print("  - remove, then re-add, the `acorn` shell hook in your shell profile")
         print("  - close any process that turns out to be holding a file open,")
         print("    escalating to all Python/VS Code processes only if needed")
         print(f"  - reinstall seedling from {colors.bold(reinstall_source)}")
@@ -404,23 +404,23 @@ def run(args) -> int:
         print()
         print(f"  - delete {colors.bold('everything')} under {home}")
         print("    (base pythons, venvs, VS Code, cloned repos, uv, and seedling's own source)")
-        print("  - remove the `seed` shell hook from your shell profile")
+        print("  - remove the `acorn` shell hook from your shell profile")
         print("  - close any process that turns out to be holding a file open,")
         print("    escalating to all Python/VS Code processes only if needed")
         print()
-        print(colors.warn("After this, `seed` stops working entirely -- you'd need to reinstall."))
+        print(colors.warn("After this, `acorn` stops working entirely -- you'd need to reinstall."))
         print()
 
         if not keep_repos and _has_repos():
             print(colors.header("Want to keep your cloned repos?") +
                   f" ({paths.REPO_DIR} has some.)")
-            print("Abort now and re-run as `seed purge --keep-repos` -- they get moved")
+            print("Abort now and re-run as `acorn purge --keep-repos` -- they get moved")
             print(f"out to {Path.home() / 'seedling-repo-backup'} before everything else is deleted.")
             print()
 
         if old_backups:
             print("Note: also deleting leftover repo backup folder(s) from a previous "
-                  "`seed purge --keep-repos` (this run isn't keeping repos, so these "
+                  "`acorn purge --keep-repos` (this run isn't keeping repos, so these "
                   "won't be left behind either):")
             for p in old_backups:
                 print(f"  - {p}")
@@ -457,8 +457,8 @@ def run(args) -> int:
         print()
 
     # Stage the reinstall script OUTSIDE ~/seedling before the wipe, so it
-    # survives. The still-loaded `seed` shell function runs it once the wipe
-    # is confirmed (seed-cli can't relaunch its own just-deleted executable).
+    # survives. The still-loaded `acorn` shell function runs it once the wipe
+    # is confirmed (acorn-cli can't relaunch its own just-deleted executable).
     if reinstall:
         _write_reinstall_script(reinstall_source, repo_backup)
 
@@ -491,7 +491,7 @@ def run(args) -> int:
 
     if failures and fsutil.failures_are_only_running_cli(failures, home):
         # The only survivors are seedling's own running program (the
-        # seed-cli shim and the tool venv python executing this very
+        # acorn-cli shim and the tool venv python executing this very
         # command) -- Windows can't delete a running executable, so hand
         # the last few files to a detached helper that runs after exit.
         fsutil.schedule_deferred_delete(home)
@@ -509,17 +509,17 @@ def run(args) -> int:
         print()
         print("These are usually held open by something outside Python/VS Code.")
         cmd = "purge-and-reinstall" if reinstall else "purge"
-        print(f"Close whatever has them open and run `seed {cmd}` again.")
+        print(f"Close whatever has them open and run `acorn {cmd}` again.")
         # A staged reinstall must not run against a half-deleted tree.
         if reinstall:
             _reinstall_marker().unlink(missing_ok=True)
         return 1
 
     if reinstall:
-        # The wipe is done (or scheduled, on Windows). The `seed` shell
+        # The wipe is done (or scheduled, on Windows). The `acorn` shell
         # function takes over from here: it waits for any deferred cleanup,
         # then runs the reinstall script staged above -- visibly, in this
-        # terminal. Nothing more for seed-cli to do; it's about to be gone.
+        # terminal. Nothing more for acorn-cli to do; it's about to be gone.
         print()
         print(colors.ok("seedling has been wiped -- reinstalling now."))
         print(f"Reinstalling from {reinstall_source}. Your shell takes over below.")

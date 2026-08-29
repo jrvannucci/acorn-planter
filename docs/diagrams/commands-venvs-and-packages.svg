@@ -59,50 +59,50 @@
 
 <text x="40" y="142" class="body" font-size="12.5" font-weight="700" fill="#52796F" letter-spacing="0.4">CREATE &amp; SWITCH</text>
 <rect x="40" y="154" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="174" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed venv &lt;name&gt; [--python tag]</text>
+<text x="52" y="174" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn venv &lt;name&gt; [--python tag]</text>
 <text x="364" y="172" class="body" font-size="12.5" fill="#52796F">Creates a venv from a base interpreter and installs the default package set into it.</text>
 <rect x="40" y="194" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="214" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed venv-list [--json]</text>
+<text x="52" y="214" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn venv-list [--json]</text>
 <text x="364" y="212" class="body" font-size="12.5" fill="#52796F">Lists every venv, its Python version, and which one is active.</text>
 <rect x="40" y="234" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="254" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed activate &lt;name&gt;</text>
+<text x="52" y="254" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn activate &lt;name&gt;</text>
 <text x="364" y="252" class="body" font-size="12.5" fill="#52796F">Activates a venv in the current shell.</text>
 <rect x="40" y="274" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="294" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed deactivate</text>
+<text x="52" y="294" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn deactivate</text>
 <text x="364" y="292" class="body" font-size="12.5" fill="#52796F">Deactivates whatever venv is active in the current shell.</text>
 <rect x="40" y="314" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="334" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed run [-n venv] -- &lt;cmd&gt;</text>
+<text x="52" y="334" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn run [-n venv] -- &lt;cmd&gt;</text>
 <text x="364" y="332" class="body" font-size="12.5" fill="#52796F">Runs one command inside a venv without activating anything -- exit code and output pass through untouched.</text>
 <rect x="40" y="354" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="374" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed which [name] [--json]</text>
+<text x="52" y="374" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn which [name] [--json]</text>
 <text x="364" y="372" class="body" font-size="12.5" fill="#52796F">Prints a venv's interpreter path, and nothing else.</text>
 <rect x="40" y="394" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="414" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed venv-default [name]</text>
+<text x="52" y="414" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn venv-default [name]</text>
 <text x="364" y="412" class="body" font-size="12.5" fill="#52796F">Shows or sets the venv every new shell auto-activates -- writes default_venv to settings.json, not to the venv itself.</text>
 <rect x="40" y="434" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="454" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed auto-activate [True|False]</text>
+<text x="52" y="454" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn auto-activate [True|False]</text>
 <text x="364" y="452" class="body" font-size="12.5" fill="#52796F">Turns auto-activation of the default venv on or off -- also just a settings.json write.</text>
 <text x="40" y="508" class="body" font-size="12.5" font-weight="700" fill="#52796F" letter-spacing="0.4">PACKAGES</text>
 <rect x="40" y="520" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="540" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed install &lt;package...&gt;</text>
+<text x="52" y="540" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn install &lt;package...&gt;</text>
 <text x="364" y="538" class="body" font-size="12.5" fill="#52796F">Passthrough to `uv pip install`, into the active venv.</text>
 <rect x="40" y="560" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="580" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed uninstall &lt;package...&gt;</text>
+<text x="52" y="580" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn uninstall &lt;package...&gt;</text>
 <text x="364" y="578" class="body" font-size="12.5" fill="#52796F">Passthrough to `uv pip uninstall`.</text>
 <rect x="40" y="600" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="620" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed package-list [--json]</text>
+<text x="52" y="620" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn package-list [--json]</text>
 <text x="364" y="618" class="body" font-size="12.5" fill="#52796F">Passthrough to `uv pip list` for the active venv.</text>
 <rect x="40" y="640" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="660" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed venv-licenses [-n name]</text>
+<text x="52" y="660" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn venv-licenses [-n name]</text>
 <text x="364" y="658" class="body" font-size="12.5" fill="#52796F">What every package installed in a venv is licensed under, and which ones carry an obligation worth a decision.</text>
 <rect x="40" y="680" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="700" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed show &lt;package...&gt;</text>
+<text x="52" y="700" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn show &lt;package...&gt;</text>
 <text x="364" y="698" class="body" font-size="12.5" fill="#52796F">Passthrough to `uv pip show` -- full detail on one installed package.</text>
 <text x="40" y="754" class="body" font-size="12.5" font-weight="700" fill="#9C4A3C" letter-spacing="0.4">DANGER ZONE</text>
 <rect x="40" y="766" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="786" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed remove-venv &lt;name&gt;</text>
+<text x="52" y="786" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn remove-venv &lt;name&gt;</text>
 <text x="364" y="784" class="body" font-size="12.5" fill="#52796F">Deletes one venv, force-closing anything holding it open first.</text>
 <rect x="40" y="806" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="826" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed remove-venv-all</text>
+<text x="52" y="826" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn remove-venv-all</text>
 <text x="364" y="824" class="body" font-size="12.5" fill="#52796F">Deletes every venv under python/venvs.</text>
 </svg>

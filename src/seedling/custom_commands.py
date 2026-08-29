@@ -1,5 +1,5 @@
 """
-`custom-commands.toml`: an organization's own `seed custom <name>` commands
+`custom-commands.toml`: an organization's own `acorn custom <name>` commands
 -- EVERY one, whether it's a simple fixed argv or a script with real logic,
 declared as one `[[command]]` entry each. One file, one parser, one place to
 audit the whole list.
@@ -9,19 +9,19 @@ A command is exactly one of two shapes:
   - `script = "..."`  a `.py`/`.sh`/`.ps1` file, resolved relative to this
                        TOML file's own directory. For anything that needs
                        real logic, a companion data file, or to chain several
-                       `seed` subcommands together -- and for that last case,
-                       no special API: `seed` is already a full CLI, so a
-                       script just shells out to it (`seed venv ...`,
-                       `seed run -n <venv> -- ...`), the same thing
+                       `acorn` subcommands together -- and for that last case,
+                       no special API: `acorn` is already a full CLI, so a
+                       script just shells out to it (`acorn venv ...`,
+                       `acorn run -n <venv> -- ...`), the same thing
                        `apply_cmd.py` already does internally.
 
 Read only when `config.get("custom_commands")` is set at all, and a bad file
 degrades to "no custom commands this run" rather than breaking every other
-`seed` command -- see `load()`. This mirrors `profile.py`'s strict-validation
-style (fail the whole file, name the offending key) but NOT its "only `seed
+`acorn` command -- see `load()`. This mirrors `profile.py`'s strict-validation
+style (fail the whole file, name the offending key) but NOT its "only `acorn
 apply` reads it" blast radius: this file is read on every invocation that
-touches `seed custom`/`seed help`/a `startup_commands` entry, so a typo must
-never brick unrelated commands like `seed venv`.
+touches `acorn custom`/`acorn help`/a `startup_commands` entry, so a typo must
+never brick unrelated commands like `acorn venv`.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ from . import config
 # the rest of the codebase.
 _NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
-# .py is the one extension that runs identically on every platform (seed-cli
+# .py is the one extension that runs identically on every platform (acorn-cli
 # runs it with its own interpreter, sys.executable -- always present, no
 # dependency on a system python3). .sh/.ps1 are for something that's
 # fundamentally a shell one-liner or needs OS-specific behavior.
@@ -156,8 +156,8 @@ def parse(text: str, *, path: Path | None = None) -> list[CustomCommand]:
                  f"command {name!r}: venv must be a non-empty string")
         _require(venv is None or run is not None,
                  f"command {name!r}: venv only applies to run, not script -- "
-                 f"a script already runs in seed-cli's own interpreter/shell "
-                 f"and reaches a venv itself via `seed run -n <venv> -- ...`")
+                 f"a script already runs in acorn-cli's own interpreter/shell "
+                 f"and reaches a venv itself via `acorn run -n <venv> -- ...`")
 
         toplevel = entry.get("toplevel", False)
         _require(isinstance(toplevel, bool),
@@ -186,10 +186,10 @@ def resolve_path() -> Path | None:
 def load() -> list[CustomCommand] | None:
     """The parsed commands, or None on ANY problem (missing file, bad TOML,
     a failed validation rule). Deliberately swallows rather than raises:
-    unlike a profile (only read by `seed apply`), this is read on every
-    `seed custom`/`seed help` invocation, and a typo in an org's file must
+    unlike a profile (only read by `acorn apply`), this is read on every
+    `acorn custom`/`acorn help` invocation, and a typo in an org's file must
     degrade to "no custom commands available" rather than crash. Callers
-    that need the actual error message for `seed custom`'s own output should
+    that need the actual error message for `acorn custom`'s own output should
     call `load_or_raise()` instead."""
     try:
         return load_or_raise()

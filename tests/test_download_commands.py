@@ -1,4 +1,4 @@
-"""seed download-whls / download-requirements -- the offline wheel-bundle
+"""acorn download-whls / download-requirements -- the offline wheel-bundle
 builders. uv's `pip download` is stubbed (monkeypatched uv_tool.run), so these
 run offline and fast; what's under test is the command line seedling hands to
 `uvx pip download` and how it wires into the offline `package_index` setting."""
@@ -68,7 +68,7 @@ def test_download_whl_forwards_pip_flags(run_cli, uv_calls, in_tmp):
 def test_download_whl_empty_is_usage_error(run_cli, uv_calls, in_tmp):
     code, out = run_cli("download-whls")
     assert code == 1
-    assert "Usage: seed download-whls" in out
+    assert "Usage: acorn download-whls" in out
     assert not uv_calls
 
 
@@ -124,7 +124,7 @@ def test_download_requirements_missing_file_errors(run_cli, uv_calls, in_tmp):
 def test_download_requirements_empty_is_usage_error(run_cli, uv_calls, in_tmp):
     code, out = run_cli("download-requirements")
     assert code == 1
-    assert "Usage: seed download-requirements" in out
+    assert "Usage: acorn download-requirements" in out
     assert not uv_calls
 
 
@@ -222,5 +222,5 @@ def test_an_empty_or_missing_directory_is_refused(
 
 def test_upload_with_no_directory_is_a_usage_error(run_cli, home, twine_calls):
     code, out = run_cli("upload-whls")
-    assert code == 1 and "Usage: seed upload-whls" in out
+    assert code == 1 and "Usage: acorn upload-whls" in out
     assert not twine_calls

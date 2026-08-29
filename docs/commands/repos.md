@@ -2,7 +2,7 @@
 
 ![What each repo command does: repo-clone, repo-list, repo-cd, repo-open, repo-install, and remove-repo in the danger zone.](../diagrams/commands-repos.svg)
 
-## `seed repo-clone <git-url>`
+## `acorn repo-clone <git-url>`
 
 Clones a git repository into `~/seedling/repo/<name>` via `git clone`. The
 repo name is derived from the URL (handles `https://host/group/name.git`,
@@ -20,56 +20,56 @@ There, if git isn't found, you'll get a clear one-line instruction
 manager on Linux) instead of a silent failure.
 
 Fails with a clear message (rather than overwriting) if a repo with that
-name already exists — remove it first with `seed remove-repo`.
+name already exists — remove it first with `acorn remove-repo`.
 
 ```
-seed repo-clone https://github.com/you/some-project.git
+acorn repo-clone https://github.com/you/some-project.git
 ```
 
-## `seed repo-list`
+## `acorn repo-list`
 
-Lists every repo cloned via `seed repo-clone`, along with each one's
+Lists every repo cloned via `acorn repo-clone`, along with each one's
 `origin` remote URL (if it's still a git checkout with one configured).
 
 ```
-seed repo-list
+acorn repo-list
 ```
 ```
 Repos in ~/seedling/repo:
   some-project  -> https://github.com/you/some-project.git
 ```
 
-## `seed repo-cd [name]`
+## `acorn repo-cd [name]`
 
 Changes your **current shell's** directory to a cloned repo — the natural
-follow-up to `seed repo-clone`, and the quickest way to run git commands
+follow-up to `acorn repo-clone`, and the quickest way to run git commands
 (`git status`, `git pull`, `git push`) against it. With no name, takes you
 to `~/seedling/repo` itself. Errors (without moving) if the repo doesn't
 exist.
 
-Like `seed activate`, this only works through the `seed` shell function —
+Like `acorn activate`, this only works through the `acorn` shell function —
 a child process can't change its parent shell's directory — so the CLI
 resolves and validates the path, and the function does the actual `cd`
-(see [Why `seed` is a shell function](../GUIDE.md#why-seed-is-a-shell-function)).
+(see [Why `acorn` is a shell function](../GUIDE.md#why-acorn-is-a-shell-function)).
 
 ```
-seed repo-cd myproject
-seed repo-cd
+acorn repo-cd myproject
+acorn repo-cd
 ```
 
-## `seed repo-open [name]`
+## `acorn repo-open [name]`
 
 Opens a cloned repo in the **operating system's file manager** (Explorer
 on Windows, Finder on macOS, your desktop's default elsewhere). With no
 name, opens `~/seedling/repo` itself. For opening in VS Code, use
-`seed vscode-repo`.
+`acorn vscode-repo`.
 
 ```
-seed repo-open some-project
-seed repo-open
+acorn repo-open some-project
+acorn repo-open
 ```
 
-## `seed repo-install <name>[extras] [--venv NAME]`
+## `acorn repo-install <name>[extras] [--venv NAME]`
 
 Installs a cloned repo's dependencies into a venv — the active one by
 default, or the one you name:
@@ -82,32 +82,32 @@ default, or the one you name:
   `uv pip install -r <repo>/requirements.txt`.
 - If neither file exists, fails with a message rather than guessing.
 - `name[extra,...]` selects the repo's optional dependencies, same spelling
-  as a package spec: `seed repo-install plotpress[gui]` installs
+  as a package spec: `acorn repo-install plotpress[gui]` installs
   `uv pip install -e <repo>[gui]`. Extras need a `pyproject.toml` to select
   from — asking for them on a `requirements.txt`-only repo is an error, not
   a silent plain install.
 - `--venv NAME` (`-n`) installs into that venv whatever this shell has
   active, and fails if there's no such venv rather than falling back to
-  another one. Without it, the same `VIRTUAL_ENV` warning as `seed install`
+  another one. Without it, the same `VIRTUAL_ENV` warning as `acorn install`
   if nothing is active.
 
 ```
-seed activate myproject
-seed repo-install some-project
-seed repo-install some-project[gui]
-seed repo-install some-project[gui,dev] --venv analysis
+acorn activate myproject
+acorn repo-install some-project
+acorn repo-install some-project[gui]
+acorn repo-install some-project[gui,dev] --venv analysis
 ```
 
 A profile can declare the same thing for a fleet — see
 [`[[repo]] install`](../PROFILES.md#reference).
 
-## `seed remove-repo <name> [-y] [--preview] [--non-interactive]`
+## `acorn remove-repo <name> [-y] [--preview] [--non-interactive]`
 
 Deletes a cloned repo from `~/seedling/repo`. Same process-closing
-behavior as `seed remove-venv` before deletion, and the same confirmation
+behavior as `acorn remove-venv` before deletion, and the same confirmation
 prompt (skippable with `-y`), `--preview`, and `--non-interactive` — see
 [Non-interactive mode & previews](../DESIGN.md#non-interactive-mode--previews).
 
 ```
-seed remove-repo some-project
+acorn remove-repo some-project
 ```

@@ -2,33 +2,33 @@
 
 ![What each status and profile command does: where, --version, summary, health-check, logs-viewer, apply, and config.](../diagrams/commands-status.svg)
 
-## `seed where`
+## `acorn where`
 
 Prints the seedling home directory (`~/seedling`, or the value of the
 `SEEDLING_HOME` environment variable override if set).
 
 ```
-seed where
+acorn where
 ```
 
-## `seed --version`
+## `acorn --version`
 
 Prints the version of seedling that is actually running, as
 `seedling <version>`. Worth quoting in any bug report — with
-`seed update-commands` in the picture, an install can be at a different
+`acorn update-commands` in the picture, an install can be at a different
 version than the share it was built from.
 
 ```
-seed --version
-seed -V
+acorn --version
+acorn -V
 ```
 
 The version lives in exactly one place, `src/seedling/__init__.py`.
 `src/pyproject.toml` reads it from there (`dynamic = ["version"]`), so a
 release is a one-line edit and the built distribution, the CLI, and the
-grouped `seed help` footer can never disagree.
+grouped `acorn help` footer can never disagree.
 
-## `seed summary [--sizes] [--json]`
+## `acorn summary [--sizes] [--json]`
 
 One read-only screen showing everything seedling has installed: uv/git/VS
 Code status, every base Python (and which is default), every venv (its
@@ -38,9 +38,9 @@ every cloned repo with its origin remote, and all current settings.
 the whole tree, so it can take a few seconds on big installs).
 
 ```
-seed summary
-seed summary --sizes
-seed summary --json
+acorn summary
+acorn summary --sizes
+acorn summary --json
 ```
 
 `--json` prints the same facts as machine-readable data instead of a
@@ -91,7 +91,7 @@ you pass `--sizes`, since computing them is the slow part.
 }
 ```
 
-## `seed health-check [--json]`
+## `acorn health-check [--json]`
 
 The health check. Verifies each moving part and prints one line per check
 with three columns: a **STATUS** (`OK` / `WARN` / `FAIL`), a cyan **AREA**
@@ -106,7 +106,7 @@ reachability probe (`git ls-remote`, 10-second timeout, prompt-proofed so it
 can never hang asking for credentials), and a directory source must exist
 and look like a seedling tree (an unmounted share is reported as exactly
 that, not assumed to be a URL) — any offline `python_mirror`/`package_index` directories
-and `ca_cert` bundle exist, the `seed` shell hook is installed and not
+and `ca_cert` bundle exist, the `acorn` shell hook is installed and not
 stale (a hook line
 pointing at a deleted file gets a loud warning), and the log directory is
 writable.
@@ -116,7 +116,7 @@ command exit 1 (useful in scripts/CI); `WARN` is informational (nothing
 installed yet, no git, etc.) and doesn't affect the exit code.
 
 ```
-seed health-check
+acorn health-check
 ```
 
 `--json` emits the same checks as data — `{schema, home, healthy, failures,
@@ -124,9 +124,9 @@ warnings, checks[]}`, each check being `{status, area, detail}`. The
 rendering changes; the verdict doesn't, and the exit code is the same either
 way.
 
-## `seed logs-viewer [--days N] [--no-open]`
+## `acorn logs-viewer [--days N] [--no-open]`
 
-Renders every logged `seed` command (the daily plain-text files under
+Renders every logged `acorn` command (the daily plain-text files under
 `~/seedling/system/logs/`) into a single **self-contained HTML page** and
 opens it in your browser. The page is offline — no CDN, no network — so it
 works on a closed network like everything else in seedling. It's a
@@ -145,11 +145,11 @@ what's loaded).
 
 **The bootstrap installer is captured too**, into
 `system/logs/install-<timestamp>.log`, shown in the viewer tagged **`setup`**
-alongside your `seed` commands — so a failed or surprising install is there
+alongside your `acorn` commands — so a failed or surprising install is there
 to inspect after the fact.
 
 - **macOS/Linux (`install.sh`)** tees its *entire* run — every step and the
-  output of the tools it invokes (uv, git, seed-cli) — into the log, in the
+  output of the tools it invokes (uv, git, acorn-cli) — into the log, in the
   same block format as the daily logs (with a real exit code).
 - **Windows (`install.ps1`)** records the console via `Start-Transcript`,
   which captures seedling's own `==>` narrative and the uv bootstrap, but
@@ -157,7 +157,7 @@ to inspect after the fact.
   PowerShell 5.1, redirecting a native command's stderr under
   `$ErrorActionPreference='Stop'` turns uv's normal progress into a fatal
   error, so the installer deliberately doesn't do that. The individual
-  `seed python` / `seed venv` setup steps still appear as their own entries
+  `acorn python` / `acorn venv` setup steps still appear as their own entries
   (they log themselves); the VS Code step runs as a background job during
   install (overlapping the Python setup for speed), so its output shows up
   inside the install log rather than as a separate entry. The installer ends
@@ -175,20 +175,20 @@ regenerated on every run.
   path; useful over SSH / on a headless box).
 
 ```
-seed logs-viewer
-seed logs-viewer --days 7
+acorn logs-viewer
+acorn logs-viewer --days 7
 ```
 
-## `seed apply [profile] [--preview] [--force]`
+## `acorn apply [profile] [--preview] [--force]`
 
 Brings this machine in line with a [deployment profile](../PROFILES.md) — the
 interpreters, named venvs and their packages, repos, and settings an
 organization has standardized on.
 
-> **Not what you want if `seed` itself is out of date** — that's
-> [`seed update-commands`](lifecycle.md#seed-update-commands), a completely separate
+> **Not what you want if `acorn` itself is out of date** — that's
+> [`acorn update-commands`](lifecycle.md#acorn-update-commands), a completely separate
 > command. This one only ever touches your environment (interpreters,
-> venvs, packages, repos); it never changes `seed`'s own code, and
+> venvs, packages, repos); it never changes `acorn`'s own code, and
 > `update-commands` never touches any of what this one manages.
 
 - With no path, uses whatever the `profile` setting records — a single file,
@@ -204,7 +204,7 @@ organization has standardized on.
   way a fleet picks up later changes to the standard.
 - **Never destroys.** An existing venv is left exactly as it is. `--force`
   installs the profile's *missing* packages into it; nothing is ever removed
-  or recreated. Deleting is `seed remove-venv`, run on purpose. An existing
+  or recreated. Deleting is `acorn remove-venv`, run on purpose. An existing
   clone is likewise never pulled, only cloned when absent — though a repo the
   profile installs is installed again into any of its venvs that doesn't have
   it, so rebuilding a venv brings the repo back with it.
@@ -216,19 +216,19 @@ organization has standardized on.
 - Exit codes: `0` applied or already current, `1` a step failed (it names
   which), `2` the profile itself is invalid.
 
-Every step is an ordinary `seed` command underneath (`python`, `venv`,
+Every step is an ordinary `acorn` command underneath (`python`, `venv`,
 `install`, `repo-clone`, `repo-install`, `config set`), so a profile can only
 do what you could have done by hand.
 
 ```
-seed apply --preview
-seed apply
-seed apply ./team-profile.toml --force
+acorn apply --preview
+acorn apply
+acorn apply ./team-profile.toml --force
 ```
 
 ---
 
-## `seed profile-check [profile] [--bundle PATH]`
+## `acorn profile-check [profile] [--bundle PATH]`
 
 Checks whether a profile can actually be applied from an
 [offline bundle](../OFFLINE.md) — **before** anyone tries it. Written for the
@@ -240,7 +240,7 @@ applying it and watching it fail.
   conda-forge tools, editors, and repos with their extras against what the
   bundle **actually contains** — the real wheelhouse, interpreter mirror,
   conda channel and staged editor, not what anyone intended to build.
-- With no path, uses the same profile `seed apply` would.
+- With no path, uses the same profile `acorn apply` would.
 - The bundle is found automatically when `package_index` is a directory of
   wheels inside one (which is what an install from a bundle records). Pass
   `--bundle S:\tools` otherwise.
@@ -251,7 +251,7 @@ applying it and watching it fail.
   reason is named), `2` the profile itself is invalid.
 
 ```
-seed profile-check ./new-team.toml
+acorn profile-check ./new-team.toml
 ```
 
 The connected-machine half of the same check runs inside `offline-bundler`,
@@ -259,22 +259,22 @@ against [`offline-bundle.toml`](../OFFLINE.md#offline-bundletoml--what-the-share
 
 ---
 
-## `seed config [get <key> | set <key> <value> | unset <key>]`
+## `acorn config [get <key> | set <key> <value> | unset <key>]`
 
 Views and changes seedling's own settings, stored in
-`~/seedling/system/config/settings.json`. Bare `seed config` lists every
+`~/seedling/system/config/settings.json`. Bare `acorn config` lists every
 setting with its current value and an explanation. The keys:
 
-- `default_base` — the base Python tag `seed venv` builds from when
-  `--python` isn't given. Set automatically by your first `seed python`.
+- `default_base` — the base Python tag `acorn venv` builds from when
+  `--python` isn't given. Set automatically by your first `acorn python`.
 - `default_venv` — a venv name that **every new shell auto-activates** on
   startup. Unset means no auto-activation. (Existing shells are
   unaffected; open a new terminal to see it.)
 - `auto_activate` — whether new shells auto-activate `default_venv`
   (true/false, default true). Toggle with
-  [`seed auto-activate True|False`](venvs-and-packages.md#seed-auto-activate-truefalse); when
+  [`acorn auto-activate True|False`](venvs-and-packages.md#acorn-auto-activate-truefalse); when
   false, the default venv stays set but isn't activated automatically.
-- `update_source` — where `seed update-commands` gets seedling's own
+- `update_source` — where `acorn update-commands` gets seedling's own
   source: a git URL (works with self-hosted GitHub/GitLab on isolated
   networks) *or* a plain directory path (e.g. a network drive holding a
   copy of the repo, for machines with no git hosting at all). Recorded
@@ -285,7 +285,7 @@ setting with its current value and an explanation. The keys:
 - `python_mirror` / `package_index` — offline sources for interpreters
   and packages (a URL, or a plain directory on a share). Normally seeded
   from `global.conf` at install time; see [OFFLINE.md](../OFFLINE.md).
-- `conda_channel` — where `seed forge-install` fetches conda-forge
+- `conda_channel` — where `acorn forge-install` fetches conda-forge
   command-line tools from (default: `conda-forge`). A URL or local
   directory for an internal mirror or an offline network.
 - `shared_root` — the directory holding per-user seedling homes, recorded
@@ -295,7 +295,7 @@ setting with its current value and an explanation. The keys:
   the OS trust store, or a PEM bundle (normally installed automatically
   from `vendor/certs/`). Applied to uv, git, and seedling's own downloads
   on every command.
-- `profile` — the [deployment profile](../PROFILES.md) `seed apply` uses when
+- `profile` — the [deployment profile](../PROFILES.md) `acorn apply` uses when
   given no path. Recorded at install time from `SEEDLING_PROFILE`.
 - `custom_commands` — path to the TOML file declaring your organization's
   own [custom commands](../CUSTOM-COMMANDS.md). Recorded at install time from
@@ -305,16 +305,16 @@ setting with its current value and an explanation. The keys:
   within one entry so a failure stops just that chain). Recorded at install
   time from `SEEDLING_STARTUP_COMMANDS`. See [CUSTOM-COMMANDS.md#running-
   commands-at-startup](../CUSTOM-COMMANDS.md#running-commands-at-startup).
-- `vscode_flavor` — which editor build `seed vscode` installs:
+- `vscode_flavor` — which editor build `acorn vscode` installs:
   `microsoft` (default) or `vscodium`. Affects the **next** install; use
-  `seed vscode --reinstall` to switch an existing one.
+  `acorn vscode --reinstall` to switch an existing one.
 - `extension_gallery` — the extension registry base URL, when it shouldn't
   be the flavor's own default (e.g. an internal Open VSX mirror).
 - `vscode_extensions` — the extensions installed into a fresh editor.
   Takes comma-separated input; an empty list installs none. Unset means
   the starter kit for the configured flavor.
 - `vscode_config_dir` — a folder holding your own `settings.json`
-  and/or `keybindings.json` to seed into a fresh editor. `settings.json` is
+  and/or `keybindings.json` to acorn into a fresh editor. `settings.json` is
   merged over the built-in defaults (your values win); `keybindings.json`
   is copied in as-is. Both apply only the first time, never overwriting a
   file a user already edited.
@@ -323,16 +323,16 @@ The four editor settings are usually deployment-wide rather than personal;
 see [the deployment guide](../DEPLOYMENT.md#which-vs-code-build)
 for what they're for and the licensing tradeoff they encode.
 
-`seed config get <key>` prints just the value (nothing at all when unset),
+`acorn config get <key>` prints just the value (nothing at all when unset),
 so it's script-friendly. `unset` resets a key to its built-in default.
 
 ```
-seed config
-seed config set default_venv myproject
-seed config set update_source https://github.mycompany.com/tools/seedling.git
-seed config set update_source "S:\shared\seedling"
-seed config set venv_default_packages "ipython,ruff,requests"
-seed config set vscode_flavor vscodium
-seed config set vscode_extensions "ms-python.python,charliermarsh.ruff"
-seed config unset default_venv
+acorn config
+acorn config set default_venv myproject
+acorn config set update_source https://github.mycompany.com/tools/seedling.git
+acorn config set update_source "S:\shared\seedling"
+acorn config set venv_default_packages "ipython,ruff,requests"
+acorn config set vscode_flavor vscodium
+acorn config set vscode_extensions "ms-python.python,charliermarsh.ruff"
+acorn config unset default_venv
 ```

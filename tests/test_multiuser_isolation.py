@@ -1,5 +1,5 @@
 """Safety property: in a shared-root install (SEEDLING_HOME_DIR with a
-{user} token), one user's `seed purge` / `seed remove-user` must delete
+{user} token), one user's `acorn purge` / `acorn remove-user` must delete
 ONLY their own subfolder -- never a sibling user's folder, the shared
 parent, or another user's profile hook."""
 
@@ -22,7 +22,7 @@ def _make_user(shared_root, os_homes, name):
     (home / "system/config/settings.json").write_text('{"default_venv": "dev"}')
     (home / "python/venvs/dev/marker.txt").write_text(f"{name}'s venv")
     (home / "repo/proj/code.py").write_text(f"{name}'s repo")
-    (home / "system/shell/seed.ps1").write_text("# hook target")
+    (home / "system/shell/acorn.ps1").write_text("# hook target")
 
     oshome = os_homes / name
     profile = oshome / "Documents" / "WindowsPowerShell"
@@ -30,7 +30,7 @@ def _make_user(shared_root, os_homes, name):
     (profile / "Microsoft.PowerShell_profile.ps1").write_text(
         "unrelated config line\n"
         "# seedling\n"
-        f'. "{home}\\system\\shell\\seed.ps1"\n')
+        f'. "{home}\\system\\shell\\acorn.ps1"\n')
     return home, oshome
 
 

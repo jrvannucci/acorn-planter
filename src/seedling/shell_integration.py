@@ -1,14 +1,14 @@
 """
-Rendering the `seed` shell functions from their templates.
+Rendering the `acorn` shell functions from their templates.
 
-The installers render `shell/seed.ps1.template` / `seed.sh.template` into
-`system/shell/seed.{ps1,sh}` once, replacing a home-directory placeholder,
+The installers render `shell/acorn.ps1.template` / `acorn.sh.template` into
+`system/shell/acorn.{ps1,sh}` once, replacing a home-directory placeholder,
 and hook that rendered file into the user's `$PROFILE` / rc file. The hook
 dot-sources the rendered file by a stable path, so refreshing the shell
 integration after an update is just a matter of re-rendering that file in
 place -- the next shell picks up the new content automatically.
 
-`seed update-commands` calls `refresh()` for exactly that: without it, edits
+`acorn update-commands` calls `refresh()` for exactly that: without it, edits
 to the templates (new subcommand routing, an `activate` fix, ...) only ever
 reached users on a full reinstall, never on an update.
 """
@@ -25,8 +25,8 @@ _PLACEHOLDER = "__SEEDLING_HOME_PLACEHOLDER__"
 
 # Rendered filename in system/shell/ -> the template it comes from.
 _SHELL_FILES: dict[str, str] = {
-    "seed.ps1": "seed.ps1.template",
-    "seed.sh": "seed.sh.template",
+    "acorn.ps1": "acorn.ps1.template",
+    "acorn.sh": "acorn.sh.template",
 }
 
 # The home-assignment line each installer renders the placeholder into.
@@ -35,22 +35,22 @@ _SHELL_FILES: dict[str, str] = {
 # Windows, for instance, bakes a POSIX-style path that str(paths.HOME) would
 # NOT reproduce) -- so a refresh re-uses that exact string.
 _HOME_LINE_RE = {
-    "seed.ps1": re.compile(r'^\$script:SeedlingHome\s*=\s*"(.+)"\s*$', re.MULTILINE),
-    "seed.sh": re.compile(r'^__SEEDLING_HOME="(.+)"\s*$', re.MULTILINE),
+    "acorn.ps1": re.compile(r'^\$script:SeedlingHome\s*=\s*"(.+)"\s*$', re.MULTILINE),
+    "acorn.sh": re.compile(r'^__SEEDLING_HOME="(.+)"\s*$', re.MULTILINE),
 }
 
 
 def _templates_dir() -> Path:
     """Where the templates live inside the installed source copy. The
     installers copy the whole repo into system/src, so the tree there mirrors
-    the repo: system/src/src/seedling/shell/. `seed update-commands` swaps a
+    the repo: system/src/src/seedling/shell/. `acorn update-commands` swaps a
     fresh copy in before calling refresh(), so this is the UPDATED template."""
     return paths.SRC_DIR / "src" / "seedling" / "shell"
 
 
 def _os_default_file() -> str:
     """The rendered file the current platform's installer places."""
-    return "seed.ps1" if os.name == "nt" else "seed.sh"
+    return "acorn.ps1" if os.name == "nt" else "acorn.sh"
 
 
 def _existing_home(rendered: Path, out_name: str) -> str | None:
@@ -84,17 +84,17 @@ def _broadcast_environment_change() -> None:
 
 def ensure_bin_on_windows_path() -> bool:
     """Windows counterpart to refresh(): install.ps1's persistent-PATH step
-    (system\\bin on the registry user PATH, so `seed-cli` is reachable
+    (system\\bin on the registry user PATH, so `acorn-cli` is reachable
     without a profile -- see installers/install.ps1) only ever ran once, at
     install time. An install from before that step existed, or one where
     the entry was removed by hand, would otherwise never pick it up short
-    of a full reinstall. `seed update-commands` calls this every time for
+    of a full reinstall. `acorn update-commands` calls this every time for
     exactly that reason -- the same "template changes must reach an update,
     not just a reinstall" rule this module exists for, applied to a
     registry entry instead of a rendered file.
 
     POSIX needs no counterpart: the same PATH addition lives INSIDE
-    seed.sh itself (see seed.sh.template), so refresh() above already
+    acorn.sh itself (see acorn.sh.template), so refresh() above already
     re-applies it on every update along with the rest of the template.
 
     SEEDLING_SKIP_PATH_REGISTER is the same test-only escape hatch
@@ -106,7 +106,7 @@ def ensure_bin_on_windows_path() -> bool:
     below finds. The two are separate: this process's os.environ was
     captured from its parent at launch, so a registry entry an EARLIER
     `update-commands` run already added doesn't retroactively appear here,
-    and `update_cmd.run()` calls this before reinstalling seed-cli via
+    and `update_cmd.run()` calls this before reinstalling acorn-cli via
     uv_tool.run() specifically so that subprocess (which builds its own env
     from os.environ, see uv_tool._build_env) doesn't print uv's own "is not
     on your PATH" warning during the very install that's supposed to fix it.
@@ -156,7 +156,7 @@ def refresh() -> list[Path]:
     installed source copy, overwriting the ones in system/shell/.
 
     Refreshes whichever files the installer already placed -- so we never
-    scatter an unused seed.sh onto a Windows install (or vice versa) -- plus
+    scatter an unused acorn.sh onto a Windows install (or vice versa) -- plus
     the current platform's file, so it's restored even if it went missing.
     Missing templates are skipped rather than raising: a stubbed/partial
     source tree (e.g. under test) simply refreshes nothing.
@@ -175,7 +175,7 @@ def refresh() -> list[Path]:
             continue
         out_path = paths.SHELL_DIR / out_name
         home = _existing_home(out_path, out_name) or (
-            str(paths.HOME) if out_name == "seed.ps1" else paths.HOME.as_posix())
+            str(paths.HOME) if out_name == "acorn.ps1" else paths.HOME.as_posix())
         out_path.write_text(render(template_path, home), encoding="utf-8")
         written.append(out_path)
     return written

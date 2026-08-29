@@ -1,4 +1,4 @@
-"""The PyPI application family (`seed tool-*`) and the Spyder editor built on
+"""The PyPI application family (`acorn tool-*`) and the Spyder editor built on
 top of it. Nothing here downloads: the pieces that would (uv tool install)
 are stubbed, and everything else works off a faked app environment."""
 
@@ -50,7 +50,7 @@ def test_app_version_read_from_dist_info(home):
 
 
 def test_app_tool_root_is_separate_from_seed_cli():
-    """seed-cli lives in system/tool. If apps shared that root, `uv tool
+    """acorn-cli lives in system/tool. If apps shared that root, `uv tool
     list` would report the running CLI as an app and `uv tool upgrade --all`
     would sweep it."""
     from seedling import uv_tool
@@ -104,7 +104,7 @@ def test_write_config_points_spyder_at_the_interpreter(home):
 
 def test_write_config_preserves_existing_settings(home):
     """spyder.ini is Spyder's live config once it has run. Rewriting it from
-    scratch on every `seed spyder` would throw away the user's settings."""
+    scratch on every `acorn spyder` would throw away the user's settings."""
     paths.SPYDER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     ini = paths.SPYDER_CONFIG_DIR / "spyder.ini"
     ini.write_text("[editor]\nwrap = True\n\n"
@@ -128,7 +128,7 @@ def test_arm_is_refused_with_the_conda_fallback(home, monkeypatch, capsys):
     monkeypatch.setattr(tool_cmd, "ensure_installed", boom)
 
     assert spyder_cmd._prepare(object()) is False
-    assert "seed forge-install spyder" in capsys.readouterr().out
+    assert "acorn forge-install spyder" in capsys.readouterr().out
 
 
 def test_both_editors_are_registered_in_the_family():
@@ -147,7 +147,7 @@ def test_help_rows_mark_what_is_installed(home):
 
 class TestSpyderVenvSelection:
     """Which environment Spyder runs code in. Precedence is
-    --venv > VIRTUAL_ENV > default_venv, matching how `seed install` and
+    --venv > VIRTUAL_ENV > default_venv, matching how `acorn install` and
     `venv-list` already treat an activated venv as "the current one"."""
 
     def _venv(self, home, name):
@@ -181,7 +181,7 @@ class TestSpyderVenvSelection:
 
     def test_active_non_seedling_venv_is_still_honored(self, home, monkeypatch,
                                                         tmp_path):
-        """`seed install` installs into whatever is active, seedling-managed
+        """`acorn install` installs into whatever is active, seedling-managed
         or not; Spyder must not disagree about what "current" means."""
         outside = tmp_path / "elsewhere"
         bindir = outside / ("Scripts" if os.name == "nt" else "bin")
@@ -216,7 +216,7 @@ class TestSpyderVenvSelection:
         assert fatal is not None and "nope" in fatal
 
     def test_a_stale_default_venv_is_not_fatal(self, home, monkeypatch):
-        """Spyder's policy differs from `seed run`'s on purpose: an editor
+        """Spyder's policy differs from `acorn run`'s on purpose: an editor
         that refuses to open because `default_venv` names a deleted venv is
         worse than one that opens and says it has no environment."""
         config.set_value("default_venv", "deleted")
@@ -293,7 +293,7 @@ class TestIpykernelDowngradeNotice:
 def test_tool_remove_leaves_venv_packages_alone(home, monkeypatch):
     """`tool-remove` takes the application, NOT what it installed elsewhere.
 
-    `seed spyder` puts spyder-kernels into the target venv; removing Spyder
+    `acorn spyder` puts spyder-kernels into the target venv; removing Spyder
     deliberately leaves it. Undoing it would mean a remove-* command editing
     packages in a venv the user may now depend on, and deciding whether to
     restore the ipykernel version it displaced. This pins that choice so it

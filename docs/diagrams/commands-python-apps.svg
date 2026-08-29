@@ -58,14 +58,14 @@
   <text x="40" y="79" class="body fmute" font-size="13.5" font-style="italic">Run, not imported -- each installed into its own isolated environment.</text>
 
 <rect x="40" y="130" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="150" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed tool-install &lt;name&gt;[==ver]</text>
+<text x="52" y="150" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn tool-install &lt;name&gt;[==ver]</text>
 <text x="364" y="140" class="body" font-size="12.5" fill="#52796F">Installs a PyPI application (Spyder, JupyterLab, httpie) into its own venv under extensions/apps/, launchers on PATH --</text>
 <text x="364" y="157" class="body" font-size="12.5" fill="#52796F">not your project venv.</text>
 <rect x="40" y="172" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="192" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed tool-list</text>
+<text x="52" y="192" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn tool-list</text>
 <text x="364" y="190" class="body" font-size="12.5" fill="#52796F">Lists installed applications and their versions.</text>
 <text x="40" y="246" class="body" font-size="12.5" font-weight="700" fill="#9C4A3C" letter-spacing="0.4">DANGER ZONE</text>
 <rect x="40" y="258" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="278" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed tool-remove &lt;name&gt;</text>
+<text x="52" y="278" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn tool-remove &lt;name&gt;</text>
 <text x="364" y="276" class="body" font-size="12.5" fill="#52796F">Removes an application's environment and launchers -- leaves whatever it installed into your project venvs alone.</text>
 </svg>

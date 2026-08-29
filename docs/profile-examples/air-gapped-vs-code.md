@@ -128,7 +128,7 @@ An empty `attention` list is a real answer, not a missing one: every wheel here
 resolved to a permissive licence. That is what `--accept-third-party-terms`
 does *not* cover — the acknowledgement is about VS Code and the Marketplace,
 and the wheels are reported separately so the two aren't confused for each
-other. Verify with `seed whl-licenses S:\seedling\wheels`.
+other. Verify with `acorn whl-licenses S:\seedling\wheels`.
 
 **What the bundle looks like**
 
@@ -160,7 +160,7 @@ offline-bundle/
 ```
 
 Extensions live under `app/data/` rather than `~/.vscode` — that is portable
-mode, and it is why `seed purge` leaves nothing behind.
+mode, and it is why `acorn purge` leaves nothing behind.
 
 **What a cert file looks like.** Any PEM-encoded certificate, one or more per
 file. The installer concatenates *every* `.pem` and `.crt` in the folder into

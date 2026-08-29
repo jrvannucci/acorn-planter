@@ -98,5 +98,5 @@ def test_installer_into_spaced_home(tmp_path):
     assert (seedling_home / "system" / "src" / "src" / "pyproject.toml").exists()
     bashrc = (fake_home / ".bashrc").read_text()
     # hook line must be quoted so a spaced path sources correctly
-    assert '. "' in bashrc and "seed.sh" in bashrc
+    assert '. "' in bashrc and "acorn.sh" in bashrc
     assert "space" in str(seedling_home) or "home dir" in bashrc

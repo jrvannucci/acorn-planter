@@ -334,7 +334,7 @@ def test_verify_bundle_fails_when_venv_packages_are_missing(tmp_path, monkeypatc
         out, out / "seedling", uv, ["hatchling", "ipython"]) is False
     out_text = capsys.readouterr().out
     assert "Preflight FAILED" in out_text
-    assert "seed venv --python 3.12" in out_text
+    assert "acorn venv --python 3.12" in out_text
 
 
 def test_verify_bundle_fails_when_the_interpreter_wont_install(tmp_path, monkeypatch,
@@ -350,7 +350,7 @@ def test_verify_bundle_fails_when_the_interpreter_wont_install(tmp_path, monkeyp
 
 def test_verify_bundle_needs_an_interpreter_meeting_the_floor(tmp_path, monkeypatch,
                                                               capsys):
-    """Mirroring only 3.9 against a >=3.12 floor can't build seed-cli."""
+    """Mirroring only 3.9 against a >=3.12 floor can't build acorn-cli."""
     out = _fake_bundle(tmp_path, versions=("3.9",))
     _stub_offline(monkeypatch)
     uv = tmp_path / "uv.exe"
@@ -445,7 +445,7 @@ def test_archive_bundle_zip_contains_the_whole_tree_under_one_folder(tmp_path):
     with zipfile.ZipFile(archive) as zf:
         names = zf.namelist()
     # Extracting must reproduce ONE top-level "offline-bundle/" folder --
-    # the same layout install.cmd/seed apply expect -- not the contents
+    # the same layout install.cmd/acorn apply expect -- not the contents
     # spilled loose at the archive root.
     assert all(n.startswith("offline-bundle/") for n in names)
     assert "offline-bundle/seedling/GET_STARTED/global.conf" in names
@@ -649,7 +649,7 @@ def test_stage_repo_refresh_keeps_vendor_payloads(tmp_path, monkeypatch):
 
 
 # --- requires-python floor --------------------------------------------------
-# The mirrored interpreters serve two purposes: the one uv installs seed-cli
+# The mirrored interpreters serve two purposes: the one uv installs acorn-cli
 # with (must satisfy the floor) and base Pythons for users' own venvs (any
 # version). So the rule is "at least one satisfies", not "all satisfy".
 

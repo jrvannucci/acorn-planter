@@ -1,11 +1,11 @@
 """
-`seed logs-viewer` -- render the daily command logs as a single, self-contained
+`acorn logs-viewer` -- render the daily command logs as a single, self-contained
 HTML page and open it in the browser.
 
 The logs are the plain-text daily files runlog.py writes under
-~/seedling/system/logs/ (seed-YYYY-MM-DD.log), each a sequence of blocks:
+~/seedling/system/logs/ (acorn-YYYY-MM-DD.log), each a sequence of blocks:
 
-    === [2026-07-05 14:30:22] seed venv dev
+    === [2026-07-05 14:30:22] acorn venv dev
     <everything the command printed, ANSI stripped>
     === [14:30:23] exit code 0
 
@@ -55,8 +55,8 @@ def _log_files(days: int | None) -> list[Path]:
     cutoff = None
     if days is not None:
         cutoff = _dt.date.today() - _dt.timedelta(days=days - 1)
-    for f in paths.LOGS_DIR.glob("seed-*.log"):
-        stamp = f.name[len("seed-"): -len(".log")]
+    for f in paths.LOGS_DIR.glob("acorn-*.log"):
+        stamp = f.name[len("acorn-"): -len(".log")]
         try:
             day = _dt.date.fromisoformat(stamp)
         except ValueError:
@@ -82,7 +82,7 @@ def _read_log_text(path: Path) -> str:
 
 
 def _parse_file(path: Path, kind: str = "command") -> list[dict]:
-    """Parse one block-format log (daily seed log, or an install.sh log) into
+    """Parse one block-format log (daily acorn log, or an install.sh log) into
     a list of entries, each tagged with `kind` ('command' or 'install')."""
     text = _read_log_text(path)
 
@@ -219,7 +219,7 @@ def render_html(entries: list[dict]) -> str:
 
 def _open_in_browser(path: Path) -> bool:
     """Open the generated page with the OS default handler for .html (the
-    browser), same approach as `seed repo-open`. Never fatal -- a headless
+    browser), same approach as `acorn repo-open`. Never fatal -- a headless
     box has no browser, and the caller prints the path either way."""
     system = platform.system()
     try:
@@ -250,7 +250,7 @@ def run(args) -> int:
 
     if not entries:
         print("No commands logged yet -- the viewer will be empty until you "
-              "run some `seed` commands (or logging is off via SEEDLING_NO_LOG=1).")
+              "run some `acorn` commands (or logging is off via SEEDLING_NO_LOG=1).")
 
     n = len(entries)
     fails = sum(1 for e in entries if e["exit"] not in (0, None))
@@ -303,7 +303,7 @@ _TEMPLATE = r"""<!DOCTYPE html>
   }
   header { flex: none; border-bottom: 1px solid var(--border); padding: 12px 16px; }
   h1 { margin: 0; font-size: 16px; display: inline; }
-  h1 .seed { color: var(--accent); }
+  h1 .acorn { color: var(--accent); }
   .meta { color: var(--muted); font-size: 12px; margin-left: 8px; }
   .controls { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   #search {
@@ -371,7 +371,7 @@ _TEMPLATE = r"""<!DOCTYPE html>
 </head>
 <body>
 <header>
-  <h1><span class="seed">seed</span> command logs</h1><span class="meta" id="meta"></span>
+  <h1><span class="acorn">acorn</span> command logs</h1><span class="meta" id="meta"></span>
   <div class="controls">
     <input id="search" type="search" placeholder="Filter by command or output ...">
     <label class="toggle"><input type="checkbox" id="failonly"> failures only</label>

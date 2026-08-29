@@ -1,7 +1,7 @@
 [project]
 name = "seedling"
 # Read from seedling/__init__.py (see [tool.hatch.version]) so the version
-# lives in exactly one place -- `seed --version` reports the same string the
+# lives in exactly one place -- `acorn --version` reports the same string the
 # built distribution carries, and a bump is a one-line edit.
 dynamic = ["version"]
 description = "A tidy, single-folder global Python distributor and local environment manager."
@@ -10,7 +10,7 @@ requires-python = ">=3.12"
 dependencies = []
 
 [project.scripts]
-seed-cli = "seedling.cli:main"
+acorn-cli = "seedling.cli:main"
 
 [build-system]
 requires = ["hatchling"]

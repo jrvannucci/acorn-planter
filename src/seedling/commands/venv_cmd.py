@@ -23,19 +23,19 @@ def _python_interpreter_path(base_dir):
 
 def run(args) -> int:
     if not args.name:
-        print("Usage: seed venv <name> [--python <tag>]")
+        print("Usage: acorn venv <name> [--python <tag>]")
         return 1
 
     paths.ensure_layout()
 
     tag = args.python or config.get_default_base()
     if tag is None:
-        print("No base Python found. Install one first, e.g.:  seed python 312")
+        print("No base Python found. Install one first, e.g.:  acorn python 312")
         return 1
 
     base_dir = python_cmd.resolve_base(tag)
     if base_dir is None:
-        print(f"Base python '{tag}' isn't installed. Run:  seed python {tag}")
+        print(f"Base python '{tag}' isn't installed. Run:  acorn python {tag}")
         return 1
 
     interpreter = _python_interpreter_path(base_dir)
@@ -46,7 +46,7 @@ def run(args) -> int:
     target = paths.venv_dir(args.name)
 
     # Taken BEFORE the existence check, and held through the default-package
-    # install: two `seed venv myproject` runs racing would otherwise both see
+    # install: two `acorn venv myproject` runs racing would otherwise both see
     # "doesn't exist", and the loser would install packages into a tree the
     # winner was still creating.
     with lock.venv_lock(target):
@@ -62,7 +62,7 @@ def _create(args, tag, interpreter, target) -> int:
     result = uv_tool.run_captured(["venv", "--python", str(interpreter), str(target)])
     for line in (result.stdout + result.stderr).splitlines():
         # uv prints its own "Activate with: source .../activate" hint, which
-        # doesn't match how `seed activate` actually works (it's a shell
+        # doesn't match how `acorn activate` actually works (it's a shell
         # function, not a sourced script path) -- drop just that hint line,
         # keep everything else (interpreter resolution, creation confirmation,
         # etc.). Matching the "activate with" lead-in rather than any mention
@@ -87,11 +87,11 @@ def _create(args, tag, interpreter, target) -> int:
             )
             if result.returncode != 0:
                 print("warning: default package install failed; the venv "
-                      "itself is fine. Install them later with `seed install "
+                      "itself is fine. Install them later with `acorn install "
                       f"{' '.join(default_packages)}`.")
 
     print("Done.")
-    print(colors.ok(f"Activate it with:  seed activate {args.name}"))
+    print(colors.ok(f"Activate it with:  acorn activate {args.name}"))
     return 0
 
 

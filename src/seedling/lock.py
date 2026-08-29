@@ -1,8 +1,8 @@
 """
-Cross-process locking, so two `seed` commands can't mutate the same venv at
+Cross-process locking, so two `acorn` commands can't mutate the same venv at
 once.
 
-The failure this prevents is real and quiet: two `seed install` runs against
+The failure this prevents is real and quiet: two `acorn install` runs against
 one venv have uv unpacking wheels into the same site-packages concurrently,
 and the loser can leave a half-written distribution that imports but is
 missing modules. It stops being hypothetical the moment anything automated
@@ -30,7 +30,7 @@ because a silent multi-second pause reads as a hang.
 Lock files are never deleted, only unlocked. They are empty, one per venv
 ever touched, and removing one is a race in itself -- a process can be
 holding a lock on a file another process is about to unlink and recreate,
-after which the two hold "the same" lock simultaneously. `seed purge`
+after which the two hold "the same" lock simultaneously. `acorn purge`
 removes the directory along with everything else.
 """
 
@@ -136,14 +136,14 @@ def file_lock(key: str, what: str, timeout: float = DEFAULT_TIMEOUT):
             waited = time.monotonic() - started
             if waited >= timeout:
                 raise LockBusy(
-                    f"another seed command has been working on {what} for "
+                    f"another acorn command has been working on {what} for "
                     f"over {int(timeout)}s, so this one stopped instead of "
                     f"running alongside it. Wait for it to finish, or check "
-                    f"for a stuck process with `seed kill-processes`.")
+                    f"for a stuck process with `acorn kill-processes`.")
             if not announced and waited >= _ANNOUNCE_AFTER:
                 announced = True
                 # stderr: a --json consumer must still get clean stdout.
-                print(f"Waiting for another seed command to finish with "
+                print(f"Waiting for another acorn command to finish with "
                       f"{what}...", file=sys.stderr)
             time.sleep(_POLL_SECONDS)
         yield True
@@ -160,7 +160,7 @@ def venv_lock(venv_path, timeout: float = DEFAULT_TIMEOUT):
     """Serialize work on ONE venv, so two different venvs never wait on each
     other -- installing into 'web' while 'ml' builds is fine and common.
 
-    Keyed by absolute path, not by name: `seed install` follows VIRTUAL_ENV
+    Keyed by absolute path, not by name: `acorn install` follows VIRTUAL_ENV
     wherever it points, including outside ~/seedling, and two unrelated
     `.venv` directories must not serialize against each other just because
     they share a leaf name. The name still leads the filename so the locks

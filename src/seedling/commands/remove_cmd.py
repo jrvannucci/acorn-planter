@@ -15,7 +15,7 @@ def run(args) -> int:
             f"delete everything under {home}",
             top_level,
             notes=[fsutil.ESCALATION_NOTE,
-                   "the `seed` shell hook stays installed (use `seed purge` "
+                   "the `acorn` shell hook stays installed (use `acorn purge` "
                    "to remove that too)"],
         )
         git_tool.warn_unsaved_work(git_tool.scan_for_unsaved_work(paths.REPO_DIR))
@@ -44,7 +44,7 @@ def run(args) -> int:
 
     if failures and fsutil.failures_are_only_running_cli(failures, home):
         # The only survivors are seedling's own running program (the
-        # seed-cli shim and the tool venv python executing this very
+        # acorn-cli shim and the tool venv python executing this very
         # command) -- Windows can't delete a running executable, so hand
         # the last few files to a detached helper that runs after exit.
         fsutil.schedule_deferred_delete(home)
@@ -61,14 +61,14 @@ def run(args) -> int:
         print()
         print("These are usually held open by something outside Python/VS Code")
         print("(a file explorer window, an editor, antivirus/indexing).")
-        print("Close whatever has them open and run `seed remove-user` again.")
+        print("Close whatever has them open and run `acorn remove-user` again.")
         return 1
 
     print()
     print(colors.ok("Done.") + " seedling has been fully removed from your user directory.")
     print()
-    print("Note: the `seed` shell function/alias itself is still in your shell profile.")
-    print("Run `seed purge` instead next time for a full clean removal, or")
+    print("Note: the `acorn` shell function/alias itself is still in your shell profile.")
+    print("Run `acorn purge` instead next time for a full clean removal, or")
     print("run the uninstaller (uninstall.cmd -- or `sh uninstall.cmd` on")
     print("macOS/Linux) to just remove the shell hook now.")
     return 0

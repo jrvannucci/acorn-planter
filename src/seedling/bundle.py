@@ -48,7 +48,7 @@ SCHEMA = 1
 LOCAL_NAME = "offline-bundle.toml"
 
 # Every bundle holds these whether or not it says so: seedling itself is built
-# with hatchling, and the default venv packages go into every venv `seed venv`
+# with hatchling, and the default venv packages go into every venv `acorn venv`
 # creates. Declared here rather than in the builder so the validator and the
 # download agree by construction -- a profile using the default packages must
 # not be reported as unsatisfiable against a bundle that always carries them.
@@ -123,7 +123,7 @@ class Bundle:
     deploy_root: str | None = None
     pythons: list[str] = field(default_factory=list)
     # THE package set, not an addition to one: every distribution any profile
-    # may name, plus whatever users should be able to `seed install` later.
+    # may name, plus whatever users should be able to `acorn install` later.
     packages: list[str] = field(default_factory=list)
     tools: list[str] = field(default_factory=list)
     editor_flavor: str = "microsoft"

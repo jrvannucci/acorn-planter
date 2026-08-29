@@ -23,7 +23,7 @@ def _derive_name(url: str) -> str:
 def clone(args) -> int:
     url = getattr(args, "url", None)
     if not url:
-        print("Usage: seed repo-clone <git-url>")
+        print("Usage: acorn repo-clone <git-url>")
         return 1
 
     try:
@@ -36,7 +36,7 @@ def clone(args) -> int:
     target = paths.repo_dir(name)
     if target.exists():
         print(f"'{name}' already exists at {target}.")
-        print(f"Run `seed remove-repo {name}` first if you want to re-clone it.")
+        print(f"Run `acorn remove-repo {name}` first if you want to re-clone it.")
         return 1
 
     paths.REPO_DIR.mkdir(parents=True, exist_ok=True)
@@ -47,21 +47,21 @@ def clone(args) -> int:
         return 1
 
     print(f"Cloned '{name}'.")
-    print(f"  seed repo-cd {name}        # jump into it (git commands work there)")
-    print(f"  seed vscode-repo {name}    # open it in VS Code")
-    print(f"  seed repo-open {name}      # open it in the file manager")
-    print(f"  seed repo-install {name}   # install its dependencies into the active venv")
+    print(f"  acorn repo-cd {name}        # jump into it (git commands work there)")
+    print(f"  acorn vscode-repo {name}    # open it in VS Code")
+    print(f"  acorn repo-open {name}      # open it in the file manager")
+    print(f"  acorn repo-install {name}   # install its dependencies into the active venv")
     return 0
 
 
 def list_repos(args) -> int:
     if not paths.REPO_DIR.exists() or not any(paths.REPO_DIR.iterdir()):
-        print("No repos cloned yet. Run: seed repo-clone <git-url>")
+        print("No repos cloned yet. Run: acorn repo-clone <git-url>")
         return 0
 
     repos = sorted(d for d in paths.REPO_DIR.iterdir() if d.is_dir())
     if not repos:
-        print("No repos cloned yet. Run: seed repo-clone <git-url>")
+        print("No repos cloned yet. Run: acorn repo-clone <git-url>")
         return 0
 
     git = git_tool.find_git()  # best-effort only here; don't auto-download just to list
@@ -82,7 +82,7 @@ def list_repos(args) -> int:
 def remove(args) -> int:
     name = getattr(args, "name", None)
     if not name:
-        print("Usage: seed remove-repo <name>")
+        print("Usage: acorn remove-repo <name>")
         return 1
 
     target = paths.repo_dir(name)
@@ -125,30 +125,30 @@ def remove(args) -> int:
 
 
 def cd_repo(args) -> int:
-    """`seed repo-cd [name]` -- change the current shell's directory to a
+    """`acorn repo-cd [name]` -- change the current shell's directory to a
     cloned repo (or to ~/seedling/repo itself with no name). The directory
-    change happens in the `seed` shell function; this command's job is
-    resolving and validating the target (same split as `seed activate`)."""
+    change happens in the `acorn` shell function; this command's job is
+    resolving and validating the target (same split as `acorn activate`)."""
     name = getattr(args, "name", None)
     target = paths.repo_dir(name) if name else paths.REPO_DIR
 
     if not target.exists():
         if name:
             print(f"No repo named '{name}' found in {paths.REPO_DIR}")
-            print("Clone it first with:  seed repo-clone <git-url>")
+            print("Clone it first with:  acorn repo-clone <git-url>")
         else:
             print(f"No repos cloned yet ({paths.REPO_DIR} doesn't exist). "
-                  "Run: seed repo-clone <git-url>")
+                  "Run: acorn repo-clone <git-url>")
         return 1
 
     if getattr(args, "print_path", False):
-        # Consumed by the `seed` shell function, which cd's to this path so
+        # Consumed by the `acorn` shell function, which cd's to this path so
         # the change actually affects the caller's shell.
         print(str(target))
         return 0
 
     print(
-        "This only works when 'seed' is the shell function installed by the "
+        "This only works when 'acorn' is the shell function installed by the "
         "seedling installer (it's what lets a directory change affect your "
         "current shell). If you're seeing this, re-run the installer or "
         "open a new terminal.\n"
@@ -158,9 +158,9 @@ def cd_repo(args) -> int:
 
 
 def open_repo(args) -> int:
-    """`seed repo-open [name]` -- open a cloned repo (or the repos folder
+    """`acorn repo-open [name]` -- open a cloned repo (or the repos folder
     itself) in the OS file manager. For opening in VS Code, that's
-    `seed vscode-repo`."""
+    `acorn vscode-repo`."""
     name = getattr(args, "name", None)
     target = paths.repo_dir(name) if name else paths.REPO_DIR
     if not target.exists():
@@ -168,7 +168,7 @@ def open_repo(args) -> int:
             print(f"No repo named '{name}' found in {paths.REPO_DIR}")
         else:
             print(f"No repos cloned yet ({paths.REPO_DIR} doesn't exist). "
-                  "Run: seed repo-clone <git-url>")
+                  "Run: acorn repo-clone <git-url>")
         return 1
 
     print(f"Opening in the file manager -> {target}")
@@ -183,10 +183,10 @@ def open_repo(args) -> int:
 
 
 def vscode_repo(args) -> int:
-    """`seed vscode-repo <name>` -- open a cloned repo in VS Code."""
+    """`acorn vscode-repo <name>` -- open a cloned repo in VS Code."""
     name = getattr(args, "name", None)
     if not name:
-        print("Usage: seed vscode-repo <name>")
+        print("Usage: acorn vscode-repo <name>")
         return 1
 
     target = paths.repo_dir(name)
@@ -194,7 +194,7 @@ def vscode_repo(args) -> int:
         print(f"No repo named '{name}' found in {paths.REPO_DIR}")
         return 1
 
-    # Same first-run download gate as `seed vscode` -- reaching the editor
+    # Same first-run download gate as `acorn vscode` -- reaching the editor
     # from a repo shouldn't cost 300MB more quietly than reaching it directly.
     if not vscode_cmd.confirm_first_install(args):
         return 0
@@ -212,7 +212,7 @@ def vscode_repo(args) -> int:
 def install_repo(args) -> int:
     spec = getattr(args, "name", None)
     if not spec:
-        print("Usage: seed repo-install <name>[extra,...] [--venv <name>]")
+        print("Usage: acorn repo-install <name>[extra,...] [--venv <name>]")
         return 1
 
     try:
@@ -231,9 +231,9 @@ def install_repo(args) -> int:
 
     # Which environment gets it. A named venv is resolved here and its
     # interpreter passed to uv explicitly, so the answer can't depend on what
-    # happens to be active -- that's what lets `seed apply` install one repo
+    # happens to be active -- that's what lets `acorn apply` install one repo
     # into several venvs in a row. With no name this keeps following
-    # VIRTUAL_ENV exactly as `seed install` does.
+    # VIRTUAL_ENV exactly as `acorn install` does.
     requested = getattr(args, "venv", None)
     venv_python = None
     venv_path = None
@@ -245,7 +245,7 @@ def install_repo(args) -> int:
         venv_python, venv_path = resolved.python, resolved.path
     elif not os.environ.get("VIRTUAL_ENV"):
         print("Note: no venv looks active (VIRTUAL_ENV isn't set). "
-              "Run `seed activate <name>` first, or uv will fall back to "
+              "Run `acorn activate <name>` first, or uv will fall back to "
               "whatever it can find (e.g. a .venv in the current directory).")
 
     where = f" into '{requested}'" if requested else ""
@@ -268,7 +268,7 @@ def install_repo(args) -> int:
             # them would install something other than what was asked for.
             print(f"error: repo '{name}' has no pyproject.toml, only "
                   f"{requirements.name}, which has no extras to choose from. "
-                  f"Re-run as `seed repo-install {name}`.")
+                  f"Re-run as `acorn repo-install {name}`.")
             return 1
         print(f"Installing dependencies from {requirements}{where} ...")
         command = ["pip", "install", *interpreter, "-r", str(requirements)]
@@ -282,7 +282,7 @@ def install_repo(args) -> int:
     with guard:
         result = uv_tool.run(command, check=False)
     # check=False, then report: a failed install has to come back as an exit
-    # code so `seed apply` can name it and carry on with the rest of the
+    # code so `acorn apply` can name it and carry on with the rest of the
     # profile, rather than aborting the whole run on an exception.
     if result.returncode != 0:
         print(f"Install of '{name}' failed.")

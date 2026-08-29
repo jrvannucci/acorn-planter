@@ -14,10 +14,10 @@ Start here if seedling is installed on your own machine, or about to be.
 
 | | |
 |---|---|
-| **[Using seedling](GUIDE.md)** | How installation works, the folder layout, why `seed` is a shell function, the update model, uninstalling, and troubleshooting. |
+| **[Using seedling](GUIDE.md)** | How installation works, the folder layout, why `acorn` is a shell function, the update model, uninstalling, and troubleshooting. |
 | **[Command reference](COMMANDS.md)** | All 59 commands in one filterable list — click any one to open its full documentation — plus the per-family breakdowns. |
 | **[Design and safety](DESIGN.md)** | Why deletion is so defensive, what gets logged, how downloads are verified, and how to run seedling unattended. |
-| **[Scripting & automation](commands/scripting-and-automation.md)** | The machine-facing surface, in one place: `seed run`, `seed which`, `--json` on every read command, never blocking on a prompt, and how concurrent commands are serialized. |
+| **[Scripting & automation](commands/scripting-and-automation.md)** | The machine-facing surface, in one place: `acorn run`, `acorn which`, `--json` on every read command, never blocking on a prompt, and how concurrent commands are serialized. |
 
 ---
 
@@ -29,9 +29,9 @@ lab, a restricted network.
 | | |
 |---|---|
 | **[Deployment guide](DEPLOYMENT.md)** | `global.conf`, shared-machine installs, the elevated `admin-*` teardown family, a rollout checklist, and the answers to a security review. |
-| **[Deployment profiles](PROFILES.md)** | One file describing the environment your users should end up with — interpreters, named venvs and their packages, repos — applied at install and re-applied with `seed apply`. |
+| **[Deployment profiles](PROFILES.md)** | One file describing the environment your users should end up with — interpreters, named venvs and their packages, repos — applied at install and re-applied with `acorn apply`. |
 | **[Profile examples](PROFILE-EXAMPLES.md)** | Complete, working profiles for real situations — a research group, a software team, a classroom, an air-gapped fleet. Copy one and change the names. |
-| **[Custom commands](CUSTOM-COMMANDS.md)** | Add your organization's own verbs to `seed` (`seed lint`, `seed bootstrap`) and, optionally, run some of them automatically in every new shell. |
+| **[Custom commands](CUSTOM-COMMANDS.md)** | Add your organization's own verbs to `acorn` (`acorn lint`, `acorn bootstrap`) and, optionally, run some of them automatically in every new shell. |
 | **[Offline / air-gapped networks](OFFLINE.md)** | Running with no internet at all: mirrors, vendored binaries, wheel directories, corporate CAs, and `GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd`. |
 | **[Licensing and redistribution](LICENSING.md)** | seedling ships no third-party software. What it downloads, under what terms, and what changes when you stage a bundle for a share. |
 
@@ -39,7 +39,7 @@ lab, a restricted network.
 
 ## Working on seedling itself
 
-**[Contributor guide](CONTRIBUTING.md)** — the edit → `seed update-commands`
+**[Contributor guide](CONTRIBUTING.md)** — the edit → `acorn update-commands`
 loop (including `--from-branch` for tracking a fork's branch), the source
 layout, and running the tests.
 
@@ -55,8 +55,8 @@ layout, and running the tests.
 | Build a bundle for an air-gapped network | [Offline networks → The workflow](OFFLINE.md#the-workflow) |
 | Look up a command | [Command reference](COMMANDS.md) |
 | Drive seedling from a script, CI job or AI agent | [Scripting & automation](commands/scripting-and-automation.md) |
-| Get a venv's interpreter path | [`seed which`](commands/venvs-and-packages.md#seed-which-name---json) |
-| Run something in a venv without a shell | [`seed run`](commands/venvs-and-packages.md#seed-run--n-venv----command-args) |
+| Get a venv's interpreter path | [`acorn which`](commands/venvs-and-packages.md#acorn-which-name---json) |
+| Run something in a venv without a shell | [`acorn run`](commands/venvs-and-packages.md#acorn-run--n-venv----command-args) |
 | Read seedling's state as JSON | [Scripting & automation](commands/scripting-and-automation.md) |
 | Install an editor (VS Code, Spyder) or a Python app | [Command reference](COMMANDS.md) |
 | Standardize the editor across a fleet | [Deployment profiles](PROFILES.md) |
@@ -65,7 +65,7 @@ layout, and running the tests.
 | Remove seedling completely | [Using seedling → Uninstalling](GUIDE.md#uninstalling) |
 | Fix something that broke | [Using seedling → Troubleshooting](GUIDE.md#troubleshooting) |
 | Standardize a team's setup | [Profile examples](PROFILE-EXAMPLES.md) |
-| Add my own verbs to `seed` | [Custom commands](CUSTOM-COMMANDS.md) |
+| Add my own verbs to `acorn` | [Custom commands](CUSTOM-COMMANDS.md) |
 | Give everyone the same venvs and packages | [Profile examples](PROFILE-EXAMPLES.md) |
 | Give different teams different environments | [Profiles → Who gets which profile](PROFILES.md#who-gets-which-profile) |
 | Point installs at an internal source | [Deployment guide → `global.conf`](DEPLOYMENT.md#deployment-configuration-globalconf) |

@@ -1,6 +1,6 @@
 """
-`seed show <package>` -- passthrough to `uv pip show` for the active venv,
-the read-only counterpart of `seed install`/`seed package-list`.
+`acorn show <package>` -- passthrough to `uv pip show` for the active venv,
+the read-only counterpart of `acorn install`/`acorn package-list`.
 
 `check=False`, not the default: `uv pip show` exits non-zero for a package
 that isn't installed (uv's own "WARNING: Package(s) not found: ..." already
@@ -16,14 +16,14 @@ import os
 from .. import uv_tool
 
 _NO_VENV_NOTE = ("Note: no venv looks active (VIRTUAL_ENV isn't set). "
-                 "Run `seed activate <name>` first, or uv will fall back to "
+                 "Run `acorn activate <name>` first, or uv will fall back to "
                  "whatever it can find (e.g. a .venv in the current directory).")
 
 
 def run(args) -> int:
     packages = getattr(args, "packages", None) or []
     if not packages:
-        print("Usage: seed show <package> [<package> ...]")
+        print("Usage: acorn show <package> [<package> ...]")
         print("(anything after `show` is passed straight through to `uv pip show`)")
         return 1
 

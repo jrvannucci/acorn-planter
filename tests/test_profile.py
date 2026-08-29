@@ -1,5 +1,5 @@
 """Deployment profiles: parsing/validation (seedling/profile.py) and the
-idempotent applier (`seed apply`).
+idempotent applier (`acorn apply`).
 
 Validation is where most of the value is -- a profile is distributed to a
 whole fleet, so a typo has to fail loudly for the admin rather than quietly
@@ -102,7 +102,7 @@ def test_invalid_profiles_are_rejected(text, fragment):
 
 
 def test_install_time_settings_are_not_settable_from_a_profile():
-    """global.conf owns anything that must be right BEFORE seed-cli runs.
+    """global.conf owns anything that must be right BEFORE acorn-cli runs.
     Allowing a profile to rewrite it would create two sources of truth."""
     for key in ("update_source", "package_index", "python_mirror",
                 "native_tls", "ca_cert", "shared_root", "profile"):
@@ -183,7 +183,7 @@ def test_find_returns_none_when_there_is_nothing(home, tmp_path, monkeypatch):
 
 
 def test_a_recorded_profile_that_no_longer_exists_is_ignored(home, tmp_path, monkeypatch):
-    """A share that moved shouldn't make every `seed apply` fail with a
+    """A share that moved shouldn't make every `acorn apply` fail with a
     traceback -- it falls through to the local lookup."""
     config.set_value("profile", str(tmp_path / "gone.toml"))
     monkeypatch.chdir(tmp_path)
@@ -429,7 +429,7 @@ class TestRepoInstallTargets:
 
 def _fake_clone(home, name: str, *, dist: str | None = "toolkit",
                 requirements: bool = False):
-    """A repo directory as `seed repo-clone` would have left it."""
+    """A repo directory as `acorn repo-clone` would have left it."""
     repo = home / "repo" / name
     repo.mkdir(parents=True, exist_ok=True)
     if dist:
@@ -445,7 +445,7 @@ class TestApplyInstallsReposIntoVenvs:
 
     The rule is one line: install into any target venv that doesn't already
     have it. That covers the case this used to miss -- a venv REBUILT after
-    `seed remove-venv` kept its clone on disk, so nothing re-installed the
+    `acorn remove-venv` kept its clone on disk, so nothing re-installed the
     repo and the new venv came back without it.
     """
 
@@ -649,7 +649,7 @@ class TestProfileEditor:
 
 
 class TestProfileEditorQuery:
-    """`seed apply --print-editor` is how the installers learn a profile's
+    """`acorn apply --print-editor` is how the installers learn a profile's
     editor BEFORE deciding whether to start the VS Code background job. It
     has to stay machine-readable: one bare token, or nothing at all."""
 
@@ -784,7 +784,7 @@ def test_every_documented_example_profile_is_valid():
     Each example lives on its own page under docs/profile-examples/ (split
     out of the single PROFILE-EXAMPLES.md landing page), and a few carry
     custom-commands.toml examples too (the software-team and classroom
-    personas demonstrate `seed custom` / `startup_commands` alongside their
+    personas demonstrate `acorn custom` / `startup_commands` alongside their
     profile) -- those are `[[command]]` tables, a different schema
     entirely, and must be routed to custom_commands.parse() instead of
     being force-fit as a profile."""
@@ -898,7 +898,7 @@ def test_an_undistributed_profile_is_never_picked_up(home, tmp_path):
 
 
 def test_one_broken_profile_doesnt_hide_everyone_elses(home, tmp_path):
-    """The bundler and `seed apply` both report a broken file; skipping it
+    """The bundler and `acorn apply` both report a broken file; skipping it
     here keeps it from making every other user's profile unreachable."""
     d = _folder(tmp_path, profile=DEFAULT_P, broken="this is not toml {{{")
     got = [p.name for p in profile_mod.distributed_to(d, "alice")]

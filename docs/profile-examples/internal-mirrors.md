@@ -58,7 +58,7 @@ default_venv = "work"
 ```
 
 The mirrors and the CA go in `global.conf`, because they must be right
-before seed-cli exists:
+before acorn-cli exists:
 
 ```sh
 # global.conf -- in the copy you distribute.
@@ -102,17 +102,17 @@ SEEDLING_PROFILE="installation-profile"
   `editor` already suppresses it, but stating it in the conf documents the
   intent for whoever reads this file next.
 
-**Check it before rollout.** `seed health-check` verifies the mirrors and the
+**Check it before rollout.** `acorn health-check` verifies the mirrors and the
 CA bundle are actually reachable and valid, which is the failure this shape is
 prone to:
 
 ```
-seed health-check
+acorn health-check
 ```
 
 **Make that check run for every user, every terminal, automatically.** This
 is the shape's real failure mode day-to-day: someone's VPN drops, or a
-mirror goes down for maintenance, and their `seed install` just times out
+mirror goes down for maintenance, and their `acorn install` just times out
 with no obvious cause. A [startup command](../CUSTOM-COMMANDS.md) turns
 "check it before rollout" into "it's already been checked by the time you
 notice something's wrong":
@@ -121,7 +121,7 @@ notice something's wrong":
 # custom-commands.toml -- next to profile.toml
 [[command]]
 name = "check-mirror"
-run = ["seed", "health-check"]
+run = ["acorn", "health-check"]
 description = "Verify the internal mirrors and CA bundle are reachable"
 ```
 
@@ -134,7 +134,7 @@ SEEDLING_STARTUP_COMMANDS="check-mirror"
 Every new terminal now runs it automatically. If a mirror is unreachable,
 the shell still opens — a failing startup command warns and moves on, never
 locks anyone out — but the warning is right there when they open the
-terminal, not buried in a confusing `seed install` failure five minutes
+terminal, not buried in a confusing `acorn install` failure five minutes
 later.
 
 ---

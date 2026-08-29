@@ -47,9 +47,9 @@ GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd --verify-only -o "S:\tools"
 Users run `GET_STARTED/install.cmd` from `S:\tools\seedling\`. Same command for
 everyone; each person gets the profiles distributed to them.
 
-Afterwards: edit a profile on the share, users run `seed update-commands`
-then `seed apply`. A profile written later, from inside, is checked with
-[`seed profile-check`](commands/status.md#seed-profile-check-profile---bundle-path)
+Afterwards: edit a profile on the share, users run `acorn update-commands`
+then `acorn apply`. A profile written later, from inside, is checked with
+[`acorn profile-check`](commands/status.md#acorn-profile-check-profile---bundle-path)
 before anyone applies it.
 
 ## Building the bundle
@@ -80,7 +80,7 @@ platforms = ["Windows/x86_64", "Linux/x86_64"]
 pythons = ["3.12", "3.11"]
 
 # THE package set: every distribution any profile may name, plus whatever
-# users should be able to `seed install` later, when nobody can reach PyPI
+# users should be able to `acorn install` later, when nobody can reach PyPI
 # to add one more thing.
 packages = ["pandas", "numpy", "scipy", "polars", "httpx", "pytest", "spyder"]
 
@@ -118,7 +118,7 @@ the first.
 
 `hatchling`, `ipython`, `ruff`, `ipykernel` and `pip` are always downloaded
 and never need declaring — seedling itself is built with the first, and the
-rest go into every venv `seed venv` creates.
+rest go into every venv `acorn venv` creates.
 
 **A mixed fleet needs one wheelhouse, not two bundles.** `pip download` can
 resolve for a platform it isn't running on, so the builder makes an extra pass
@@ -168,11 +168,11 @@ build, and `--bundle=` (empty) ignores it entirely.
 ### Checking a profile from inside the air gap
 
 The profiles that matter most are often written *later*, by someone on the
-offline network. `seed profile-check` answers "will this apply here?" against
+offline network. `acorn profile-check` answers "will this apply here?" against
 the bundle on disk:
 
 ```
-seed profile-check ./new-team.toml
+acorn profile-check ./new-team.toml
 ```
 
 On a machine installed from a bundle it finds the share by itself
@@ -209,20 +209,20 @@ offline-bundle/
                         resolved once per mirrored interpreter
   conda-channel/     <- only when tools are asked for -- offline-bundle.toml's `tools`,
                         --tools, or a profile's [tools] when there's no spec: a conda
-                        channel of conda-forge CLI tools, for `seed forge-install`
+                        channel of conda-forge CLI tools, for `acorn forge-install`
 ```
 
 Declare `tools = [...]` in `offline-bundle.toml` (or pass `--tools
 ripgrep,pandoc`, or — with no bundle spec — declare them in your profile) and
 the builder vendors **micromamba** and a **conda channel** into the bundle and
-points `SEEDLING_CONDA_CHANNEL` at it, so `seed forge-install` (and any tools a
-profile declares, via `seed apply`) work offline from the one bundle.
+points `SEEDLING_CONDA_CHANNEL` at it, so `acorn forge-install` (and any tools a
+profile declares, via `acorn apply`) work offline from the one bundle.
 
-**Python applications** (`seed tool-install`, and `seed spyder`, which uses it)
+**Python applications** (`acorn tool-install`, and `acorn spyder`, which uses it)
 resolve from the same `wheels/` folder as everything else — they're ordinary
 PyPI packages, so `package_index` applies to them just as it does to
-`seed install`. Add them to the wheel set with `--packages spyder` and
-`seed tool-install spyder` then works with no internet. There's no separate
+`acorn install`. Add them to the wheel set with `--packages spyder` and
+`acorn tool-install spyder` then works with no internet. There's no separate
 artifact to carry: unlike conda-forge tools, applications need no channel of
 their own.
 
@@ -250,7 +250,7 @@ the three paths. Useful flags:
 | `--no-archive` | Leave the bundle as a folder. For when the output folder *is* the share |
 | `--dry-run` | Show the plan and exit without downloading |
 
-It is **not** a `seed` command — it prepares the distribution, so it runs from
+It is **not** a `acorn` command — it prepares the distribution, so it runs from
 the checkout before seedling is installed anywhere. It needs Python 3.12+ and
 internet on the build machine. The **wheels** cover every platform in
 `platforms`; **uv, the interpreters and the editor** come from the machine you
@@ -301,12 +301,12 @@ build machine, with the network refused:
 ```
 [10] Verify the bundle installs offline
     Python 3.12: interpreter + 4 package(s) install offline.
-    seed-cli builds offline on Python 3.12 (hatchling resolved from the bundle).
+    acorn-cli builds offline on Python 3.12 (hatchling resolved from the bundle).
     Preflight passed: this bundle installs with no internet.
 ```
 
 It installs each mirrored interpreter from `python-builds/`, creates a venv on
-each and installs the default packages from `wheels/`, then builds `seed-cli`
+each and installs the default packages from `wheels/`, then builds `acorn-cli`
 from the bundled source — the step that needs `hatchling` and that actually
 blocks an install. Two details make it a real test rather than a formality: it
 uses a **cold uv cache** (the build just warmed the normal one, which would
@@ -347,7 +347,7 @@ SEEDLING_PACKAGE_INDEX="S:\tools\wheels"
 
 Then a user runs `S:\tools\seedling\GET_STARTED\install.cmd` and gets the full
 experience — newest mirrored Python, `dev` venv with your default
-packages auto-activated, and `seed update-commands` flowing from the share
+packages auto-activated, and `acorn update-commands` flowing from the share
 — without their machine ever attempting to reach the internet, and without
 setting a single environment variable.
 
@@ -378,7 +378,7 @@ Enterprise / GitLab, plus Artifactory / Nexus / devpi:
 |---|---|
 | `SEEDLING_REPO_URL` | your seedling repo's git URL |
 | `SEEDLING_PYTHON_MIRROR` | your `python-build-standalone` mirror |
-| `SEEDLING_PACKAGE_INDEX` | your internal package index (must also serve `hatchling`, used to build seed-cli) |
+| `SEEDLING_PACKAGE_INDEX` | your internal package index (must also serve `hatchling`, used to build acorn-cli) |
 | `vendor/uv/` | the `uv` binary (it won't be on your package index) |
 
 **You have only a shared network drive** — no git server, no internal index,
@@ -421,7 +421,7 @@ Details: [HTTPS and corporate certificate authorities](#https-and-corporate-cert
 | `vendor/git/` | MinGit — git on Windows with no system install |
 
 The conf values are recorded in seedling's settings at install time and applied
-automatically to every command afterward (view or change them later with `seed
+automatically to every command afterward (view or change them later with `acorn
 config`). Everything that *isn't* a download — venvs, activation, config,
 logging, previews, removal, directory-based updates — already works with zero
 network access. The [component-by-component reference](#component-reference)
@@ -468,7 +468,7 @@ answers a review rather than deferring to one.
 Check it yourself at any point, on either side of the gap:
 
 ```
-seed whl-licenses S:\tools\wheels
+acorn whl-licenses S:\tools\wheels
 ```
 
 ```
@@ -481,8 +481,8 @@ Needs a decision (3):
   ...
 ```
 
-`seed forge-licenses` does the same for the bundled conda channel, and
-`seed venv-licenses` for what a machine ended up running. All three take
+`acorn forge-licenses` does the same for the bundled conda channel, and
+`acorn venv-licenses` for what a machine ended up running. All three take
 `--fail-on copyleft,unknown`, which turns a policy into an exit code you can
 run before copying anything to a share.
 
@@ -500,26 +500,26 @@ bundle — and for understanding what the bundler is doing.
 
 | Component | Normally from | When it's needed | Point it elsewhere with |
 |---|---|---|---|
-| seedling's own source | github.com | Install; `seed update-commands` | `SEEDLING_REPO_URL` — a git URL **or a folder** on a share (no git needed) |
+| seedling's own source | github.com | Install; `acorn update-commands` | `SEEDLING_REPO_URL` — a git URL **or a folder** on a share (no git needed) |
 | `uv` | astral.sh | Install (skipped if already present) | `vendor/uv/` in the copy you distribute |
-| Python interpreters | python-build-standalone releases | `seed python`; the installer's default setup | `SEEDLING_PYTHON_MIRROR` — a mirror URL or a folder of archives |
-| Python packages | pypi.org | Install; `seed venv`; `seed install`; `seed update-commands` | `SEEDLING_PACKAGE_INDEX` — an index URL, or a folder of wheels (which disables the internet index entirely) |
-| conda-forge tools | conda-forge | First `seed forge-install` (micromamba once) | `SEEDLING_CONDA_CHANNEL` — a mirror or a local channel folder |
-| git (Windows) | git-for-windows releases | First `seed repo-clone`, if no system git | `vendor/git/` — only needed if the machines have no system git |
-| VS Code + extensions | update.code.visualstudio.com / Marketplace | First `seed vscode` | `vendor/vscode/` — a pre-seeded portable copy |
+| Python interpreters | python-build-standalone releases | `acorn python`; the installer's default setup | `SEEDLING_PYTHON_MIRROR` — a mirror URL or a folder of archives |
+| Python packages | pypi.org | Install; `acorn venv`; `acorn install`; `acorn update-commands` | `SEEDLING_PACKAGE_INDEX` — an index URL, or a folder of wheels (which disables the internet index entirely) |
+| conda-forge tools | conda-forge | First `acorn forge-install` (micromamba once) | `SEEDLING_CONDA_CHANNEL` — a mirror or a local channel folder |
+| git (Windows) | git-for-windows releases | First `acorn repo-clone`, if no system git | `vendor/git/` — only needed if the machines have no system git |
+| VS Code + extensions | update.code.visualstudio.com / Marketplace | First `acorn vscode` | `vendor/vscode/` — a pre-seeded portable copy |
 
 Four things about that table are worth knowing before you rely on it.
 
 **The package index must also serve what seedling itself needs**, not just
-your users' packages: `hatchling` (uv builds `seed-cli` with it, at install
-and at every `seed update-commands`) plus the default venv packages
+your users' packages: `hatchling` (uv builds `acorn-cli` with it, at install
+and at every `acorn update-commands`) plus the default venv packages
 (`ipython`, `ruff`, `ipykernel`, `pip`) and all of their transitive
 dependencies. A missing transitive dependency fails resolution outright
 offline — there is no index to fall back to.
 
 **At least one mirrored interpreter must satisfy seedling's own
 `requires-python`.** The mirror does two jobs: it supplies the interpreter
-that builds `seed-cli`, and the base Pythons your users create venvs from.
+that builds `acorn-cli`, and the base Pythons your users create venvs from.
 Older versions are fine for the second — mirror as many as you like — but if
 none is new enough for the first, the bundle builds cleanly here and fails
 there. The bundler checks this before downloading anything and refuses to
@@ -543,14 +543,14 @@ cost of Pylance. See
 ### Populating a wheel directory by hand
 
 ```
-seed download-whls hatchling ipython ruff ipykernel pip pandas
+acorn download-whls hatchling ipython ruff ipykernel pip pandas
 ```
 
 Wheels land in `./wheelhouse`; copy it to the share and set
 `SEEDLING_PACKAGE_INDEX` to that folder. Cross-platform bundles take
 `pip download`'s own flags: `--platform win_amd64 --python-version 312
 --only-binary=:all:`. On a network with an internal index you can publish
-them instead of sharing a folder — `seed upload-whls ./wheelhouse`.
+them instead of sharing a folder — `acorn upload-whls ./wheelhouse`.
 
 ---
 
@@ -566,7 +566,7 @@ packages), and the VS Code part only works pre-seeded (#7) — otherwise set
 and the setup can be run later per-machine:
 
 ```
-seed python && seed venv dev && seed config set default_venv dev
+acorn python && acorn venv dev && acorn config set default_venv dev
 ```
 
 A failed auto-setup is never fatal either way — seedling itself still
@@ -594,7 +594,7 @@ both zero-touch for users:
   `global.conf` instead — recorded as the `native_tls` setting and
   applied to uv as `UV_NATIVE_TLS`.
 
-`seed health-check` verifies the recorded bundle still exists, and explicitly
+`acorn health-check` verifies the recorded bundle still exists, and explicitly
 set `SSL_CERT_FILE`/`UV_NATIVE_TLS` environment variables always win over
 the settings.
 
@@ -612,8 +612,8 @@ equivalent:
 |---|---|
 | seedling source + updates | Already file-based (#1) — the ideal case |
 | Python interpreter mirror | `SEEDLING_PYTHON_MIRROR="S:\tools\python-builds"` — a share folder of archives; seedling handles the `file://` conversion |
-| Package index | `SEEDLING_PACKAGE_INDEX="S:\tools\wheels"` — a **directory of wheels** on the share; the internet index is disabled automatically. Populate it on a connected machine with [`seed download-whls`](#populating-a-wheel-directory-by-hand) (include `hatchling`, the default venv packages, and all transitive deps for your platform) |
-| git hosting | git needs no server: **bare repositories on the share** (`git init --bare S:/repos/project.git`) are full remotes — `seed repo-clone S:/repos/project.git`, push, and pull all work over git's file protocol |
+| Package index | `SEEDLING_PACKAGE_INDEX="S:\tools\wheels"` — a **directory of wheels** on the share; the internet index is disabled automatically. Populate it on a connected machine with [`acorn download-whls`](#populating-a-wheel-directory-by-hand) (include `hatchling`, the default venv packages, and all transitive deps for your platform) |
+| git hosting | git needs no server: **bare repositories on the share** (`git init --bare S:/repos/project.git`) are full remotes — `acorn repo-clone S:/repos/project.git`, push, and pull all work over git's file protocol |
 | VS Code | Pre-seeded portable folder in `vendor/vscode/`, as above (#7) |
 
 Practical notes for this setup: since all users are on the same platform
@@ -631,7 +631,7 @@ access control.
 - **Download checksum lookups** (used for MinGit and VS Code metadata)
   aren't reachable — irrelevant in practice, since those downloads don't
   happen offline; anything pre-seeded was verified when you fetched it.
-- **`seed python` "newest"** means the newest your pinned uv knows about
+- **`acorn python` "newest"** means the newest your pinned uv knows about
   and your mirror stocks — update the uv binary and mirror together.
 - The conf values translate into uv's own knobs under the hood
   (`UV_PYTHON_INSTALL_MIRROR`, `UV_DEFAULT_INDEX`, or a generated

@@ -1,6 +1,6 @@
 """Parsing for the `thing[extra,extra]` spelling.
 
-One implementation, two callers: `seed repo-install plotpress[gui]` on the
+One implementation, two callers: `acorn repo-install plotpress[gui]` on the
 command line, and `[[repo]] install = ["dev[gui]"]` in a profile. The two
 have to agree exactly -- a profile is meant to say what a user could have
 typed -- so neither owns the parser.
@@ -33,6 +33,6 @@ def split_extras(spec: str) -> tuple[str, list[str]]:
 
 def join_extras(name: str, extras: list[str]) -> str:
     """The inverse: `("proj", ["gui"])` -> `"proj[gui]"`. Used to build the
-    spec `seed apply` hands to `seed repo-install`, so what runs is spelled
+    spec `acorn apply` hands to `acorn repo-install`, so what runs is spelled
     exactly like what a user would type."""
     return f"{name}[{','.join(extras)}]" if extras else name

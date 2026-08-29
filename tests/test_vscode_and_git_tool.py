@@ -1,4 +1,4 @@
-"""vscode_cmd (pre-seed short-circuit, --no-open, clean offline errors) and
+"""vscode_cmd (pre-acorn short-circuit, --no-open, clean offline errors) and
 git_tool (lookup order, streamed tagging)."""
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ def _preseed_vscode(home):
 
 
 def test_default_settings_point_python_venvpath_at_seedlings_venvs(home):
-    """So every `seed venv` shows up in VS Code's interpreter picker without
+    """So every `acorn venv` shows up in VS Code's interpreter picker without
     anyone pointing VS Code at it by hand."""
     vscode_cmd._write_default_settings()
     settings_file = (paths.VSCODE_APP_DIR / "data" / "user-data" / "User"
@@ -86,7 +86,7 @@ def test_org_settings_missing_file_is_a_silent_noop(home, tmp_path):
 
 
 def test_org_settings_malformed_json_degrades_gracefully(home, tmp_path, capfd):
-    """A broken settings.json in vscode_config_dir must not break `seed
+    """A broken settings.json in vscode_config_dir must not break `acorn
     vscode` entirely -- same reasoning custom-commands.toml uses."""
     config_dir = tmp_path / "vscode-config"
     config_dir.mkdir()
@@ -186,7 +186,7 @@ def test_vscode_opens_given_path(run_cli, home, monkeypatch, tmp_path):
 
 def test_first_install_prompts_and_declining_downloads_nothing(
         run_cli, home, monkeypatch):
-    """Nothing is installed: `seed vscode` must ASK before pulling ~300MB, and
+    """Nothing is installed: `acorn vscode` must ASK before pulling ~300MB, and
     a 'no' must leave the network untouched and still exit 0 (declining an
     optional download isn't an error)."""
     def boom(*a, **k):
@@ -282,7 +282,7 @@ def test_fetch_reports_progress(home, tmp_path):
 
 
 def test_offline_download_fails_cleanly(home, monkeypatch, capsys):
-    """No pre-seed + no network must be a one-line error, not a traceback."""
+    """No pre-acorn + no network must be a one-line error, not a traceback."""
     monkeypatch.setattr(
         vscode_cmd, "_resolve_download",
         lambda os_id, kind, name: ("https://x/download", None))

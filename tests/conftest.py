@@ -252,15 +252,15 @@ STUB_UV = """#!/bin/sh
 BIN="$(dirname "$0")"
 echo "uv $*" >> "$BIN/calls.log"
 env | grep -E "^(UV_|SSL_CERT_FILE|GIT_SSL_CAINFO)" >> "$BIN/uv-env.log" 2>/dev/null
-printf '#!/bin/sh\\necho "seed-cli $*" >> "$(dirname "$0")/calls.log"\\nexit 0\\n' > "$BIN/seed-cli"
-chmod +x "$BIN/seed-cli"
+printf '#!/bin/sh\\necho "acorn-cli $*" >> "$(dirname "$0")/calls.log"\\nexit 0\\n' > "$BIN/acorn-cli"
+chmod +x "$BIN/acorn-cli"
 exit 0
 """
 
 
 def plant_stub_uv(home: Path) -> Path:
     """Pre-place a POSIX stub uv so installer runs need no network. The stub
-    logs its invocations and environment, and fabricates a seed-cli stub
+    logs its invocations and environment, and fabricates a acorn-cli stub
     that logs too."""
     bin_dir = home / "system" / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
@@ -274,12 +274,12 @@ def plant_stub_uv(home: Path) -> Path:
 # Windows installer harness -- lets install.ps1 be EXECUTED end to end, not
 # just syntax-checked. The trick that makes it possible: install.ps1 skips the
 # uv download when system\bin\uv.exe already exists, then runs `& uv tool
-# install` and expects seed-cli.exe to appear. So the whole thing works with a
+# install` and expects acorn-cli.exe to appear. So the whole thing works with a
 # real (tiny) stub uv.exe in place, exactly like the POSIX stub -- but on
 # Windows `& $UvExe` needs a genuine PE executable, not a script named .exe.
 # We compile one with the C# compiler that ships with .NET Framework (present
 # on every Windows box). It mirrors the POSIX stub: logs its calls, records
-# UV_* env, and fabricates seed-cli.exe (a copy of itself) on `tool install`.
+# UV_* env, and fabricates acorn-cli.exe (a copy of itself) on `tool install`.
 # ---------------------------------------------------------------------------
 _STUB_EXE_SRC = r"""
 using System;
@@ -314,9 +314,9 @@ class Stub {
             }
             if (a.Length >= 1 && a[0] == "tool")
                 File.Copy(Path.Combine(dir, "uv.exe"),
-                          Path.Combine(dir, "seed-cli.exe"), true);
+                          Path.Combine(dir, "acorn-cli.exe"), true);
         }
-        // `seed-cli config get default_venv` prints nothing -> the installer
+        // `acorn-cli config get default_venv` prints nothing -> the installer
         // reads it as "unset" and sets the default, same as a real fresh run.
         return 0;
     }

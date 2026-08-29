@@ -1,4 +1,4 @@
-"""seed health-check: OK/WARN/FAIL matrix, the cyan AREA column, exit codes,
+"""acorn health-check: OK/WARN/FAIL matrix, the cyan AREA column, exit codes,
 stale-hook and offline source validation."""
 
 from __future__ import annotations
@@ -149,7 +149,7 @@ def test_missing_ca_cert_fails(run_cli, home):
 
 
 def test_stale_hook_detection(run_cli, home, monkeypatch, tmp_path):
-    """A profile hook line pointing at a deleted seed script must WARN, and a
+    """A profile hook line pointing at a deleted acorn script must WARN, and a
     present target reads as OK. Uses the current platform's profile + script
     name (and native path separators) so the target actually resolves."""
     import os
@@ -157,10 +157,10 @@ def test_stale_hook_detection(run_cli, home, monkeypatch, tmp_path):
     if os.name == "nt":
         profile = (fake_userhome / "Documents" / "WindowsPowerShell"
                    / "Microsoft.PowerShell_profile.ps1")
-        seed_script = home / "system" / "shell" / "seed.ps1"
+        seed_script = home / "system" / "shell" / "acorn.ps1"
     else:
         profile = fake_userhome / ".bashrc"
-        seed_script = home / "system" / "shell" / "seed.sh"
+        seed_script = home / "system" / "shell" / "acorn.sh"
     profile.parent.mkdir(parents=True, exist_ok=True)
     profile.write_text(f'. "{seed_script}"\n')
     import pathlib

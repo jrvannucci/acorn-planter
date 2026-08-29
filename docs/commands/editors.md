@@ -2,7 +2,7 @@
 
 ![What each editor command does: vscode, vscode-repo, spyder, and spyder-repo.](../diagrams/commands-editors.svg)
 
-## `seed vscode [path] [--reinstall] [--no-open] [-y]`
+## `acorn vscode [path] [--reinstall] [--no-open] [-y]`
 
 Opens VS Code at `path` (defaults to the current directory), installing a
 fully portable copy into `~/seedling/extensions/vscode/app` first if none
@@ -20,7 +20,7 @@ installer's default setup uses).
   `--non-interactive` (or `SEEDLING_NONINTERACTIVE=1`) skips the install
   rather than waiting for input. `--reinstall` is exempt: asking for a
   reinstall already says you want the download.
-- `seed vscode-repo` shares the same gate and the same flags, since it can
+- `acorn vscode-repo` shares the same gate and the same flags, since it can
   trigger the same first-time download.
 
 - **Portable mode:** a `data/` folder is created next to the VS Code
@@ -34,7 +34,7 @@ installer's default setup uses).
   - `python.terminal.activateEnvironment: true`
   - `python.analysis.typeCheckingMode: "basic"`
   - `files.autoSave: "onFocusChange"`
-  - `python.venvPath` set to `~/seedling/python/venvs`, so every `seed venv`
+  - `python.venvPath` set to `~/seedling/python/venvs`, so every `acorn venv`
     shows up in VS Code's interpreter picker automatically
   - Telemetry, auto-update, and extension auto-update all turned off
 - **Default extensions** installed on first install:
@@ -58,9 +58,9 @@ installer's default setup uses).
   with a warning rather than falling back to that behavior.
 - All subprocess calls (extension installs, opening a window) run with
   stdout/stderr/stdin redirected away from your terminal, and the window-
-  open call is fully detached from seedling's own process — `seed vscode`
+  open call is fully detached from seedling's own process — `acorn vscode`
   returns immediately either way and never blocks on VS Code's own output.
-- Idempotent: a plain `seed vscode` with no `--reinstall` only ever
+- Idempotent: a plain `acorn vscode` with no `--reinstall` only ever
   downloads/reinstalls/re-adds extensions on the very first run for a given
   `~/seedling`; every call after that just opens a window.
 - Platform support: downloads the correct stable-build archive for
@@ -68,29 +68,29 @@ installer's default setup uses).
   Linux (`linux-x64` / `linux-arm64`) automatically.
 
 ```
-seed vscode
-seed vscode ./my-project
-seed vscode --reinstall
+acorn vscode
+acorn vscode ./my-project
+acorn vscode --reinstall
 ```
 
-## `seed vscode-repo <name> [-y]`
+## `acorn vscode-repo <name> [-y]`
 
 Opens a cloned repo in VS Code — installing VS Code first if it isn't
-already (same one-time setup as `seed vscode`). Shares the same CLI-entry-
-point, detached-process opening logic as `seed vscode`, and the same
+already (same one-time setup as `acorn vscode`). Shares the same CLI-entry-
+point, detached-process opening logic as `acorn vscode`, and the same
 first-time download prompt (with the same `-y` / `--non-interactive`
 flags) — reaching the editor from a repo shouldn't cost 300 MB any more
 quietly than reaching it directly.
 
 ```
-seed vscode-repo some-project
+acorn vscode-repo some-project
 ```
 
-## `seed spyder [path] [--venv <name>] [--no-open] [-y] [--non-interactive]`
+## `acorn spyder [path] [--venv <name>] [--no-open] [-y] [--non-interactive]`
 
 Installs (once) and opens **Spyder**, the scientific Python IDE — the
 variable explorer, IPython console and plots pane that people coming from
-MATLAB or R usually want. Same shape as `seed vscode`, and it asks before
+MATLAB or R usually want. Same shape as `acorn vscode`, and it asks before
 its first-time ~200 MB download in exactly the same way.
 
 `-y`/`--yes` skips the first-run "install this ~200 MB?" prompt;
@@ -99,13 +99,13 @@ all and aborts instead — the same two shared confirmation knobs every
 consequential-but-not-destructive prompt in seedling honors (see
 [Non-interactive mode & previews](../DESIGN.md#non-interactive-mode--previews)).
 
-Underneath it's `seed tool-install spyder`, but the command exists because
+Underneath it's `acorn tool-install spyder`, but the command exists because
 three things have to be arranged that a plain application install can't
 know about:
 
 - **Its settings stay inside seedling.** Spyder would otherwise write to
   `~/.config/spyder-6` or `%APPDATA%`; seedling points it at
-  `~/seedling/extensions/spyder-config` (`--conf-dir`), so `seed purge`
+  `~/seedling/extensions/spyder-config` (`--conf-dir`), so `acorn purge`
   still leaves nothing behind.
 - **It's pointed at a venv.** Unlike VS Code, whose Python extension
   discovers environments itself, Spyder has to be told. seedling writes the
@@ -122,9 +122,9 @@ Most specific wins:
 
 1. **`--venv <name>`** — when you say outright. Naming a venv that doesn't
    exist is an error, not a fall back to a different one.
-2. **The venv active in this shell** (`VIRTUAL_ENV`) — so `seed activate
-   analysis && seed spyder` gives you that environment, the same way
-   `seed install` targets it. Any active venv counts, seedling-managed or
+2. **The venv active in this shell** (`VIRTUAL_ENV`) — so `acorn activate
+   analysis && acorn spyder` gives you that environment, the same way
+   `acorn install` targets it. Any active venv counts, seedling-managed or
    not.
 3. **`default_venv`** — so it still works from a shell with nothing
    activated.
@@ -150,26 +150,26 @@ packages; it says so.
 
 > **x86_64 only.** Spyder comes from PyPI, and PyQt5's Qt payload publishes
 > no arm64 wheels — so this can't work on Apple Silicon or ARM Linux. There,
-> use the conda-forge build instead: `seed forge-install spyder`. `seed
+> use the conda-forge build instead: `acorn forge-install spyder`. `acorn
 > spyder` says exactly that rather than failing with a dependency error.
 
 ```
-seed spyder                      # the active venv, else the default
-seed activate analysis
-seed spyder                      # now runs in 'analysis'
-seed spyder --venv scratch       # or name one outright
+acorn spyder                      # the active venv, else the default
+acorn activate analysis
+acorn spyder                      # now runs in 'analysis'
+acorn spyder --venv scratch       # or name one outright
 ```
 
-## `seed spyder-repo <name> [--venv <name>] [-y] [--non-interactive]`
+## `acorn spyder-repo <name> [--venv <name>] [-y] [--non-interactive]`
 
 Opens a cloned repo as a **Spyder project** (`--project`), the natural
-counterpart to `seed vscode-repo`. Same install-if-needed behavior, the
+counterpart to `acorn vscode-repo`. Same install-if-needed behavior, the
 same first-run prompt (and the same `-y`/`--non-interactive` knobs for it),
-and the same [venv resolution](#which-venv-it-uses) as `seed spyder` —
+and the same [venv resolution](#which-venv-it-uses) as `acorn spyder` —
 `--venv <name>` names one outright, otherwise the active venv or
 `default_venv` is used.
 
 ```
-seed spyder-repo some-project
-seed spyder-repo some-project --venv analysis
+acorn spyder-repo some-project
+acorn spyder-repo some-project --venv analysis
 ```

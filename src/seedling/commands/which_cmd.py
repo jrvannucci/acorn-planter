@@ -1,19 +1,19 @@
 """
-`seed which [name]` -- print the absolute path to a venv's Python
+`acorn which [name]` -- print the absolute path to a venv's Python
 interpreter, and nothing else.
 
 The point is the "nothing else". Every neighbouring command prints helpful
-prose to stdout (`seed install` notes when no venv looks active, `venv-list`
+prose to stdout (`acorn install` notes when no venv looks active, `venv-list`
 prints a header), which is right for a person and fatal for
-`$(seed which dev)`. So this command holds to one rule: **stdout carries the
+`$(acorn which dev)`. So this command holds to one rule: **stdout carries the
 path and only the path**; every diagnostic goes to stderr, and an
 unresolvable venv is a non-zero exit rather than a message where a path
 should be.
 
 Scope is deliberately venvs only. `--python`/`--app`/`--tool` variants were
 considered and dropped: the moment it resolves four unrelated families it
-stops being "the venv interpreter" and belongs beside `seed where` as a
-general install query instead. `seed summary --json` already answers the
+stops being "the venv interpreter" and belongs beside `acorn where` as a
+general install query instead. `acorn summary --json` already answers the
 broader question for anything that needs it.
 """
 

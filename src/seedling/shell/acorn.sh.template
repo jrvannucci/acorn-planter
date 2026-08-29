@@ -1,32 +1,32 @@
 # seedling shell integration (bash/zsh)
 # Installed by install.sh. Sourced from your ~/.bashrc or ~/.zshrc.
 #
-# `seed` is a shell FUNCTION, not just a binary, because `seed activate`
+# `acorn` is a shell FUNCTION, not just a binary, because `acorn activate`
 # needs to modify environment variables in *your current shell* -- something
 # a plain subprocess can never do.
 
 __SEEDLING_HOME="__SEEDLING_HOME_PLACEHOLDER__"
-__SEEDLING_CLI="$__SEEDLING_HOME/system/bin/seed-cli"
+__SEEDLING_CLI="$__SEEDLING_HOME/system/bin/acorn-cli"
 
-# seed-cli itself resolves the seedling home from this variable (falling
+# acorn-cli itself resolves the seedling home from this variable (falling
 # back to ~/seedling). Exporting it here is what makes a custom
 # SEEDLING_HOME_DIR from global.conf work at runtime, not just at
 # install time. For default installs this is a no-op.
 export SEEDLING_HOME="$__SEEDLING_HOME"
 
-# seed-cli/uv/micromamba themselves, so they run as bare commands in ANY
+# acorn-cli/uv/micromamba themselves, so they run as bare commands in ANY
 # process that inherits this shell's environment -- not just one that goes
-# through the `seed` function below. This is what makes `seed-cli` (and
+# through the `acorn` function below. This is what makes `acorn-cli` (and
 # `uv`, `micromamba`) reachable from a script, a CI job, or an AI coding
 # agent's shell tool: PATH is inherited across subshells and `exec`, a shell
-# FUNCTION is not. The function still wins for a person typing `seed` at
+# FUNCTION is not. The function still wins for a person typing `acorn` at
 # this prompt (bash/zsh resolve functions before PATH).
 case ":$PATH:" in
     *":$__SEEDLING_HOME/system/bin:"*) ;;
     *) PATH="$__SEEDLING_HOME/system/bin:$PATH"; export PATH ;;
 esac
 
-# Command-line tools installed with `seed forge-install` (from conda-forge) put
+# Command-line tools installed with `acorn forge-install` (from conda-forge) put
 # their launchers here; add it to PATH so they run as bare commands. Guarded so
 # repeated sourcing never stacks duplicate entries.
 case ":$PATH:" in
@@ -34,7 +34,7 @@ case ":$PATH:" in
     *) PATH="$__SEEDLING_HOME/system/conda/shims:$PATH"; export PATH ;;
 esac
 
-# Same, for Python applications installed with `seed tool-install` (from PyPI,
+# Same, for Python applications installed with `acorn tool-install` (from PyPI,
 # via uv). A separate directory because it's a separate tool root -- see
 # uv_tool.tool_install_env.
 case ":$PATH:" in
@@ -45,7 +45,7 @@ esac
 # If the venv this shell has active was just deleted (purge, remove-user,
 # remove-venv(-all), remove-python...), deactivate it instead of leaving a
 # dangling prompt pointing at a folder that no longer exists. Only the
-# shell itself can do this -- seed-cli is a child process.
+# shell itself can do this -- acorn-cli is a child process.
 __seedling_deactivate_if_gone() {
     if [ -n "${VIRTUAL_ENV:-}" ] && [ ! -d "$VIRTUAL_ENV" ]; then
         if command -v deactivate >/dev/null 2>&1 || declare -f deactivate >/dev/null 2>&1; then
@@ -55,7 +55,7 @@ __seedling_deactivate_if_gone() {
     fi
 }
 
-seed() {
+acorn() {
     if [ "$1" = "activate" ]; then
         shift
         local script
@@ -96,10 +96,10 @@ seed() {
 
     if [ "$1" = "purge" ] || [ "$1" = "remove-user" ] || [ "$1" = "purge-and-reinstall" ]; then
         # These commands may finish their own deletion via an invisible
-        # background helper. seed-cli has exited by then, so this
+        # background helper. acorn-cli has exited by then, so this
         # still-loaded function is the only thing left that can tell the
         # user whether the cleanup actually succeeded -- and, for
-        # purge-and-reinstall, run the reinstall seed-cli staged before it
+        # purge-and-reinstall, run the reinstall acorn-cli staged before it
         # deleted its own executable.
         "$__SEEDLING_CLI" "$@"
         __seed_status=$?
@@ -142,12 +142,12 @@ seed() {
 }
 
 # Auto-activate the configured default venv in every new shell
-# (set one with: seed config set default_venv <name>). Skipped when some
+# (set one with: acorn config set default_venv <name>). Skipped when some
 # venv is already active, or when auto-activation is turned off with
-# `seed auto-activate False`. SEEDLING_NO_LOG keeps this startup query from
+# `acorn auto-activate False`. SEEDLING_NO_LOG keeps this startup query from
 # spamming seedling's command log on every shell launch.
 if [ -z "$VIRTUAL_ENV" ]; then
-    # Honour `seed auto-activate False` without a seed-cli launch: settings.json
+    # Honour `acorn auto-activate False` without a acorn-cli launch: settings.json
     # is written by Python's json.dumps (deterministic formatting), so a plain
     # grep for the disabled state is reliable, and skipping here also saves the
     # config-get process below. Only an explicit `false` disables it; an
@@ -160,7 +160,7 @@ if [ -z "$VIRTUAL_ENV" ]; then
         __seedling_default_venv="$(SEEDLING_NO_LOG=1 "$__SEEDLING_CLI" config get default_venv 2>/dev/null)"
     fi
     if [ -n "$__seedling_default_venv" ]; then
-        seed activate "$__seedling_default_venv" >/dev/null 2>&1 \
+        acorn activate "$__seedling_default_venv" >/dev/null 2>&1 \
             || echo "seedling: couldn't auto-activate default venv '$__seedling_default_venv'"
     fi
     unset __seedling_default_venv __seedling_settings
@@ -180,8 +180,8 @@ fi
 # same reasoning that already lets auto_activate above be a plain grep. This
 # is only used to decide WHETHER anything is configured, so an org that
 # hasn't set startup_commands pays nothing at all; ONLY the actual running
-# of the list is handed to seed-cli, and as ONE process
-# (`seed custom --startup`, which loops internally) rather than one seed-cli
+# of the list is handed to acorn-cli, and as ONE process
+# (`acorn custom --startup`, which loops internally) rather than one acorn-cli
 # cold start per configured name -- terminal-open latency shouldn't scale
 # with how many startup commands an org has.
 __seedling_settings_startup="$__SEEDLING_HOME/system/config/settings.json"

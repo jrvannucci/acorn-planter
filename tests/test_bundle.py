@@ -1,6 +1,6 @@
 """offline-bundle.toml: parsing/validation, the two ways an Inventory is
 built (declared intent vs. what a bundle on disk actually holds), and the
-profile check that both feed -- including `seed profile-check`, the
+profile check that both feed -- including `acorn profile-check`, the
 air-gapped side of the story."""
 
 from __future__ import annotations
@@ -264,7 +264,7 @@ def test_every_profile_in_the_example_subpages_is_valid(home):
             raise AssertionError(f"{name}: {e}") from e
 
 
-# --- seed profile-check ----------------------------------------------------
+# --- acorn profile-check ----------------------------------------------------
 
 class TestProfileCheckCommand:
     def _bundle_on_disk(self, tmp_path):

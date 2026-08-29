@@ -7,24 +7,24 @@ scattered across the filesystem:
 ~/seedling/
     system/               <- everything seedling needs to run itself, kept
         bin/                 out of the way of the stuff you actually use
-        tool/             <- the uv-managed venv seed-cli itself runs in
-        src/              <- seedling's own source (see `seed update-commands`)
+        tool/             <- the uv-managed venv acorn-cli itself runs in
+        src/              <- seedling's own source (see `acorn update-commands`)
         config/
             settings.json <- seedling's own config (default python version, etc.)
-        logs/             <- one log file per day; every `seed` command appends
+        logs/             <- one log file per day; every `acorn` command appends
                              what ran and everything it printed
-        locks/            <- advisory lock files, one per venv, so two seed
+        locks/            <- advisory lock files, one per venv, so two acorn
                              commands can't mutate the same one at once
         cache/
             uv/           <- uv's package/interpreter download cache, kept
                              inside seedling instead of ~/.cache / %LOCALAPPDATA%
         conda/            <- micromamba root: conda-forge tool envs, package
-                             cache, and the PATH shims (`seed forge-install`)
-        shims/            <- launchers for PyPI applications (`seed tool-install`),
+                             cache, and the PATH shims (`acorn forge-install`)
+        shims/            <- launchers for PyPI applications (`acorn tool-install`),
                              put on PATH by the shell hook
         shell/
-            seed.sh       <- sourced by bash/zsh to define the `seed` function
-            seed.ps1      <- dot-sourced by PowerShell to define the `seed` function
+            acorn.sh       <- sourced by bash/zsh to define the `acorn` function
+            acorn.ps1      <- dot-sourced by PowerShell to define the `acorn` function
     python/
         base/<tag>/       <- base python installs, e.g. base/312
         venvs/<name>/     <- virtual environments built off a base python
@@ -36,9 +36,9 @@ scattered across the filesystem:
                              stops VS Code writing to ~/.vscode or %APPDATA%
         spyder-config/    <- Spyder's own settings (SPYDER_CONFDIR), for the
                              same reason: nothing outside ~/seedling
-        apps/<name>/      <- one uv-managed environment per `seed tool-install`
+        apps/<name>/      <- one uv-managed environment per `acorn tool-install`
     repo/
-        <name>/           <- repos cloned with `seed repo-clone`
+        <name>/           <- repos cloned with `acorn repo-clone`
 """
 
 from __future__ import annotations
@@ -91,12 +91,12 @@ SHELL_DIR = SYSTEM_DIR / "shell"
 LOGS_DIR = SYSTEM_DIR / "logs"
 UV_CACHE_DIR = SYSTEM_DIR / "cache" / "uv"
 
-# Advisory lock files, one per venv, so two seed commands can't mutate the
+# Advisory lock files, one per venv, so two acorn commands can't mutate the
 # same environment at once (see lock.py). Empty files whose only content is
 # the OS lock the holder takes on them -- they are never read.
 LOCKS_DIR = SYSTEM_DIR / "locks"
 
-# conda-forge command-line tools, managed with micromamba (`seed forge-install`).
+# conda-forge command-line tools, managed with micromamba (`acorn forge-install`).
 # The per-tool environments live under system/ because they are an
 # implementation detail; only the shims are user-facing. MAMBA_DIR is
 # micromamba's root prefix (its package cache and envs), and FORGE_SHIMS_DIR
@@ -114,7 +114,7 @@ VENVS_DIR = PYTHON_DIR / "venvs"
 
 EXTENSIONS_DIR = HOME / "extensions"
 
-# PyPI applications installed as isolated tools (`seed tool-install`), each in
+# PyPI applications installed as isolated tools (`acorn tool-install`), each in
 # its own uv-managed venv. This is UV_TOOL_DIR for those calls, which is why
 # it gets a directory of its own rather than sharing extensions/: uv treats
 # every child of UV_TOOL_DIR as one of its tools and warns about "malformed"
@@ -212,7 +212,7 @@ def venv_python_path(venv: str | Path) -> Path:
     VIRTUAL_ENV value or a directory listing already have.
 
     The Scripts-vs-bin split is the most-copied two-liner in the codebase --
-    `seed activate`, `summary`, `health-check`, `spyder` and venv creation
+    `acorn activate`, `summary`, `health-check`, `spyder` and venv creation
     each had their own -- so it lives here. Note this is the VENV layout;
     uv's managed base CPython dirs are shaped differently and are resolved
     by venv_cmd._python_interpreter_path.
@@ -229,7 +229,7 @@ def venv_python(venv: str | Path) -> Path | None:
 
 
 def venv_bin_dir(venv: str | Path) -> Path:
-    """The directory a venv puts executables in -- what `seed run` prepends
+    """The directory a venv puts executables in -- what `acorn run` prepends
     to PATH, and what an activate script would."""
     venv_path = venv if isinstance(venv, Path) else venv_dir(venv)
     return venv_path / ("Scripts" if os.name == "nt" else "bin")

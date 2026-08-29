@@ -1,13 +1,13 @@
 """
-`seed tool-install / tool-list / tool-remove` -- Python applications from
+`acorn tool-install / tool-list / tool-remove` -- Python applications from
 PyPI, each installed into its own isolated environment.
 
 This is the uv/PyPI counterpart to the conda-forge `forge-*` family. The split
 is by where a thing comes from, because that is what actually differs:
 
-  seed install         packages INTO the venv you're working in (uv pip)
-  seed tool-install    an application in its OWN venv, on PATH (uv tool)
-  seed forge-install   a non-Python program from conda-forge (micromamba)
+  acorn install         packages INTO the venv you're working in (uv pip)
+  acorn tool-install    an application in its OWN venv, on PATH (uv tool)
+  acorn forge-install   a non-Python program from conda-forge (micromamba)
 
 `tool-install` is for things you run rather than import -- Spyder, JupyterLab,
 httpie -- where putting the app's dependency tree in your project venv would
@@ -75,7 +75,7 @@ def ensure_installed(args, spec: str, *, note: str = "") -> bool:
     """Install `spec` if it isn't already, asking first when it would mean a
     download. Returns True if the app is present afterwards.
 
-    Shared with the editor front ends (`seed spyder`), which need exactly
+    Shared with the editor front ends (`acorn spyder`), which need exactly
     this and shouldn't reimplement the prompt."""
     name = _spec_name(spec)
     if is_installed(name):
@@ -83,7 +83,7 @@ def ensure_installed(args, spec: str, *, note: str = "") -> bool:
     if note:
         print(f"{name} isn't installed yet ({note}).")
     if not confirm.ask(args, f"Install {name} now?"):
-        print(f"Skipped. To install it later:  seed tool-install {name} -y")
+        print(f"Skipped. To install it later:  acorn tool-install {name} -y")
         return False
     return _install(spec) == 0
 
@@ -100,8 +100,8 @@ def _install(spec: str, *, with_packages: list[str] | None = None) -> int:
 def install(args) -> int:
     spec = getattr(args, "spec", None)
     if not spec:
-        print("Usage: seed tool-install <name>[==version]   "
-              "(e.g. seed tool-install spyder)")
+        print("Usage: acorn tool-install <name>[==version]   "
+              "(e.g. acorn tool-install spyder)")
         return 1
 
     name = _spec_name(spec)
@@ -112,7 +112,7 @@ def install(args) -> int:
     paths.ensure_layout()
     if is_installed(name) and not getattr(args, "reinstall", False):
         print(f"'{name}' is already installed.")
-        print(f"Reinstall it with:  seed tool-install {name} --reinstall")
+        print(f"Reinstall it with:  acorn tool-install {name} --reinstall")
         return 0
 
     argv = ["tool", "install", spec]
@@ -136,7 +136,7 @@ def list_apps(args) -> int:
     names = installed_apps()
     if not names:
         print("No PyPI applications installed.")
-        print("Install one with:  seed tool-install <name>   "
+        print("Install one with:  acorn tool-install <name>   "
               "(e.g. spyder, jupyterlab)")
         return 0
 
@@ -151,7 +151,7 @@ def list_apps(args) -> int:
 def remove(args) -> int:
     name = getattr(args, "name", None)
     if not name:
-        print("Usage: seed tool-remove <name>")
+        print("Usage: acorn tool-remove <name>")
         return 1
     name = _spec_name(name)
 

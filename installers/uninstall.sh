@@ -2,8 +2,8 @@
 # Standalone seedling uninstaller (bash/zsh/sh) -- removes the managed
 # folder AND the shell hook line.
 #
-# The normal way to uninstall is `seed purge` (more thorough, and it knows
-# its own install location). This script is the FALLBACK for when seed-cli
+# The normal way to uninstall is `acorn purge` (more thorough, and it knows
+# its own install location). This script is the FALLBACK for when acorn-cli
 # itself is broken and can't run. It resolves the install location the same
 # way the installer did -- SEEDLING_HOME env override, else global.conf's
 # SEEDLING_HOME_DIR with "~" and "{user}" expansion -- so relocated and
@@ -34,7 +34,7 @@ else
 fi
 
 # {user} -> the current login name: this removes THIS user's install, like
-# `seed purge` (all-users teardown is `seed admin-purge-all-users`).
+# `acorn purge` (all-users teardown is `acorn admin-purge-all-users`).
 case "$SEEDLING_HOME" in
     *"{user}"*)
         _seed_user="${USER:-${USERNAME:-$(id -un 2>/dev/null || echo user)}}"
@@ -44,7 +44,7 @@ esac
 
 echo "Uninstalling seedling at: $SEEDLING_HOME"
 
-# Match any line sourcing a seed shell script from under the seedling home
+# Match any line sourcing a acorn shell script from under the seedling home
 # -- not just the exact current hook text -- so hooks written by older
 # seedling layouts (e.g. ~/seedling/shell/ before it moved under system/)
 # are cleaned up too instead of erroring in every new shell.
@@ -52,7 +52,7 @@ for profile in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.prof
     [ -f "$profile" ] || continue
     awk -v home="$SEEDLING_HOME" '
         $0 == "# seedling" { next }
-        index($0, home) && (index($0, "seed.sh") || index($0, "seed.ps1")) { next }
+        index($0, home) && (index($0, "acorn.sh") || index($0, "acorn.ps1")) { next }
         { print }
     ' "$profile" > "$profile.tmp"
     if cmp -s "$profile" "$profile.tmp"; then

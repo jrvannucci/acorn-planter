@@ -1,4 +1,4 @@
-"""`seed run` and `seed which`: venv resolution precedence, the
+"""`acorn run` and `acorn which`: venv resolution precedence, the
 stdout-is-only-the-path contract, exit-code passthrough, and the child
 environment."""
 
@@ -65,7 +65,7 @@ def test_nothing_to_resolve(home):
 
 
 def test_active_venv_outside_seedling_is_honored(home, monkeypatch, tmp_path):
-    """`seed install` installs into whatever is active, seedling-managed or
+    """`acorn install` installs into whatever is active, seedling-managed or
     not; `run` and `which` must not disagree about what "current" means."""
     outside = tmp_path / "elsewhere"
     bindir = outside / ("Scripts" if os.name == "nt" else "bin")
@@ -79,7 +79,7 @@ def test_active_venv_outside_seedling_is_honored(home, monkeypatch, tmp_path):
 
 
 def test_strict_mode_stops_on_a_broken_active_venv(home, monkeypatch, tmp_path):
-    """`seed run` must never quietly act on a DIFFERENT environment than the
+    """`acorn run` must never quietly act on a DIFFERENT environment than the
     one the caller is pointing at -- so a dangling VIRTUAL_ENV is an error,
     not a silent fall-through to default_venv."""
     make_venv_dirs(home, "dev")
@@ -94,7 +94,7 @@ def test_strict_mode_stops_on_a_broken_active_venv(home, monkeypatch, tmp_path):
 
 def test_lenient_mode_falls_through_instead(home, monkeypatch, tmp_path):
     """The same state, resolved leniently, walks on down the precedence.
-    This is what `seed spyder` asks for; see spyder_cmd.resolve_venv."""
+    This is what `acorn spyder` asks for; see spyder_cmd.resolve_venv."""
     make_venv_dirs(home, "dev")
     config.set_value("default_venv", "dev")
     monkeypatch.setenv("VIRTUAL_ENV", str(tmp_path / "gone"))
@@ -114,10 +114,10 @@ def test_lenient_mode_is_still_strict_about_an_explicit_name(home):
     assert error.source == venv_target.SOURCE_ARGUMENT
 
 
-# --- seed which -------------------------------------------------------------
+# --- acorn which -------------------------------------------------------------
 
 def test_which_prints_only_the_path(home, capsys):
-    """The whole point of the command: `$(seed which dev)` must be usable,
+    """The whole point of the command: `$(acorn which dev)` must be usable,
     so not one byte of prose may land on stdout."""
     make_venv_dirs(home, "dev")
     from seedling import cli
@@ -157,16 +157,16 @@ def test_which_json_reports_failure_as_json(home, capsys):
     assert "ghost" in doc["error"]
 
 
-# --- seed run ---------------------------------------------------------------
+# --- acorn run ---------------------------------------------------------------
 
 def test_run_without_a_command_is_usage(run_cli, home):
     code, out = run_cli("run")
     assert code == 1
-    assert "Usage: seed run" in out
+    assert "Usage: acorn run" in out
 
 
 def test_run_passes_the_exit_code_through(home, monkeypatch):
-    """`seed run -- pytest` is worthless in CI if this doesn't hold."""
+    """`acorn run -- pytest` is worthless in CI if this doesn't hold."""
     make_venv_dirs(home, "dev")
     from seedling import cli
     code = cli.main(["run", "-n", "dev", "--",
@@ -210,7 +210,7 @@ def test_run_resolves_the_command_inside_the_venv(home, capfd, monkeypatch, tmp_
     """The bug this guards is silent and exactly backwards: on Windows,
     CreateProcess resolves argv[0] against the PARENT's PATH, so handing a
     bare name to subprocess sets the venv up correctly and then runs the
-    system copy inside it. `seed run -- python` must run the VENV's python.
+    system copy inside it. `acorn run -- python` must run the VENV's python.
     """
     make_venv_dirs(home, "dev")
     _fake_executable(paths.venv_bin_dir("dev"), "seedprobe", "FROM_THE_VENV")

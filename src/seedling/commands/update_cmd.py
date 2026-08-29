@@ -1,5 +1,5 @@
 """
-`seed update-commands` -- the ONLY way seedling's own commands change.
+`acorn update-commands` -- the ONLY way seedling's own commands change.
 
 The installers copy seedling's source into ~/seedling/system/src (WITHOUT
 its .git folder -- no git checkout lives inside seedling) and record where
@@ -14,8 +14,8 @@ on its own. This command updates by RE-FETCHING from the recorded source:
   - nothing recorded -> reinstall the local copy as-is, which doubles as a
                         "repair" command for hand-edited sources
 
-Either way, seed-cli is then reinstalled from the refreshed copy, and the
-`seed` shell function (system/shell/seed.ps1|.sh) is re-rendered from the
+Either way, acorn-cli is then reinstalled from the refreshed copy, and the
+`acorn` shell function (system/shell/acorn.ps1|.sh) is re-rendered from the
 refreshed templates so shell-side changes ship with updates too.
 """
 
@@ -86,7 +86,7 @@ def _drift_vscode_extensions(raw: str):
 # installer resolves (and sometimes copies) relative to its own invocation
 # context; replicating that faithfully from here, after the fact, risks
 # reporting drift that was never really there. Those four still need a
-# person to notice and re-run `seed config set` by hand.
+# person to notice and re-run `acorn config set` by hand.
 _DRIFT_CHECKS = [
     ("SEEDLING_VENV_DEFAULT_PACKAGES", "venv_default_packages", _drift_list),
     ("SEEDLING_PYTHON_MIRROR", "python_mirror", _drift_plain),
@@ -114,7 +114,7 @@ def report_conf_drift(refreshed_src: Path) -> None:
     global.conf now asks for something different than what's already
     configured on this machine, and say so -- never applies anything.
 
-    `seed update-commands` only ever refreshes seed-cli's own code; it has
+    `acorn update-commands` only ever refreshes acorn-cli's own code; it has
     never re-seeded settings.json from a changed global.conf (settings
     are seeded once, at install time). An org moving a share path or
     changing an index previously left every existing user's machine
@@ -152,7 +152,7 @@ def report_conf_drift(refreshed_src: Path) -> None:
     for key, current, new in drifted:
         print(f"  {key}: {current!r} -> {new!r}")
         value = ",".join(new) if isinstance(new, list) else new
-        print(f"    seed config set {key} \"{value}\"")
+        print(f"    acorn config set {key} \"{value}\"")
 
 
 def _swap_in(src: Path, tmp: Path) -> bool:
@@ -235,8 +235,8 @@ def _refresh_from_url(src: Path, url: str, branch: str | None = None) -> bool:
 
 def _self_install_targets() -> list[Path]:
     """What `uv tool install` must replace: the tool venv (whose python.exe
-    IS the currently running seed-cli) and the seed-cli shim."""
-    exe = "seed-cli.exe" if os.name == "nt" else "seed-cli"
+    IS the currently running acorn-cli) and the acorn-cli shim."""
+    exe = "acorn-cli.exe" if os.name == "nt" else "acorn-cli"
     return [paths.TOOL_DIR / "seedling", paths.BIN_DIR / exe]
 
 
@@ -255,7 +255,7 @@ def _move_running_self_aside() -> list[tuple[Path, Path]]:
     DELETE the tool venv, but this very process is running from its
     python.exe -- Windows refuses to delete a running executable (and, worse,
     uv gets partway before failing, leaving a gutted install with a broken
-    `seed`). Windows DOES allow renaming a running executable's tree, so the
+    `acorn`). Windows DOES allow renaming a running executable's tree, so the
     live copies are renamed aside, uv installs into fresh paths, and the
     aside copies are swept on the NEXT update (or rolled back if uv fails).
     Returns [(original, aside), ...] for rollback."""
@@ -276,7 +276,7 @@ def _move_running_self_aside() -> list[tuple[Path, Path]]:
 
 def _roll_back_aside(moved: list[tuple[Path, Path]]) -> None:
     """uv failed mid-install: put the renamed-aside live copies back so the
-    user still has a working `seed` (the failure must never brick the CLI)."""
+    user still has a working `acorn` (the failure must never brick the CLI)."""
     for original, aside in reversed(moved):
         try:
             if original.exists():
@@ -284,7 +284,7 @@ def _roll_back_aside(moved: list[tuple[Path, Path]]) -> None:
             aside.rename(original)
         except OSError:
             print(f"warning: couldn't restore {original} from {aside}; "
-                  "if `seed` stops working, re-run the installer.")
+                  "if `acorn` stops working, re-run the installer.")
 
 
 def run(args) -> int:
@@ -329,7 +329,7 @@ def run(args) -> int:
         print("No update source is recorded, so there's nowhere to fetch a "
               "newer version from; reinstalling from the current local copy "
               "(this still picks up any changes made there by hand).")
-        print("Tip: `seed config set update_source <git-url-or-directory>` "
+        print("Tip: `acorn config set update_source <git-url-or-directory>` "
               "gives this command somewhere to update from.")
 
     # Windows-only: an install from before system\bin was added to the
@@ -346,7 +346,7 @@ def run(args) -> int:
         print(f"Added {paths.BIN_DIR} to your PATH "
               "(new terminals/processes will see it).")
 
-    print("Reinstalling the seed CLI ...")
+    print("Reinstalling the acorn CLI ...")
     _sweep_aside_leftovers()
     moved = _move_running_self_aside()
     try:
@@ -355,12 +355,12 @@ def run(args) -> int:
                     env=uv_tool.selfinstall_env())
     except (subprocess.CalledProcessError, uv_tool.UvNotFound):
         _roll_back_aside(moved)
-        print("The reinstall failed; the previous seed CLI was restored and "
+        print("The reinstall failed; the previous acorn CLI was restored and "
               "still works. Fix the problem above and re-run "
-              "`seed update-commands`.")
+              "`acorn update-commands`.")
         return 1
 
-    # The `seed` shell FUNCTION (system/shell/seed.ps1|.sh, hooked into the
+    # The `acorn` shell FUNCTION (system/shell/acorn.ps1|.sh, hooked into the
     # user's profile by the installer) is part of "the commands" too --
     # re-render it from the refreshed templates, or template changes would
     # only ever reach users on a full reinstall.
@@ -372,5 +372,5 @@ def run(args) -> int:
 
     report_conf_drift(src)
 
-    print(colors.ok("Done. Your `seed` commands are up to date."))
+    print(colors.ok("Done. Your `acorn` commands are up to date."))
     return 0

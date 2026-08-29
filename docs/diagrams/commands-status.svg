@@ -58,28 +58,28 @@
   <text x="40" y="79" class="body fmute" font-size="13.5" font-style="italic">Read-only status, plus applying a fleet-wide deployment profile.</text>
 
 <rect x="40" y="128" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed where</text>
+<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn where</text>
 <text x="364" y="146" class="body" font-size="12.5" fill="#52796F">Prints the seedling home directory.</text>
 <rect x="40" y="168" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="188" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed --version</text>
-<text x="364" y="186" class="body" font-size="12.5" fill="#52796F">Prints the version of seed that's actually running.</text>
+<text x="52" y="188" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn --version</text>
+<text x="364" y="186" class="body" font-size="12.5" fill="#52796F">Prints the version of acorn that's actually running.</text>
 <rect x="40" y="208" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="228" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed summary [--sizes] [--json]</text>
+<text x="52" y="228" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn summary [--sizes] [--json]</text>
 <text x="364" y="226" class="body" font-size="12.5" fill="#52796F">One read-only screen of everything installed: interpreters, venvs, repos, tooling, and settings.</text>
 <rect x="40" y="248" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="268" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed health-check [--json]</text>
+<text x="52" y="268" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn health-check [--json]</text>
 <text x="364" y="266" class="body" font-size="12.5" fill="#52796F">Verifies every moving part, one line per check -- exits 1 if anything actually fails.</text>
 <rect x="40" y="288" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="308" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed logs-viewer [--days N]</text>
+<text x="52" y="308" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn logs-viewer [--days N]</text>
 <text x="364" y="306" class="body" font-size="12.5" fill="#52796F">Renders every logged command into a self-contained, searchable HTML page.</text>
 <rect x="40" y="328" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="348" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed apply [profile] [--preview] [--force]</text>
+<text x="52" y="348" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn apply [profile] [--preview] [--force]</text>
 <text x="364" y="346" class="body" font-size="12.5" fill="#52796F">Brings this machine in line with a deployment profile, idempotently -- never destroys an existing venv or repo.</text>
 <rect x="40" y="370" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="390" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed profile-check [profile] [--bundle PATH]</text>
+<text x="52" y="390" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn profile-check [profile] [--bundle PATH]</text>
 <text x="364" y="380" class="body" font-size="12.5" fill="#52796F">Checks a profile against what an offline bundle actually holds -- before anyone on the air-gapped side tries to apply</text>
 <text x="364" y="397" class="body" font-size="12.5" fill="#52796F">it.</text>
 <rect x="40" y="412" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="432" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed config [get|set|unset]</text>
+<text x="52" y="432" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn config [get|set|unset]</text>
 <text x="364" y="430" class="body" font-size="12.5" fill="#52796F">Views and changes seedling's own settings (default_venv, package_index, vscode_flavor, ...).</text>
 </svg>

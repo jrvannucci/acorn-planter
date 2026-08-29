@@ -57,7 +57,7 @@ DANGER = "#9C4A3C"
 # ---------------------------------------------------------------------------
 
 def _command_name(signature: str) -> str:
-    """'seed venv <name> [--python tag]' -> 'venv'. The stable key between
+    """'acorn venv <name> [--python tag]' -> 'venv'. The stable key between
     FAMILIES and the docs, whose signatures spell out more flags."""
     parts = signature.split()
     return parts[1] if len(parts) > 1 else signature
@@ -444,7 +444,7 @@ def build() -> str:
 
 <p class="empty" id="cmdx-empty" hidden>Nothing matches that.</p>
 
-<p class="cmdx-foot">{total} commands. Run <code>seed help</code> for the same
+<p class="cmdx-foot">{total} commands. Run <code>acorn help</code> for the same
 list in your terminal.</p>
 </div>
 <script>{JS}</script>

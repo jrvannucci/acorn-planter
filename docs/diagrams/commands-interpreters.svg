@@ -58,15 +58,15 @@
   <text x="40" y="79" class="body fmute" font-size="13.5" font-style="italic">Structural commands: the base installs that venvs are built from.</text>
 
 <rect x="40" y="128" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed python [version]</text>
-<text x="364" y="146" class="body" font-size="12.5" fill="#52796F">Installs a base CPython interpreter via uv. The first one installed becomes the default `seed venv` builds from.</text>
+<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn python [version]</text>
+<text x="364" y="146" class="body" font-size="12.5" fill="#52796F">Installs a base CPython interpreter via uv. The first one installed becomes the default `acorn venv` builds from.</text>
 <rect x="40" y="170" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="190" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed python-list [--json]</text>
+<text x="52" y="190" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn python-list [--json]</text>
 <text x="364" y="180" class="body" font-size="12.5" fill="#52796F">Lists installed base interpreters, the real versioned target each points to, which is default, and flags any broken</text>
 <text x="364" y="197" class="body" font-size="12.5" fill="#52796F">alias.</text>
 <text x="40" y="246" class="body" font-size="12.5" font-weight="700" fill="#9C4A3C" letter-spacing="0.4">DANGER ZONE</text>
 <rect x="40" y="260" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="280" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed remove-python &lt;tag&gt;</text>
+<text x="52" y="280" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn remove-python &lt;tag&gt;</text>
 <text x="364" y="270" class="body" font-size="12.5" fill="#52796F">Deletes a base Python -- and every venv built from it, since a venv can't outlive the interpreter it was created</text>
 <text x="364" y="287" class="body" font-size="12.5" fill="#52796F">against.</text>
 </svg>

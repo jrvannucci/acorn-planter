@@ -1,5 +1,5 @@
 """
-`seed forge-install / forge-list / forge-remove` -- conda-forge tools via
+`acorn forge-install / forge-list / forge-remove` -- conda-forge tools via
 micromamba.
 
 micromamba itself is never run here: conda_tool.run is stubbed to fabricate the
@@ -169,7 +169,7 @@ def test_remove_unknown(home, capsys):
 
 
 def test_run_tool_dispatches_to_the_right_env(fake_micromamba, home, monkeypatch):
-    """`seed forge <cmd> args` finds which env provides <cmd> and execs it
+    """`acorn forge <cmd> args` finds which env provides <cmd> and execs it
     there, passing arguments straight through."""
     forge_cmd.install(_ns(spec="ripgrep"))    # stub exposes command 'ripgrep'
     execed = {}

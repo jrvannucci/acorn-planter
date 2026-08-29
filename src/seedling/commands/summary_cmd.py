@@ -1,5 +1,5 @@
 """
-`seed summary` -- one screen showing everything seedling has installed:
+`acorn summary` -- one screen showing everything seedling has installed:
 tooling, base Pythons, venvs, repos, VS Code, and the current settings.
 Read-only. Pass --sizes to also compute per-section disk usage (walks the
 whole tree, so it can take a few seconds on big installs). Pass --json to
@@ -96,7 +96,7 @@ def _collect_tooling(want_sizes: bool) -> dict:
 
 
 def collect_pythons(want_sizes: bool = False) -> list[dict]:
-    """Public because `seed python-list --json` emits exactly this. One
+    """Public because `acorn python-list --json` emits exactly this. One
     definition of "a base Python, as data" -- a consumer must not have to
     learn a second shape depending on which command it asked."""
     if not paths.BASE_DIR.exists():
@@ -123,7 +123,7 @@ def collect_pythons(want_sizes: bool = False) -> list[dict]:
 
 
 def collect_venvs(want_sizes: bool = False) -> list[dict]:
-    """Public for `seed venv-list --json`, same reasoning as collect_pythons."""
+    """Public for `acorn venv-list --json`, same reasoning as collect_pythons."""
     if not paths.VENVS_DIR.exists():
         return []
     active = os.environ.get("VIRTUAL_ENV")
@@ -167,7 +167,7 @@ def _collect_repos(want_sizes: bool, git: str | None) -> list[dict]:
 
 
 def collect(want_sizes: bool = False) -> dict:
-    """Everything `seed summary` knows, as plain data -- no printing, no
+    """Everything `acorn summary` knows, as plain data -- no printing, no
     color. Sizes are only walked when want_sizes is set; they're None
     otherwise, since walking the tree is the slow part."""
     home = paths.HOME
@@ -193,7 +193,7 @@ def collect(want_sizes: bool = False) -> dict:
         # Masked at the source, not at the printer: this dict feeds both
         # the human output and --json, and seedling tees command output
         # into system/logs -- so an unmasked secret here is written to
-        # disk by the act of running `seed summary`.
+        # disk by the act of running `acorn summary`.
         "settings": {key: config.mask(key, settings.get(key))
                      for key in config.KNOWN_KEYS},
         "total_size_bytes": _size_of(home, want_sizes),
@@ -226,12 +226,12 @@ def _render_text(data: dict, want_sizes: bool) -> int:
     git = tooling["git"]["path"]
     print(f"  git:     {git if git else colors.dim('not found (auto-downloaded on Windows when needed)')}")
     vscode_str = ("installed" if tooling["vscode"]["installed"]
-                  else "not installed (run `seed vscode`)")
+                  else "not installed (run `acorn vscode`)")
     print(f"  VS Code: {vscode_str}{_size_suffix(tooling['vscode']['size_bytes'])}")
 
     _section(f"Base Pythons ({paths.BASE_DIR})")
     if not data["pythons"]:
-        print("  none -- run: seed python <version>")
+        print("  none -- run: acorn python <version>")
     for entry in data["pythons"]:
         target = entry["target"] or "?"
         marker = "  (default)" if entry["default"] else ""
@@ -241,7 +241,7 @@ def _render_text(data: dict, want_sizes: bool) -> int:
 
     _section(f"Venvs ({paths.VENVS_DIR})")
     if not data["venvs"]:
-        print("  none -- run: seed venv <name>")
+        print("  none -- run: acorn venv <name>")
     for entry in data["venvs"]:
         version = f"  [python {entry['python_version']}]" if entry["python_version"] else ""
         markers = ""
@@ -253,7 +253,7 @@ def _render_text(data: dict, want_sizes: bool) -> int:
 
     _section(f"Repos ({paths.REPO_DIR})")
     if not data["repos"]:
-        print("  none -- run: seed repo-clone <git-url>")
+        print("  none -- run: acorn repo-clone <git-url>")
     for entry in data["repos"]:
         suffix = colors.dim(f"  -> {entry['remote']}") if entry["remote"] else ""
         print(f"  {entry['name']}{suffix}{_size_suffix(entry['size_bytes'])}")
@@ -267,14 +267,14 @@ def _render_text(data: dict, want_sizes: bool) -> int:
         else:
             shown = str(value)
         print(f"  {key} = {shown}")
-    print(colors.dim("  change with: seed config set <key> <value>"))
+    print(colors.dim("  change with: acorn config set <key> <value>"))
 
     if want_sizes:
         _section("Total")
         print(f"  {data['home']}: {_human(data['total_size_bytes'] or 0)}")
     else:
         print()
-        print(colors.dim("Tip: `seed summary --sizes` adds disk usage per item."))
+        print(colors.dim("Tip: `acorn summary --sizes` adds disk usage per item."))
     return 0
 
 

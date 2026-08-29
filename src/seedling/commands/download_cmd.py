@@ -1,17 +1,17 @@
 """
-`seed download-whls` / `seed download-requirements` -- build an offline wheel
+`acorn download-whls` / `acorn download-requirements` -- build an offline wheel
 bundle on a connected machine that can then feed an air-gapped install --
-and `seed upload-whls`, which pushes one into an internal index instead.
+and `acorn upload-whls`, which pushes one into an internal index instead.
 
 Both shell out to `uvx pip download` (uv has no `pip download` of its own, so
 pip is run as an ephemeral uv tool -- nothing is installed permanently). The
 result is a flat directory of `.whl` files (plus any source archives) that is
 exactly what seedling's `package_index` setting consumes on the offline side:
 
-    (connected)  seed download-whls pandas
+    (connected)  acorn download-whls pandas
     (copy the ./wheelhouse folder to the offline machine or a share)
-    (offline)    seed config set package_index <that-folder>
-                 seed install pandas
+    (offline)    acorn config set package_index <that-folder>
+                 acorn install pandas
 
 Every `pip download` flag passes straight through, so cross-platform bundles
 (`--platform`, `--python-version`, `--only-binary=:all:`) and `--no-deps` all
@@ -101,14 +101,14 @@ def _report(dest: Path) -> None:
     print(colors.ok(f"Downloaded {count} into {dest}"))
     print("To install these on an offline machine:")
     print("  1. Copy this folder to the target machine or a shared drive.")
-    print(f"  2. seed config set package_index {dest}")
-    print("  3. seed install <package>   # now resolves from the folder, offline")
+    print(f"  2. acorn config set package_index {dest}")
+    print("  3. acorn install <package>   # now resolves from the folder, offline")
 
 
 def run_whl(args) -> int:
     tokens = getattr(args, "args", None) or []
     if not tokens:
-        print("Usage: seed download-whls <package> [<package> ...] [pip download flags]")
+        print("Usage: acorn download-whls <package> [<package> ...] [pip download flags]")
         print("Downloads each package AND all its dependencies as wheels "
               "(default: ./wheelhouse) for an offline install.")
         return 1
@@ -118,7 +118,7 @@ def run_whl(args) -> int:
 def run_requirements(args) -> int:
     tokens = getattr(args, "args", None) or []
     if not tokens:
-        print("Usage: seed download-requirements <requirements.txt> [pip download flags]")
+        print("Usage: acorn download-requirements <requirements.txt> [pip download flags]")
         print("Downloads every pinned package AND its dependencies as wheels "
               "(default: ./wheelhouse) for an offline install.")
         return 1
@@ -167,7 +167,7 @@ def run_upload(args) -> int:
     flag_url, tokens = _take_repository_url(tokens)
     directory = next((tok for tok in tokens if not tok.startswith("-")), None)
     if not directory:
-        print("Usage: seed upload-whls <dir> [--repository-url URL] "
+        print("Usage: acorn upload-whls <dir> [--repository-url URL] "
               "[twine upload flags]")
         print("Publishes every wheel in <dir> to your internal package index.")
         return 1
@@ -188,7 +188,7 @@ def run_upload(args) -> int:
     token = str(token) if token else None
     if not url:
         print("No upload URL configured. Set the one for your organization:")
-        print("  seed config set package_upload_url "
+        print("  acorn config set package_upload_url "
               "https://pypi.corp.example/api/pypi/pypi-local/")
         print("...or pass it for one run:  --repository-url <url>")
         print("Note this is the UPLOAD endpoint, which is usually not the "
@@ -230,5 +230,5 @@ def run_upload(args) -> int:
     print()
     print(colors.ok(f"Published {len(dists)} distribution(s) to {url}"))
     print("On the target machines nothing changes: package_index already "
-          "points at this index, so `seed install` resolves the new packages.")
+          "points at this index, so `acorn install` resolves the new packages.")
     return 0

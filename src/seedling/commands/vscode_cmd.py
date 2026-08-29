@@ -79,7 +79,7 @@ _QUIET = editors.QUIET
 def _write_status(phase: str, done: int = 0, total: int = 0) -> None:
     """One-line machine-readable progress ('<phase> <done> <total>') for the
     installers' background-job status bar: they poll this file while waiting
-    on `seed vscode --no-open`. Written via replace so pollers never see a
+    on `acorn vscode --no-open`. Written via replace so pollers never see a
     half-written line; never fatal -- a status bar must not break installs."""
     try:
         paths.VSCODE_DIR.mkdir(parents=True, exist_ok=True)
@@ -143,7 +143,7 @@ def flavor() -> str:
         raise UnknownFlavor(
             f"unknown vscode_flavor {value!r}. Valid values: "
             f"{', '.join(FLAVORS)}. Fix it with "
-            f"`seed config set vscode_flavor <value>`.")
+            f"`acorn config set vscode_flavor <value>`.")
     return value
 
 
@@ -309,7 +309,7 @@ def _find_gui_executable(app_dir: Path) -> Path | None:
 
 
 def _vscode_config_dir() -> Path | None:
-    """Where an organization's own settings.json/keybindings.json to seed
+    """Where an organization's own settings.json/keybindings.json to acorn
     into a fresh editor live, per settings.json -- or None when the feature
     isn't configured. See docs/DEPLOYMENT.md."""
     raw = config.get("vscode_config_dir")
@@ -323,7 +323,7 @@ def _org_settings_overrides() -> dict:
     (like everything else conf-driven) rather than cached, since this only
     ever runs once per real install anyway. A missing/unreadable/malformed
     file degrades to "no overrides" rather than failing the whole install;
-    `seed vscode` isn't the place a broken JSON file should be discovered."""
+    `acorn vscode` isn't the place a broken JSON file should be discovered."""
     directory = _vscode_config_dir()
     if directory is None:
         return {}
@@ -343,7 +343,7 @@ def _write_default_settings() -> None:
         # python.venvPath is the one setting that can't be a static literal
         # in DEFAULT_SETTINGS -- it's an absolute, machine-specific path.
         # Pointing it at seedling's own venvs folder is what makes every
-        # `seed venv` show up in VS Code's interpreter picker without the
+        # `acorn venv` show up in VS Code's interpreter picker without the
         # user ever pointing VS Code at one by hand.
         #
         # An organization's own settings.json (vscode_config_dir) is merged
@@ -374,7 +374,7 @@ def _write_keybindings() -> None:
     try:
         target.write_text(source.read_text(encoding="utf-8-sig"), encoding="utf-8")
     except OSError as e:
-        print(f"warning: could not seed keybindings.json ({e}).")
+        print(f"warning: could not acorn keybindings.json ({e}).")
 
 
 def _product_json(app_dir: Path) -> Path | None:
@@ -432,7 +432,7 @@ def _chmod_executables(app_dir: Path) -> None:
 def install(force: bool = False, install_extensions: bool = True) -> list[str] | None:
     """Ensure VS Code is installed, returning the CLI argv prefix to use for
     opening it (or None on failure). Only re-downloads if `force` is set or
-    nothing is installed yet -- this is what makes plain `seed vscode` calls
+    nothing is installed yet -- this is what makes plain `acorn vscode` calls
     idempotent instead of re-downloading/reinstalling every single time.
 
     `install_extensions=False` downloads/extracts VS Code but skips the default
@@ -468,7 +468,7 @@ def install(force: bool = False, install_extensions: bool = True) -> list[str] |
         return None
     except OSError as e:
         # Clean failure instead of a traceback -- e.g. an offline network.
-        # (On offline deployments, pre-seed extensions/vscode instead; see
+        # (On offline deployments, pre-acorn extensions/vscode instead; see
         # docs/OFFLINE.md.)
         print(f"error: {label} could not be downloaded ({e}).")
         tmp_archive.unlink(missing_ok=True)
@@ -536,7 +536,7 @@ def _install_extensions(cli: list[str], wanted: list[str]) -> None:
 
 def open_window(cli: list[str], path: str) -> None:
     """Open VS Code at `path` via its CLI entry point, fully detached from
-    seedling's own process. Kept as the name `seed vscode` and `seed
+    seedling's own process. Kept as the name `acorn vscode` and `acorn
     vscode-repo` already call; the detaching itself is family-generic."""
     editors.open_detached(cli, path)
 
@@ -553,12 +553,12 @@ DOWNLOAD_NOTE = "~300 MB download"
 
 def confirm_first_install(args) -> bool:
     """Ask before the first-run ~300MB download, via the shared editor-family
-    gate. Shared by `seed vscode` and `seed vscode-repo`, which trigger the
+    gate. Shared by `acorn vscode` and `acorn vscode-repo`, which trigger the
     same download from different directions."""
     # flavor() before prompting on purpose: a misconfigured vscode_flavor
     # should fail as a config error (cli._invoke renders UnknownFlavor)
     # rather than after the user has agreed to a download. Resolved here
-    # rather than in the family registry so `seed help` can't inherit the
+    # rather than in the family registry so `acorn help` can't inherit the
     # crash.
     label = "VSCodium" if flavor() == "vscodium" else "VS Code"
     return editors.confirm_first_install(
@@ -580,7 +580,7 @@ def run(args) -> int:
     if getattr(args, "no_open", False):
         # Install-only mode, used by the installers' default setup: get VS
         # Code onto disk without popping a window in the middle of install.
-        print("VS Code is installed and ready. Open it with:  seed vscode")
+        print("VS Code is installed and ready. Open it with:  acorn vscode")
         return 0
 
     open_path = getattr(args, "path", None) or str(Path.cwd())
@@ -590,7 +590,7 @@ def run(args) -> int:
 
 
 # Join the editor family. Done at import time (cli imports this module), so
-# `seed help` renders VS Code's rows without cli.py needing to know anything
+# `acorn help` renders VS Code's rows without cli.py needing to know anything
 # about editors beyond "ask the registry".
 editors.register(editors.Editor(
     key="vscode",

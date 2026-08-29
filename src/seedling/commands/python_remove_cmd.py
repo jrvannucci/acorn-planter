@@ -35,12 +35,12 @@ def _venvs_using_base(base_dir) -> list:
 def run(args) -> int:
     tag = getattr(args, "tag", None)
     if not tag:
-        print("Usage: seed remove-python <tag>")
+        print("Usage: acorn remove-python <tag>")
         return 1
 
     base_dir = python_cmd.resolve_base(tag)
     if base_dir is None:
-        print(f"No base Python installed with tag '{tag}'. Run: seed python-list")
+        print(f"No base Python installed with tag '{tag}'. Run: acorn python-list")
         return 1
 
     affected_venvs = _venvs_using_base(base_dir)
@@ -83,9 +83,9 @@ def run(args) -> int:
         cfg["default_base"] = new_default
         config.save(cfg)
         if new_default:
-            print(f"Default base for `seed venv` switched to '{new_default}'.")
+            print(f"Default base for `acorn venv` switched to '{new_default}'.")
         else:
-            print("No base Python interpreters left; `seed venv` will need one installed first.")
+            print("No base Python interpreters left; `acorn venv` will need one installed first.")
 
     if all_failures:
         print("Some files could not be removed after several attempts:")

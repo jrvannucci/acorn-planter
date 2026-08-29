@@ -390,7 +390,7 @@ def subchip(x: float, y: float, w: float, h: float, label: str) -> str:
 
 CONTENT_TOP = 110    # where content starts below the header/subtitle
 CONFIG_GAP = 34      # space for the connector arrow + its label
-CONFIG_NOTE = "one file, read at install and every later `seed apply`"
+CONFIG_NOTE = "one file, read at install and every later `acorn apply`"
 
 # global.conf, drawn as its own card above profile.toml -- the
 # SEEDLING_PROFILE key is what makes the profile below get read AT ALL, so
@@ -446,7 +446,7 @@ def build_part2(slug: str, title: str, subtitle: str, groups: list[dict],
                 machine_note: str, storage: list[dict] | None = None,
                 footnote: str | None = None,
                 config_label: str = "installation-profile/",
-                config_via: str = "install + seed apply") -> None:
+                config_via: str = "install + acorn apply") -> None:
     storage = storage or []
     machine_x = P_GROUP_X + P_GROUP_W + P_ARROW_GAP
 
@@ -644,8 +644,8 @@ PROFILES = [
                     item("seedling itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "the public package index", kind="internet", items=[
-                    item("Packages", "seed venv / apply"),
-                    item("Spyder", "seed spyder"),
+                    item("Packages", "acorn venv / apply"),
+                    item("Spyder", "acorn spyder"),
                 ]),
             ],
             machine_note="each researcher's own ~/seedling",
@@ -665,16 +665,16 @@ PROFILES = [
             groups=[
                 group("github.com", "seedling itself, plus platform.git, shared-lib.git", kind="internet", items=[
                     item("seedling itself", "the install one-liner"),
-                    item("Repos", "seed repo-clone"),
+                    item("Repos", "acorn repo-clone"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
-                    item("Packages", "seed apply"),
+                    item("Packages", "acorn apply"),
                 ]),
                 group("conda-forge", "via the vendored micromamba", kind="internet", items=[
-                    item("conda-forge tools", "seed forge-install"),
+                    item("conda-forge tools", "acorn forge-install"),
                 ]),
                 group("VS Code Marketplace", "official build + 4 extensions", kind="internet", items=[
-                    item("Editor", "seed apply"),
+                    item("Editor", "acorn apply"),
                 ]),
             ],
             machine_note="each engineer's own ~/seedling",
@@ -698,11 +698,11 @@ PROFILES = [
                     item("seedling itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
-                    item("Packages", "seed apply"),
-                    item("Spyder", "seed apply"),
+                    item("Packages", "acorn apply"),
+                    item("Spyder", "acorn apply"),
                 ]),
                 group("VS Code Marketplace", "official build", kind="internet", items=[
-                    item("Editor", "seed apply"),
+                    item("Editor", "acorn apply"),
                 ]),
             ],
             machine_note="one shared venv, both editors installed",
@@ -724,8 +724,8 @@ PROFILES = [
                     item("seedling itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
-                    item("Packages (pinned)", "seed apply"),
-                    item("Spyder", "seed spyder"),
+                    item("Packages (pinned)", "acorn apply"),
+                    item("Spyder", "acorn spyder"),
                 ]),
             ],
             machine_note="every lab machine, identical pins",
@@ -745,14 +745,14 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("artifactory.corp.example", "one Artifactory host, three proxies", kind="internal", items=[
-                    item("Packages", "seed install"),
-                    item("Spyder", "seed apply"),
-                    item("conda-forge tools", "seed forge-install"),
-                    item("Interpreters", "seed python"),
+                    item("Packages", "acorn install"),
+                    item("Spyder", "acorn apply"),
+                    item("conda-forge tools", "acorn forge-install"),
+                    item("Interpreters", "acorn python"),
                 ]),
                 group("gitlab.corp.example", "your internal git host", kind="internal", items=[
-                    item("seedling itself", "seed update-commands"),
-                    item("Repos", "seed repo-clone"),
+                    item("seedling itself", "acorn update-commands"),
+                    item("Repos", "acorn repo-clone"),
                 ]),
             ],
             machine_note="every workstation, live over HTTPS each time",
@@ -789,14 +789,14 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("artifactory.corp.example", "the one live service on this network", kind="internal", items=[
-                    item("Packages", "seed install"),
-                    item("Spyder", "seed apply"),
+                    item("Packages", "acorn install"),
+                    item("Spyder", "acorn apply"),
                 ]),
                 group("S:\\seedling (the offline build)", "everything else, copied once", kind="bundle", items=[
                     item("seedling itself", "system/src/"),
                     item("uv", "system/bin/"),
-                    item("Interpreters", "seed python"),
-                    item("conda-forge tools", "seed forge-install"),
+                    item("Interpreters", "acorn python"),
+                    item("conda-forge tools", "acorn forge-install"),
                     item("Editor", "extensions/vscode/"),
                     item("Git", "extensions/git/"),
                     item("CA cert", "system/certs/"),
@@ -836,10 +836,10 @@ PROFILES = [
             groups=[
                 group("the share (the offline build)", "offline-bundle/, copied once", kind="bundle", items=[
                     item("seedling itself", "system/src/"),
-                    item("Packages", "seed install"),
+                    item("Packages", "acorn install"),
                     item("uv", "system/bin/"),
-                    item("Interpreters", "seed python"),
-                    item("conda-forge tools", "seed forge-install"),
+                    item("Interpreters", "acorn python"),
+                    item("conda-forge tools", "acorn forge-install"),
                     item("Editor (VSCodium)", "extensions/vscode/"),
                     item("Git (optional)", "extensions/git/"),
                 ]),
@@ -879,10 +879,10 @@ PROFILES = [
             groups=[
                 group("the share (the offline build)", "offline-bundle/, copied once", kind="bundle", items=[
                     item("seedling itself", "system/src/"),
-                    item("Packages", "seed install"),
+                    item("Packages", "acorn install"),
                     item("uv", "system/bin/"),
-                    item("Interpreters", "seed python"),
-                    item("conda-forge tools", "seed forge-install"),
+                    item("Interpreters", "acorn python"),
+                    item("conda-forge tools", "acorn forge-install"),
                     item("Editor (VS Code)", "extensions/vscode/ -- keeps Pylance"),
                     item("Git (optional)", "extensions/git/"),
                 ]),
@@ -924,16 +924,16 @@ PROFILES = [
             groups=[
                 group("S:\\seedling (the offline build)", "one shared offline build, staged once", kind="bundle", items=[
                     item("seedling itself", "system/src/"),
-                    item("Packages + Spyder", "seed install / apply"),
+                    item("Packages + Spyder", "acorn install / apply"),
                     item("uv", "system/bin/"),
-                    item("Interpreters x2", "seed python 3.12 / 3.11"),
-                    item("conda-forge tools", "seed forge-install"),
+                    item("Interpreters x2", "acorn python 3.12 / 3.11"),
+                    item("conda-forge tools", "acorn forge-install"),
                     item("Editor", "extensions/vscode/"),
                     item("Git", "extensions/git/"),
                     item("CA cert", "system/certs/"),
                 ]),
                 group("git.corp.example", "reached only after install", kind="internal", items=[
-                    item("Repos", "seed repo-clone"),
+                    item("Repos", "acorn repo-clone"),
                 ]),
             ],
             machine_note="S:\\users\\{user}\\seedling -- a private folder per person",
@@ -958,7 +958,7 @@ PROFILES = [
                     item("seedling itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
-                    item("Packages", "seed venv"),
+                    item("Packages", "acorn venv"),
                 ]),
             ],
             machine_note="the one venv, straight from the internet",

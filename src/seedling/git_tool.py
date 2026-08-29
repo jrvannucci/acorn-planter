@@ -1,6 +1,6 @@
 """
 Bundled portable git, used only by the repo-related commands
-(`seed repo-clone`, and anything else that shells out to git) when no
+(`acorn repo-clone`, and anything else that shells out to git) when no
 system git is found.
 
 Only auto-bootstrapped on Windows, where Git for Windows publishes a

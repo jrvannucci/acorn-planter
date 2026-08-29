@@ -1,11 +1,11 @@
 """
-The listing commands: `seed venv-list`, `seed python-list`, and
-`seed package-list`.
+The listing commands: `acorn venv-list`, `acorn python-list`, and
+`acorn package-list`.
 
 Each takes `--json`. The venv and python payloads are built by
 summary_cmd's collectors rather than assembled here, so a venv looks the
-same to a consumer whether it arrived via `seed venv-list --json` or
-`seed summary --json` -- two shapes for one thing would be a bug waiting to
+same to a consumer whether it arrived via `acorn venv-list --json` or
+`acorn summary --json` -- two shapes for one thing would be a bug waiting to
 happen. `package-list` is different: it forwards to `uv pip list`, which
 already speaks JSON, so `--json` becomes uv's own `--format json` and the
 output is uv's, unwrapped.
@@ -28,7 +28,7 @@ from . import summary_cmd
 SCHEMA_VERSION = 1
 
 _NO_VENV_NOTE = ("Note: no venv looks active (VIRTUAL_ENV isn't set). "
-                 "Run `seed activate <name>` first, or uv will fall back to "
+                 "Run `acorn activate <name>` first, or uv will fall back to "
                  "whatever it can find (e.g. a .venv in the current directory).")
 
 
@@ -41,7 +41,7 @@ def _warn_no_active_venv(want_json: bool) -> None:
 
 
 def list_packages(args) -> int:
-    """seed package-list -- passthrough to `uv pip list` for the active venv."""
+    """acorn package-list -- passthrough to `uv pip list` for the active venv."""
     extra = list(getattr(args, "extra", None) or [])
     # `--json` is seedling's spelling across every read command; uv spells the
     # same thing `--format json`. Translate rather than make callers remember
@@ -81,12 +81,12 @@ def list_python(args) -> int:
         return 0
 
     if not paths.BASE_DIR.exists():
-        print("No base Python interpreters installed yet. Run: seed python <version>")
+        print("No base Python interpreters installed yet. Run: acorn python <version>")
         return 0
 
     alias_files = sorted(paths.BASE_DIR.glob("*.alias.json"))
     if not alias_files:
-        print("No base Python interpreters installed yet. Run: seed python <version>")
+        print("No base Python interpreters installed yet. Run: acorn python <version>")
         return 0
 
     default_tag = config.get_default_base()
@@ -100,8 +100,8 @@ def list_python(args) -> int:
             target = "?"
 
         resolved = paths.BASE_DIR / target
-        marker = "  (default for `seed venv`)" if tag == default_tag else ""
-        missing = "" if resolved.exists() else f"  [missing! re-run: seed python {tag}]"
+        marker = "  (default for `acorn venv`)" if tag == default_tag else ""
+        missing = "" if resolved.exists() else f"  [missing! re-run: acorn python {tag}]"
         print(f"  {tag:<8} -> {target}{marker}{missing}")
 
     return 0
@@ -117,12 +117,12 @@ def list_venvs(args) -> int:
         return 0
 
     if not paths.VENVS_DIR.exists():
-        print("No venvs created yet. Run: seed venv <name>")
+        print("No venvs created yet. Run: acorn venv <name>")
         return 0
 
     venvs = sorted(d for d in paths.VENVS_DIR.iterdir() if d.is_dir())
     if not venvs:
-        print("No venvs created yet. Run: seed venv <name>")
+        print("No venvs created yet. Run: acorn venv <name>")
         return 0
 
     active = os.environ.get("VIRTUAL_ENV")

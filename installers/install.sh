@@ -123,8 +123,8 @@ case "$SEEDLING_HOME" in
 esac
 
 # ---------------------------------------------------------------------------
-# 1b. Capture this whole install into the seedling logs, so `seed logs-viewer`
-#     shows the bootstrap alongside your `seed` commands. Everything from here
+# 1b. Capture this whole install into the seedling logs, so `acorn logs-viewer`
+#     shows the bootstrap alongside your `acorn` commands. Everything from here
 #     down is tee'd (ANSI-stripped, like the daily logs) into a per-install
 #     log and still shown live. Best-effort: a logs dir we can't create just
 #     means this install runs without a log.
@@ -134,7 +134,7 @@ if mkdir -p "$SEEDLING_HOME/system/logs" 2>/dev/null; then
     SEED_INSTALL_LOG="$SEEDLING_HOME/system/logs/install-$(date +%Y%m%d-%H%M%S).log"
     printf '=== [%s] installer (bootstrap)\n' "$(date '+%Y-%m-%d %H:%M:%S')" > "$SEED_INSTALL_LOG"
 fi
-_seed_rc_file="$(mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/seed-rc.$$")"
+_seed_rc_file="$(mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/acorn-rc.$$")"
 {
 trap 'printf %s "$?" > "$_seed_rc_file" 2>/dev/null' EXIT
 
@@ -174,8 +174,8 @@ mkdir -p "$SEEDLING_HOME/system/bin" \
 
 # ---------------------------------------------------------------------------
 # 2b. Copy the source INTO seedling itself. This is what makes updates
-#     explicit: seed-cli gets installed from $SEEDLING_HOME/src, a copy that
-#     nothing outside of `seed update-commands` ever touches again. Deleting,
+#     explicit: acorn-cli gets installed from $SEEDLING_HOME/src, a copy that
+#     nothing outside of `acorn update-commands` ever touches again. Deleting,
 #     moving, or `git pull`-ing wherever you originally downloaded this from
 #     has zero effect on the installed commands after this point.
 # ---------------------------------------------------------------------------
@@ -189,7 +189,7 @@ SRC_DIR="$SEEDLING_HOME/system/src"
 # to break deletion on Windows).
 rm -rf "$SRC_DIR/.git"
 
-# The deployment profile travels with the source copy, so `seed apply` keeps
+# The deployment profile travels with the source copy, so `acorn apply` keeps
 # working after the share it was installed from goes away. An absolute path
 # in the conf is honoured as-is.
 PROFILE_PATH=""
@@ -206,20 +206,20 @@ if [ -n "$SEEDLING_PROFILE_FROM_ENV" ]; then
     # instead would not find out until something they expected is missing.
     [ -f "$PROFILE_SRC" ] || die "SEEDLING_PROFILE=$SEEDLING_PROFILE_FROM_ENV was set, but no file exists at $PROFILE_SRC."
     # Copy it in: the original may be a downloads folder, a mounted share, or
-    # a temp file, and `seed apply` has to keep working long after that goes
+    # a temp file, and `acorn apply` has to keep working long after that goes
     # away -- the same reason the source itself is copied.
     PROFILE_PATH="$SEEDLING_HOME/system/config/profile.toml"
     cp "$PROFILE_SRC" "$PROFILE_PATH"
     info "Using profile $PROFILE_SRC (copied to $PROFILE_PATH)"
 elif [ -n "$SEEDLING_PROFILE" ]; then
     # Conf-supplied: ships inside the distributed copy, so it already lives
-    # under ~/seedling and `seed update-commands` refreshes it.
+    # under ~/seedling and `acorn update-commands` refreshes it.
     case "$SEEDLING_PROFILE" in
         /*|?:[\\/]*) PROFILE_PATH="$SEEDLING_PROFILE" ;;
         *)           PROFILE_PATH="$SRC_DIR/$SEEDLING_PROFILE" ;;
     esac
     # Either a single file or the FOLDER of profiles, in which case
-    # `seed apply` resolves which of them this user is distributed.
+    # `acorn apply` resolves which of them this user is distributed.
     if [ ! -f "$PROFILE_PATH" ] && [ ! -d "$PROFILE_PATH" ]; then
         # Non-fatal, unlike the env case: a conf naming a profile that wasn't
         # distributed shouldn't brick installs across a whole fleet.
@@ -269,7 +269,7 @@ elif [ -n "$SEEDLING_CUSTOM_COMMANDS" ]; then
     fi
 fi
 
-# An organization's own settings.json/keybindings.json to seed into a fresh
+# An organization's own settings.json/keybindings.json to acorn into a fresh
 # editor (see docs/DEPLOYMENT.md) -- same env-var/conf split as everything
 # above. The env var names the directory itself (not a file whose parent is
 # inferred), so the whole-directory copy here is exactly what was asked for,
@@ -292,7 +292,7 @@ elif [ -n "$SEEDLING_VSCODE_CONFIG_DIR" ]; then
     esac
     if [ ! -d "$VSCODE_CONFIG_DIR_PATH" ]; then
         warn "SEEDLING_VSCODE_CONFIG_DIR=$SEEDLING_VSCODE_CONFIG_DIR was set, but no "
-        warn "folder was found at $VSCODE_CONFIG_DIR_PATH -- no settings/keybindings to seed."
+        warn "folder was found at $VSCODE_CONFIG_DIR_PATH -- no settings/keybindings to acorn."
         VSCODE_CONFIG_DIR_PATH=""
     fi
 fi
@@ -367,14 +367,14 @@ fi
 # ---------------------------------------------------------------------------
 # 2c. Seed seedling's settings from global.conf (first install only --
 #     an existing settings.json is never touched, so reinstalls don't
-#     clobber choices made later with `seed config set`).
+#     clobber choices made later with `acorn config set`).
 # ---------------------------------------------------------------------------
 # Piped installs have no local conf, but the clone we just copied does.
 if [ -z "$CONF_FILE" ] && [ -f "$SRC_DIR/GET_STARTED/global.conf" ]; then
     . "$SRC_DIR/GET_STARTED/global.conf"
 fi
 
-# Record where this install came from, so `seed update-commands` knows
+# Record where this install came from, so `acorn update-commands` knows
 # where to fetch newer versions (there's no git checkout inside ~/seedling
 # to pull with -- updating re-downloads from this source instead):
 #   - directory install  -> that directory
@@ -429,7 +429,7 @@ if [ ! -f "$SETTINGS_FILE" ]; then
         fi
     fi
     # Offline sources (see docs/OFFLINE.md): recorded so every future
-    # `seed` command applies them automatically -- users never set
+    # `acorn` command applies them automatically -- users never set
     # environment variables themselves.
     if [ -n "$SEEDLING_PYTHON_MIRROR" ]; then
         [ -n "$entries" ] && entries="$entries,
@@ -447,14 +447,14 @@ if [ ! -f "$SETTINGS_FILE" ]; then
         entries="$entries  \"package_upload_url\": \"$(json_escape "$SEEDLING_PACKAGE_UPLOAD_URL")\""
     fi
     # A WRITE credential. Normally left empty in a distributed conf and set
-    # only on the machine that publishes (`seed config set`); seeding it here
+    # only on the machine that publishes (`acorn config set`); seeding it here
     # would hand every user of this share publish rights to the index.
     if [ -n "$SEEDLING_PACKAGE_UPLOAD_TOKEN" ]; then
         [ -n "$entries" ] && entries="$entries,
 "
         entries="$entries  \"package_upload_token\": \"$(json_escape "$SEEDLING_PACKAGE_UPLOAD_TOKEN")\""
     fi
-    # conda-forge channel for `seed forge-install`. Only seeded when overridden
+    # conda-forge channel for `acorn forge-install`. Only seeded when overridden
     # (an internal mirror / offline path); the built-in default is conda-forge.
     channel_norm=$(printf '%s' "$SEEDLING_CONDA_CHANNEL" | tr -d ' ')
     if [ -n "$channel_norm" ] && [ "$channel_norm" != "conda-forge" ]; then
@@ -483,7 +483,7 @@ if [ ! -f "$SETTINGS_FILE" ]; then
     fi
     # Keyed off the RESOLVED path, not the conf variable: a profile supplied
     # by the SEEDLING_PROFILE env var (the piped one-liner) leaves the conf
-    # variable empty, and would otherwise never be recorded -- so `seed
+    # variable empty, and would otherwise never be recorded -- so `acorn
     # apply` with no arguments would find nothing afterwards.
     if [ -n "$PROFILE_PATH" ]; then
         [ -n "$entries" ] && entries="$entries,
@@ -555,8 +555,8 @@ if [ ! -f "$SETTINGS_FILE" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 2d. Apply the offline sources to THIS installer's own uv/seed-cli calls
-#     too (building seed-cli needs the package index; the default
+# 2d. Apply the offline sources to THIS installer's own uv/acorn-cli calls
+#     too (building acorn-cli needs the package index; the default
 #     environment setup needs both). Pre-set UV_* variables still win.
 # ---------------------------------------------------------------------------
 to_file_url() {
@@ -596,12 +596,12 @@ if [ -n "$SEEDLING_PACKAGE_INDEX" ]; then
         *)
             # A directory of wheels: uv has no reliable env var for "flat
             # directory index, internet disabled", but honors a config
-            # file. seed-cli generates the same file from settings later.
+            # file. acorn-cli generates the same file from settings later.
             if [ -z "${UV_CONFIG_FILE:-}" ]; then
                 UV_TOML="$SEEDLING_HOME/system/config/uv.toml"
                 {
                     echo "# Generated by seedling from the \`package_index\` setting. Do not edit;"
-                    echo "# change it with:  seed config set package_index <url-or-directory>"
+                    echo "# change it with:  acorn config set package_index <url-or-directory>"
                     echo "[[index]]"
                     echo "name = \"seedling-offline\""
                     echo "url = \"$(to_file_url "$SEEDLING_PACKAGE_INDEX")\""
@@ -641,15 +641,15 @@ UV="$SEEDLING_HOME/system/bin/uv"
 # ---------------------------------------------------------------------------
 # 4. Install the seedling CLI itself as an isolated uv tool, from the copy
 #    living inside ~/seedling/src (not the original download location).
-#    `seed update-commands` is the only thing that ever re-runs this step.
+#    `acorn update-commands` is the only thing that ever re-runs this step.
 # ---------------------------------------------------------------------------
 info "Installing the seedling CLI ..."
 env UV_TOOL_DIR="$SEEDLING_HOME/system/tool" UV_TOOL_BIN_DIR="$SEEDLING_HOME/system/bin" \
     UV_CACHE_DIR="$SEEDLING_HOME/system/cache/uv" \
     "$UV" tool install --force --reinstall "$SRC_DIR/src"
 
-[ -x "$SEEDLING_HOME/system/bin/seed-cli" ] || die "seed-cli was not installed correctly."
-SEED_CLI="$SEEDLING_HOME/system/bin/seed-cli"
+[ -x "$SEEDLING_HOME/system/bin/acorn-cli" ] || die "acorn-cli was not installed correctly."
+SEED_CLI="$SEEDLING_HOME/system/bin/acorn-cli"
 
 # ---------------------------------------------------------------------------
 # 4b. Default environment: the newest stable Python plus a 'dev' venv (with
@@ -674,7 +674,7 @@ else
         # the python/venv steps and dominated by a ~300MB download, so it
         # overlaps them instead of adding its whole duration to the install.
         # SEEDLING_NO_LOG=1 keeps the background run from interleaving with
-        # the foreground seed commands inside the daily log; its output is
+        # the foreground acorn commands inside the daily log; its output is
         # buffered to a file and replayed below (which also lands it in the
         # install log). Idempotent (skips if already present), never fatal.
         if [ -n "$SEEDLING_AUTO_VSCODE_FROM_ENV" ]; then
@@ -689,7 +689,7 @@ else
         VSCODE_RC=""
         # A profile that names an editor OUTRANKS SEEDLING_AUTO_VSCODE: a
         # deployment that asked for Spyder shouldn't also be handed ~300MB of
-        # VS Code it never mentioned. Asked here rather than after `seed
+        # VS Code it never mentioned. Asked here rather than after `acorn
         # apply` because the VS Code job starts first (it overlaps the Python
         # setup), so the answer is needed before it launches. An empty answer
         # means the profile doesn't say, and the conf setting decides as
@@ -714,8 +714,8 @@ else
             info "Skipping VS Code install (SEEDLING_AUTO_VSCODE=$AUTO_VSCODE)."
         else
             info "Setting up VS Code in the background (continues while Python is set up) ..."
-            VSCODE_OUT="$(mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/seed-vscode-out.$$")"
-            VSCODE_RC="$(mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/seed-vscode-rc.$$")"
+            VSCODE_OUT="$(mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/acorn-vscode-out.$$")"
+            VSCODE_RC="$(mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/acorn-vscode-rc.$$")"
             ( env SEEDLING_HOME="$SEEDLING_HOME" SEEDLING_NO_LOG=1 \
                   "$SEED_CLI" vscode --no-open -y >"$VSCODE_OUT" 2>&1
               echo "$?" >"$VSCODE_RC" ) &
@@ -732,7 +732,7 @@ else
                 DEV_READY=1
             else
                 warn "The deployment profile didn't fully apply."
-                warn "Re-run it later with:  seed apply"
+                warn "Re-run it later with:  acorn apply"
             fi
         elif [ -d "$SEEDLING_HOME/python/venvs/dev" ]; then
             info "Default 'dev' venv already exists, leaving it as-is."
@@ -749,7 +749,7 @@ else
                 DEV_READY=1
             else
                 warn "Default environment setup didn't finish (network problem?)."
-                warn "Set it up later with:  seed python && seed venv dev && seed config set default_venv dev"
+                warn "Set it up later with:  acorn python && acorn venv dev && acorn config set default_venv dev"
             fi
         fi
 
@@ -758,7 +758,7 @@ else
         # abort the whole install -- VS Code stays non-fatal.
         if [ -n "$VSCODE_PID" ]; then
             info "Waiting for the background VS Code setup to finish ..."
-            # Live status bar: seed-cli mirrors its progress into a one-line
+            # Live status bar: acorn-cli mirrors its progress into a one-line
             # status file ("<phase> <done> <total>"); poll it and repaint one
             # line in place. Only repaint on change so the install log
             # doesn't fill with duplicate frames.
@@ -800,19 +800,19 @@ else
             _vscode_rc="$(cat "$VSCODE_RC" 2>/dev/null || echo 1)"
             rm -f "$VSCODE_OUT" "$VSCODE_RC"
             if [ "$_vscode_rc" != "0" ]; then
-                warn "VS Code setup didn't finish (network problem?). Install it later with:  seed vscode"
+                warn "VS Code setup didn't finish (network problem?). Install it later with:  acorn vscode"
             fi
         fi
 fi
 
 # ---------------------------------------------------------------------------
-# 5. Write the `seed` shell function and hook it into the user's shell
+# 5. Write the `acorn` shell function and hook it into the user's shell
 # ---------------------------------------------------------------------------
 info "Writing shell integration ..."
 sed "s#__SEEDLING_HOME_PLACEHOLDER__#$SEEDLING_HOME#g" \
-    "$SRC_DIR/src/seedling/shell/seed.sh.template" > "$SEEDLING_HOME/system/shell/seed.sh"
+    "$SRC_DIR/src/seedling/shell/acorn.sh.template" > "$SEEDLING_HOME/system/shell/acorn.sh"
 
-HOOK_LINE=". \"$SEEDLING_HOME/system/shell/seed.sh\""
+HOOK_LINE=". \"$SEEDLING_HOME/system/shell/acorn.sh\""
 
 add_hook() {
     profile="$1"
@@ -821,7 +821,7 @@ add_hook() {
     # before it moved under system/) before adding the current one, so a
     # reinstall never leaves a stale line erroring in every new shell.
     awk -v home="$SEEDLING_HOME" -v keep="$HOOK_LINE" '
-        index($0, home) && (index($0, "seed.sh") || index($0, "seed.ps1")) && $0 != keep { next }
+        index($0, home) && (index($0, "acorn.sh") || index($0, "acorn.ps1")) && $0 != keep { next }
         { print }
     ' "$profile" > "$profile.tmp"
     if cmp -s "$profile" "$profile.tmp"; then
@@ -849,22 +849,22 @@ esac
 info "seedling is installed."
 echo
 if [ "$DEV_READY" = "1" ]; then
-    echo "Open a new terminal (or run: . \"$SEEDLING_HOME/system/shell/seed.sh\") --"
+    echo "Open a new terminal (or run: . \"$SEEDLING_HOME/system/shell/acorn.sh\") --"
     echo "the 'dev' venv auto-activates there, so you can immediately try:"
     echo "  python / ipython          # the newest Python, ready to go"
-    echo "  seed install <package>    # add packages to 'dev'"
-    echo "  seed venv myproject       # create another venv"
-    echo "  seed summary              # see everything seedling has installed"
+    echo "  acorn install <package>    # add packages to 'dev'"
+    echo "  acorn venv myproject       # create another venv"
+    echo "  acorn summary              # see everything seedling has installed"
 else
-    echo "Open a new terminal (or run: . \"$SEEDLING_HOME/system/shell/seed.sh\") and try:"
-    echo "  seed python               # install the newest Python"
-    echo "  seed venv myproject"
-    echo "  seed activate myproject"
-    echo "  seed summary"
+    echo "Open a new terminal (or run: . \"$SEEDLING_HOME/system/shell/acorn.sh\") and try:"
+    echo "  acorn python               # install the newest Python"
+    echo "  acorn venv myproject"
+    echo "  acorn activate myproject"
+    echo "  acorn summary"
 fi
 echo
-echo "Note: seed-cli was installed from a private copy at $SEEDLING_HOME/system/src."
-echo "Nothing updates it automatically -- run 'seed update-commands' whenever"
+echo "Note: acorn-cli was installed from a private copy at $SEEDLING_HOME/system/src."
+echo "Nothing updates it automatically -- run 'acorn update-commands' whenever"
 echo "you want to pull in changes."
 # sed strips ANSI codes from the combined stream before tee displays and
 # records it. Deliberate: the logs stay plain text end to end, so they can
@@ -874,7 +874,7 @@ echo "you want to pull in changes."
 } 2>&1 | sed "s/$(printf '\033')\[[0-9;]*[A-Za-z]//g" | { if [ -n "$SEED_INSTALL_LOG" ]; then tee -a "$SEED_INSTALL_LOG"; else cat; fi; }
 
 # Close the install-capture block opened in step 1b: record the exit code in
-# the log (block format, so `seed logs-viewer` parses it like a `seed`
+# the log (block format, so `acorn logs-viewer` parses it like a `acorn`
 # command) and exit with the installer's real status.
 _seed_rc="$(cat "$_seed_rc_file" 2>/dev/null || echo 0)"
 rm -f "$_seed_rc_file" 2>/dev/null || true

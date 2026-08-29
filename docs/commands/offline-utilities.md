@@ -2,7 +2,7 @@
 
 ![What each offline-staging command does: download-whls, download-requirements, download-forge, and upload-whls.](../diagrams/commands-offline-utilities.svg)
 
-## `seed download-forge <name>[=version]... [--dest <dir>]`
+## `acorn download-forge <name>[=version]... [--dest <dir>]`
 
 The conda-forge counterpart of `download-whls`: on a connected machine, resolve
 a tool **and all its dependencies** and write them into a local **conda
@@ -10,10 +10,10 @@ channel** — a directory you carry to an air-gapped machine (or a share) and
 install from offline.
 
 ```
-(connected)  seed download-forge ripgrep pandoc
+(connected)  acorn download-forge ripgrep pandoc
 (copy the ./conda-channel folder to the offline machine or a share)
-(offline)    seed config set conda_channel <that-folder>
-             seed forge-install ripgrep
+(offline)    acorn config set conda_channel <that-folder>
+             acorn forge-install ripgrep
 ```
 
 seedling solves the request with micromamba, downloads each package
@@ -23,9 +23,9 @@ solve — so no `conda index` or network is needed on the offline side. When
 automatically.
 
 Lands in `./conda-channel` unless you pass `--dest`. Pin versions with `=`
-(`seed download-forge pandoc=3.2`).
+(`acorn download-forge pandoc=3.2`).
 
-## `seed download-whls <package...>`
+## `acorn download-whls <package...>`
 
 Downloads a package **and all of its dependencies** as `.whl` files (plus any
 source archives) into a flat folder — the offline-bundle builder. Run it on a
@@ -33,10 +33,10 @@ connected machine, carry the folder to an air-gapped one, and point
 `package_index` at it:
 
 ```
-seed download-whls pandas
+acorn download-whls pandas
 # ... copy ./wheelhouse to the offline machine or a share ...
-seed config set package_index /path/to/wheelhouse
-seed install pandas
+acorn config set package_index /path/to/wheelhouse
+acorn install pandas
 ```
 
 Wheels land in `./wheelhouse` unless you pass your own `--dest`. Under the hood
@@ -46,7 +46,7 @@ as an ephemeral uv tool — nothing is installed permanently), so **every
 bundles easy — build wheels for a machine you're not sitting at:
 
 ```
-seed download-whls numpy --only-binary=:all: \
+acorn download-whls numpy --only-binary=:all: \
     --platform manylinux2014_x86_64 --python-version 312 --dest ./linux-wheels
 ```
 
@@ -55,29 +55,29 @@ If `package_index` (an Artifactory/Nexus/devpi URL, or a wheels directory) or
 `--find-links --no-index` / `--cert`, so a bundle can itself be built from an
 internal index without setting any environment variables.
 
-## `seed download-requirements <requirements.txt>`
+## `acorn download-requirements <requirements.txt>`
 
 Same as `download-whls`, but reads package specifiers from a `requirements.txt`
 (forwarded to `pip download -r`). Everything else — default `./wheelhouse`
 destination, flag passthrough, `package_index`/`ca_cert` handling — is identical.
 
 ```
-seed download-requirements requirements.txt
-seed download-requirements requirements.txt --dest ./bundle --python-version 311
+acorn download-requirements requirements.txt
+acorn download-requirements requirements.txt --dest ./bundle --python-version 311
 ```
 
 ---
 
-## `seed whl-licenses <dir> [--all] [--json] [--fail-on FAMILY,...]`
+## `acorn whl-licenses <dir> [--all] [--json] [--fail-on FAMILY,...]`
 
 What is every wheel in a directory licensed under? Point it at a wheelhouse
-from `seed download-whls`, or at an offline bundle (its `wheels/` is found
+from `acorn download-whls`, or at an offline bundle (its `wheels/` is found
 for you).
 
 This is the one an admin runs **before** copying a bundle to a share:
 
 ```
-seed whl-licenses S:\tools\wheels
+acorn whl-licenses S:\tools\wheels
 ```
 
 ```
@@ -100,7 +100,7 @@ The two GPL entries are Spyder's dependency chain: any profile with
 thing worth knowing on the connected machine rather than after the share is
 built.
 
-## `seed forge-licenses [<channel-dir>] [--all] [--json] [--fail-on ...]`
+## `acorn forge-licenses [<channel-dir>] [--all] [--json] [--fail-on ...]`
 
 The same question for a bundled conda channel, read from its `repodata.json`
 (the archives are zstd-compressed, which the standard library can't open —
@@ -132,7 +132,7 @@ Families, most serious first: `proprietary`, `copyleft-network` (AGPL),
 copying wheels onto a share is *redistribution*, which is the act licences
 govern — see [LICENSING.md](../LICENSING.md).
 
-## `seed upload-whls <dir> [--repository-url URL]`
+## `acorn upload-whls <dir> [--repository-url URL]`
 
 The other direction: publish a directory of wheels **into** your
 organization's package index. For the networks where the air gap has a door —
@@ -142,8 +142,8 @@ publish it once, and every user installs from the index they already have:
 no share to mount, no directory index to configure.
 
 ```
-seed download-whls pandas polars        # resolve on a connected machine
-seed upload-whls ./wheelhouse           # publish to the internal index
+acorn download-whls pandas polars        # resolve on a connected machine
+acorn upload-whls ./wheelhouse           # publish to the internal index
 ```
 
 It also takes a bundle's wheel folder directly, which is the
@@ -151,7 +151,7 @@ It also takes a bundle's wheel folder directly, which is the
 line:
 
 ```
-seed upload-whls S:\seedling\wheels
+acorn upload-whls S:\seedling\wheels
 ```
 
 - Uploads every `.whl` **and** source archive in the directory, ignoring
@@ -188,7 +188,7 @@ seedling prints settings.
 > on the machine that publishes:
 >
 > ```
-> seed config set package_upload_token <token>
+> acorn config set package_upload_token <token>
 > ```
 
 Exit codes: `0` published, `1` nothing to upload, no URL configured, or twine

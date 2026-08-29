@@ -1,4 +1,4 @@
-"""seed update-commands (all three modes, vendor/.git exclusion) and the
+"""acorn update-commands (all three modes, vendor/.git exclusion) and the
 download/verification helpers. uv's reinstall step is stubbed so these run
 offline and fast; the fetch/copy logic is what's under test."""
 
@@ -74,7 +74,7 @@ def test_directory_update_excludes_dev_build_artifacts(
     """A .venv/__pycache__/.pytest_cache/.ruff_cache sitting in a local-
     checkout update_source must not get copied into ~/seedling/system/src --
     measured at 4000+ files / 85MB for a real .venv, none of it ever read by
-    anything seed-cli does. Regression test for the copytree() that used to
+    anything acorn-cli does. Regression test for the copytree() that used to
     only exclude .git/vendor."""
     src, calls = src_installed
     upstream = tmp_path / "checkout"
@@ -106,7 +106,7 @@ def test_unreachable_directory_share_gives_a_clear_message(run_cli, home, src_in
 
 
 # --- report_conf_drift: settings.json is seeded once, at install time, and
-# never re-applied by `seed update-commands` -- these prove the DISCOVERY
+# never re-applied by `acorn update-commands` -- these prove the DISCOVERY
 # report that closes the gap without silently overwriting local changes.
 
 def test_reports_drift_when_conf_changed_upstream(run_cli, home, src_installed, tmp_path):
@@ -123,7 +123,7 @@ def test_reports_drift_when_conf_changed_upstream(run_cli, home, src_installed, 
     assert code == 0
     assert "venv_default_packages: ['ipython', 'ruff'] -> " \
            "['ipython', 'ruff', 'pandas']" in out
-    assert 'seed config set venv_default_packages "ipython,ruff,pandas"' in out
+    assert 'acorn config set venv_default_packages "ipython,ruff,pandas"' in out
     # Never applied automatically -- only reported.
     assert config.get("venv_default_packages") == ["ipython", "ruff"]
 
@@ -190,7 +190,7 @@ def test_drift_report_ignores_settings_a_fresh_install_wouldnt_seed(
 def test_reports_drift_for_native_tls(run_cli, home, src_installed, tmp_path):
     """_drift_native_tls: only "true" (case-insensitively) is drift; the
     default (unset/false) is never reported, matching the installers' own
-    "only seed when true" rule."""
+    "only acorn when true" rule."""
     src, calls = src_installed
     upstream = tmp_path / "share"
     upstream.mkdir()
@@ -201,7 +201,7 @@ def test_reports_drift_for_native_tls(run_cli, home, src_installed, tmp_path):
     code, out = run_cli("update-commands")
     assert code == 0
     assert "native_tls: None -> True" in out
-    assert 'seed config set native_tls "True"' in out
+    assert 'acorn config set native_tls "True"' in out
     assert config.get("native_tls") is None  # never applied automatically
 
 
@@ -334,9 +334,9 @@ def test_from_branch_ignored_when_no_source(run_cli, home, src_installed):
     assert "No update source is recorded" in out
 
 
-# --- self-update: rename-aside so a running seed-cli can be replaced ---------
+# --- self-update: rename-aside so a running acorn-cli can be replaced ---------
 # On Windows, `uv tool install --force --reinstall` must delete the tool venv
-# whose python.exe IS the running seed-cli -- deletion of a running exe fails
+# whose python.exe IS the running acorn-cli -- deletion of a running exe fails
 # (and uv gets partway, bricking the install). update-commands renames the
 # live copies aside first; these tests pin that behavior.
 
@@ -345,7 +345,7 @@ def _plant_live_cli(home):
     tool = home / "system" / "tool" / "seedling" / "Scripts"
     tool.mkdir(parents=True, exist_ok=True)
     (tool / "python.exe").write_text("live interpreter")
-    shim = home / "system" / "bin" / "seed-cli.exe"
+    shim = home / "system" / "bin" / "acorn-cli.exe"
     shim.parent.mkdir(parents=True, exist_ok=True)
     shim.write_text("live shim")
     return tool.parent, shim
@@ -359,7 +359,7 @@ def test_self_update_renames_live_copies_aside(run_cli, home, src_installed):
     # the live copies were moved aside (uv is stubbed, so nothing recreated them)
     assert not tooldir.exists() and not shim.exists()
     assert list(tooldir.parent.glob("seedling.old-*")), "tool venv not set aside"
-    assert list(shim.parent.glob("seed-cli.exe.old-*")), "shim not set aside"
+    assert list(shim.parent.glob("acorn-cli.exe.old-*")), "shim not set aside"
 
 
 @windows_only
@@ -373,7 +373,7 @@ def test_self_update_rolls_back_when_reinstall_fails(run_cli, home, src_installe
 
     code, out = run_cli("update-commands")
     assert code == 1
-    assert "previous seed CLI was restored" in out
+    assert "previous acorn CLI was restored" in out
     # the live copies are back where they were, contents intact
     assert (tooldir / "Scripts" / "python.exe").read_text() == "live interpreter"
     assert shim.read_text() == "live shim"
@@ -391,7 +391,7 @@ def test_self_update_sweeps_leftovers_from_previous_run(run_cli, home, src_insta
 
 def test_self_update_sweeps_a_file_leftover_from_previous_run(run_cli, home, src_installed):
     """The OTHER self-install target (_self_install_targets) is a plain FILE
-    -- seed-cli.exe itself, not a directory -- and its rename-aside leftover
+    -- acorn-cli.exe itself, not a directory -- and its rename-aside leftover
     is a file too. shutil.rmtree() (what robust_rmtree used to always use)
     raises NotADirectoryError on a plain file no matter how many times it's
     retried, so this leftover was never actually swept: it silently failed
@@ -400,7 +400,7 @@ def test_self_update_sweeps_a_file_leftover_from_previous_run(run_cli, home, src
     slow", worse than a one-time cost since it never got smaller. Regression
     test for the file leftover specifically, since the existing directory
     leftover test above did not (and could not) have caught this."""
-    exe = "seed-cli.exe" if os.name == "nt" else "seed-cli"
+    exe = "acorn-cli.exe" if os.name == "nt" else "acorn-cli"
     leftover = home / "system" / "bin" / f"{exe}.old-99999"
     leftover.parent.mkdir(parents=True, exist_ok=True)
     leftover.write_text("stale exe")
@@ -410,17 +410,17 @@ def test_self_update_sweeps_a_file_leftover_from_previous_run(run_cli, home, src
 
 
 # --- shell integration refresh ----------------------------------------------
-# update-commands must re-render system/shell/seed.{ps1,sh} from the (just
+# update-commands must re-render system/shell/acorn.{ps1,sh} from the (just
 # refreshed) templates -- template changes would otherwise only reach users
 # on a full reinstall, never on an update.
 
 def _add_templates(tree_root, marker: str):
     shell = tree_root / "src" / "seedling" / "shell"
     shell.mkdir(parents=True, exist_ok=True)
-    (shell / "seed.ps1.template").write_text(
+    (shell / "acorn.ps1.template").write_text(
         '$script:SeedlingHome = "__SEEDLING_HOME_PLACEHOLDER__"\n'
         f"# shell {marker}\n")
-    (shell / "seed.sh.template").write_text(
+    (shell / "acorn.sh.template").write_text(
         '__SEEDLING_HOME="__SEEDLING_HOME_PLACEHOLDER__"\n'
         f"# shell {marker}\n")
 
@@ -436,20 +436,20 @@ def test_update_refreshes_rendered_shell_files(run_cli, home, src_installed, tmp
     # A stale render from install time, with the home the installer baked in.
     shell_dir = home / "system" / "shell"
     shell_dir.mkdir(parents=True, exist_ok=True)
-    (shell_dir / "seed.ps1").write_text(
+    (shell_dir / "acorn.ps1").write_text(
         f'$script:SeedlingHome = "{home}"\n# shell v1\n')
 
     code, out = run_cli("update-commands")
     assert code == 0
     assert "Refreshing shell integration" in out
-    rendered = (shell_dir / "seed.ps1").read_text()
+    rendered = (shell_dir / "acorn.ps1").read_text()
     assert "# shell v2" in rendered
     assert "__SEEDLING_HOME_PLACEHOLDER__" not in rendered
     assert f'"{home}"' in rendered  # baked-in home survives the refresh
 
 
 def test_refresh_preserves_posix_home_in_sh_render(run_cli, home, src_installed, tmp_path):
-    """install.sh under git-bash bakes a POSIX-style home into seed.sh that
+    """install.sh under git-bash bakes a POSIX-style home into acorn.sh that
     str(Path) would not reproduce on Windows; the refresh must keep it."""
     src, calls = src_installed
     upstream = tmp_path / "share"
@@ -461,12 +461,12 @@ def test_refresh_preserves_posix_home_in_sh_render(run_cli, home, src_installed,
     posix_home = home.as_posix()
     shell_dir = home / "system" / "shell"
     shell_dir.mkdir(parents=True, exist_ok=True)
-    (shell_dir / "seed.sh").write_text(
+    (shell_dir / "acorn.sh").write_text(
         f'__SEEDLING_HOME="{posix_home}"\n# shell v1\n')
 
     code, out = run_cli("update-commands")
     assert code == 0
-    rendered = (shell_dir / "seed.sh").read_text()
+    rendered = (shell_dir / "acorn.sh").read_text()
     assert "# shell v2" in rendered
     assert f'__SEEDLING_HOME="{posix_home}"' in rendered
 
@@ -484,7 +484,7 @@ def test_refresh_restores_missing_platform_file(run_cli, home, src_installed, tm
     code, out = run_cli("update-commands")
     assert code == 0
     import os
-    name = "seed.ps1" if os.name == "nt" else "seed.sh"
+    name = "acorn.ps1" if os.name == "nt" else "acorn.sh"
     rendered = (home / "system" / "shell" / name).read_text()
     assert "# shell v2" in rendered
     assert "__SEEDLING_HOME_PLACEHOLDER__" not in rendered

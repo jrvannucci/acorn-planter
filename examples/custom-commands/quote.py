@@ -1,6 +1,6 @@
 # Registered in custom-commands.toml as `script = "quote.py"`.
-# Try it: seed config set custom_commands ./examples/custom-commands/custom-commands.toml
-#         seed custom quote
+# Try it: acorn config set custom_commands ./examples/custom-commands/custom-commands.toml
+#         acorn custom quote
 #
 # The case a flat TOML `run` list can't express: real logic (random.choice)
 # and a companion data file resolved relative to the script itself via

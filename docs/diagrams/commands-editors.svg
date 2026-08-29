@@ -58,17 +58,17 @@
   <text x="40" y="79" class="body fmute" font-size="13.5" font-style="italic">Installed on demand, portable, and self-contained inside ~/seedling.</text>
 
 <rect x="40" y="130" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="150" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed vscode [path]</text>
+<text x="52" y="150" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn vscode [path]</text>
 <text x="364" y="140" class="body" font-size="12.5" fill="#52796F">Installs a portable VS Code (once) and opens it at a path -- settings, extensions, and workspace state stay inside</text>
 <text x="364" y="157" class="body" font-size="12.5" fill="#52796F">~/seedling.</text>
 <rect x="40" y="172" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="192" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed vscode-repo &lt;name&gt;</text>
+<text x="52" y="192" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn vscode-repo &lt;name&gt;</text>
 <text x="364" y="190" class="body" font-size="12.5" fill="#52796F">Opens a cloned repo in VS Code, installing VS Code first if needed.</text>
 <rect x="40" y="214" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="234" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed spyder [path] [--venv name]</text>
+<text x="52" y="234" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn spyder [path] [--venv name]</text>
 <text x="364" y="224" class="body" font-size="12.5" fill="#52796F">Underneath it's `tool-install spyder` -- installs into extensions/apps/ with a PATH launcher, then points it at a venv</text>
 <text x="364" y="241" class="body" font-size="12.5" fill="#52796F">and seeds extensions/spyder-config/.</text>
 <rect x="40" y="256" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="276" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed spyder-repo &lt;name&gt; [--venv name]</text>
-<text x="364" y="274" class="body" font-size="12.5" fill="#52796F">Opens a cloned repo as a Spyder project -- same install-if-needed shape as seed spyder.</text>
+<text x="52" y="276" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn spyder-repo &lt;name&gt; [--venv name]</text>
+<text x="364" y="274" class="body" font-size="12.5" fill="#52796F">Opens a cloned repo as a Spyder project -- same install-if-needed shape as acorn spyder.</text>
 </svg>

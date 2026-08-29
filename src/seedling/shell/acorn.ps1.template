@@ -1,21 +1,21 @@
 # seedling shell integration (PowerShell)
 # Installed by install.ps1. Dot-sourced from your $PROFILE.
 #
-# `seed` is a PowerShell FUNCTION, not just a binary, because `seed activate`
+# `acorn` is a PowerShell FUNCTION, not just a binary, because `acorn activate`
 # needs to modify environment/session state in *your current shell* --
 # something a plain child process can never do.
 
 $script:SeedlingHome = "__SEEDLING_HOME_PLACEHOLDER__"
-$script:SeedlingCli = Join-Path $script:SeedlingHome "system\bin\seed-cli.exe"
+$script:SeedlingCli = Join-Path $script:SeedlingHome "system\bin\acorn-cli.exe"
 $script:SeedlingSettings = Join-Path $script:SeedlingHome "system\config\settings.json"
 
-# seed-cli itself resolves the seedling home from this variable (falling
+# acorn-cli itself resolves the seedling home from this variable (falling
 # back to ~/seedling). Setting it here is what makes a custom
 # SEEDLING_HOME_DIR from global.conf work at runtime, not just at
 # install time. For default installs this is a no-op.
 $env:SEEDLING_HOME = $script:SeedlingHome
 
-# Command-line tools installed with `seed forge-install` (from conda-forge) put
+# Command-line tools installed with `acorn forge-install` (from conda-forge) put
 # their launchers here; add it to PATH so they run as bare commands. Guarded so
 # repeated dot-sourcing never stacks duplicate entries.
 $script:SeedlingToolShims = Join-Path $script:SeedlingHome "system\conda\shims"
@@ -23,7 +23,7 @@ if (($env:PATH -split ';') -notcontains $script:SeedlingToolShims) {
     $env:PATH = "$script:SeedlingToolShims;$env:PATH"
 }
 
-# Same, for Python applications installed with `seed tool-install` (from PyPI,
+# Same, for Python applications installed with `acorn tool-install` (from PyPI,
 # via uv). A separate directory because it's a separate tool root -- see
 # uv_tool.tool_install_env.
 $script:SeedlingAppShims = Join-Path $script:SeedlingHome "system\shims"
@@ -34,7 +34,7 @@ if (($env:PATH -split ';') -notcontains $script:SeedlingAppShims) {
 # If the venv this shell has active was just deleted (purge, remove-user,
 # remove-venv(-all), remove-python...), deactivate it instead of leaving a
 # dangling prompt pointing at a folder that no longer exists. Only the
-# shell itself can do this -- seed-cli is a child process.
+# shell itself can do this -- acorn-cli is a child process.
 function script:SeedlingDeactivateIfGone {
     if ($env:VIRTUAL_ENV -and -not (Test-Path $env:VIRTUAL_ENV)) {
         if (Get-Command deactivate -ErrorAction SilentlyContinue) {
@@ -44,12 +44,12 @@ function script:SeedlingDeactivateIfGone {
     }
 }
 
-function seed {
+function acorn {
     # Deliberately a SIMPLE function (no param()/[CmdletBinding]): that keeps
     # the automatic $args holding every argument verbatim. An advanced function
-    # would bind parameters, and a bare `-e` (as in `seed install -e .`) then
+    # would bind parameters, and a bare `-e` (as in `acorn install -e .`) then
     # fails as an ambiguous prefix of the common params -ErrorAction/-ErrorVariable
-    # before seed-cli ever runs. $args passes flags through untouched.
+    # before acorn-cli ever runs. $args passes flags through untouched.
     if ($Args.Count -ge 1 -and $Args[0] -eq "activate") {
         $rest = @($Args[1..($Args.Count - 1)])
         $scriptPath = & $script:SeedlingCli activate @rest --print-path
@@ -89,10 +89,10 @@ function seed {
     if ($Args.Count -ge 1 -and ($Args[0] -eq "purge" -or $Args[0] -eq "remove-user" -or $Args[0] -eq "purge-and-reinstall")) {
         # These commands may finish their own deletion via an invisible
         # background helper (a program can't delete its own running
-        # executable on Windows). seed-cli has exited by then, so this
+        # executable on Windows). acorn-cli has exited by then, so this
         # still-loaded function is the only thing left that can tell the
         # user whether the cleanup actually succeeded -- and, for
-        # purge-and-reinstall, run the reinstall seed-cli staged before it
+        # purge-and-reinstall, run the reinstall acorn-cli staged before it
         # deleted its own executable.
         & $script:SeedlingCli @Args
         $exitCode = $LASTEXITCODE
@@ -131,15 +131,15 @@ function seed {
 }
 
 # Auto-activate the configured default venv in every new shell
-# (set one with: seed config set default_venv <name>). Skipped when some
+# (set one with: acorn config set default_venv <name>). Skipped when some
 # venv is already active.
 #
 # This runs on EVERY terminal that opens without a venv active, so it avoids
-# launching seed-cli entirely: seed-cli.exe is a Python program, and its cold
+# launching acorn-cli entirely: acorn-cli.exe is a Python program, and its cold
 # start -- previously TWICE here, to read the setting and again to resolve the
 # activation script -- dominated the time to open a terminal. Instead we read
 # default_venv straight from settings.json and dot-source the venv's own
-# Activate.ps1, both native PowerShell. The seed-cli path is kept only as a
+# Activate.ps1, both native PowerShell. The acorn-cli path is kept only as a
 # fallback for anything the shortcut can't handle (a custom venv layout, a
 # missing script), so correctness never depends on it.
 if (-not $env:VIRTUAL_ENV) {
@@ -149,13 +149,13 @@ if (-not $env:VIRTUAL_ENV) {
             $script:SeedlingCfg = Get-Content -Raw $script:SeedlingSettings | ConvertFrom-Json
             # auto_activate defaults to on: only an explicit `false` disables
             # it, so an absent/null value (older settings files) still
-            # activates. Toggle with `seed auto-activate True|False`.
+            # activates. Toggle with `acorn auto-activate True|False`.
             if ($script:SeedlingCfg.auto_activate -ne $false) {
                 $script:SeedlingDefaultVenv = $script:SeedlingCfg.default_venv
             }
         } catch {
             # A malformed settings file must not break every new shell; fall
-            # through to the seed-cli path, which reports the real problem.
+            # through to the acorn-cli path, which reports the real problem.
             $script:SeedlingDefaultVenv = $null
             $env:SEEDLING_NO_LOG = "1"
             $script:SeedlingDefaultVenv = (& $script:SeedlingCli config get default_venv 2>$null | Select-Object -First 1)
@@ -169,7 +169,7 @@ if (-not $env:VIRTUAL_ENV) {
             . $script:SeedlingActivate
             Write-Host "Activated: $($script:SeedlingDefaultVenv)"
         } else {
-            seed activate $script:SeedlingDefaultVenv | Out-Null
+            acorn activate $script:SeedlingDefaultVenv | Out-Null
         }
     }
 }
@@ -184,8 +184,8 @@ if (-not $env:VIRTUAL_ENV) {
 #
 # The settings.json check below is a native-PowerShell short-circuit so an
 # org that hasn't configured this pays nothing at all; ONLY the actual
-# running of the list is handed to seed-cli, and as ONE process
-# (`seed custom --startup`, which loops internally) rather than one seed-cli
+# running of the list is handed to acorn-cli, and as ONE process
+# (`acorn custom --startup`, which loops internally) rather than one acorn-cli
 # cold start per configured name -- terminal-open latency shouldn't scale
 # with how many startup commands an org has.
 $script:SeedlingStartupCommands = @()

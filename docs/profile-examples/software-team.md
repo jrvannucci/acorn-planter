@@ -27,7 +27,7 @@ is the one that does actual work.
 
 python = ["3.12", "3.11"]
 
-# Command-line tools that aren't Python packages, so `seed install` can't
+# Command-line tools that aren't Python packages, so `acorn install` can't
 # provide them.
 tools = ["ripgrep", "gh", "just"]
 
@@ -77,16 +77,16 @@ vscode_extensions = [
 - `python = ["3.12", "3.11"]` first, then each venv names its base with
   `python = "312"` / `"311"`. A venv can only build from an interpreter the
   profile installs.
-- `install` names the venvs to run the equivalent of `seed repo-install` in
+- `install` names the venvs to run the equivalent of `acorn repo-install` in
   after cloning — an editable install when the repo has a `pyproject.toml`,
   otherwise its `requirements.txt`. One name or a list; rebuild one of those
-  venvs later and `seed apply` installs the repo into it again.
+  venvs later and `acorn apply` installs the repo into it again.
 - `vscode_extensions` **replaces** the built-in starter kit rather than adding
   to it, so list everything you want, including the Python extension.
 
 **Team shortcuts, as [custom commands](../CUSTOM-COMMANDS.md).** `ruff` and
-`pytest` are already in `dev`'s packages above — declaring `seed lint` and
-`seed test` as one-line wrappers means a new hire's first commands work
+`pytest` are already in `dev`'s packages above — declaring `acorn lint` and
+`acorn test` as one-line wrappers means a new hire's first commands work
 without them ever discovering the underlying tool names:
 
 ```toml

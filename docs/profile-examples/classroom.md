@@ -52,17 +52,17 @@ default_packages = false
 
 - Exact `==` pins so results reproduce in week twelve as they did in week one.
 - `default_packages = false` keeps the environment to exactly what's listed.
-  Note that `seed spyder` still adds `spyder-kernels` — that's required for
+  Note that `acorn spyder` still adds `spyder-kernels` — that's required for
   its console to connect at all, not an extra.
-- Rebuilding a broken machine is `seed remove-venv phys201 && seed apply` --
-  or, with the [custom command](../CUSTOM-COMMANDS.md) below, `seed reset`.
+- Rebuilding a broken machine is `acorn remove-venv phys201 && acorn apply` --
+  or, with the [custom command](../CUSTOM-COMMANDS.md) below, `acorn reset`.
 
-**`seed reset`, so a student never has to remember the two-command recipe.**
+**`acorn reset`, so a student never has to remember the two-command recipe.**
 This is the [`script` shape](../CUSTOM-COMMANDS.md#the-script-shape) rather
-than `run`, because it chains two `seed` operations rather than running a
+than `run`, because it chains two `acorn` operations rather than running a
 single fixed one — and `toplevel = true`
 ([making a command top-level](../CUSTOM-COMMANDS.md#making-a-command-top-level))
-means it really is just the one word to type, not `seed custom reset`:
+means it really is just the one word to type, not `acorn custom reset`:
 
 ```toml
 # custom-commands.toml -- next to profile.toml
@@ -78,8 +78,8 @@ toplevel = true
 import subprocess, sys
 
 def main(argv):
-    subprocess.run(["seed", "remove-venv", "phys201", "-y"], check=True)
-    subprocess.run(["seed", "apply"], check=True)
+    subprocess.run(["acorn", "remove-venv", "phys201", "-y"], check=True)
+    subprocess.run(["acorn", "apply"], check=True)
     return 0
 
 if __name__ == "__main__":
@@ -91,9 +91,9 @@ if __name__ == "__main__":
 SEEDLING_CUSTOM_COMMANDS="custom-commands.toml"
 ```
 
-No SDK, no special orchestration API — the script shells out to `seed`
+No SDK, no special orchestration API — the script shells out to `acorn`
 itself, the same two commands from the bullet point above, just one word for
-a student to type and remember: `seed reset`.
+a student to type and remember: `acorn reset`.
 
 **Vendor folder:** none, assuming the lab machines have internet during setup.
 If they don't, build a bundle instead — see

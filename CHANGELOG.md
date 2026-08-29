@@ -11,6 +11,30 @@ what a release involves.
 
 ## [Unreleased]
 
+### Changed (breaking)
+
+- **The command is now `acorn`, not `seed`.** Every subcommand is unchanged --
+  `acorn venv dev`, `acorn install pandas`, `acorn purge`. The package, the
+  `~/seedling` home, all 37 `SEEDLING_*` variables and every `global.conf` key
+  keep their names, so **nothing on disk moves and no deployment config
+  breaks**: an admin's conf, an offline bundle and a profile folder all keep
+  working untouched.
+
+  What changed with it: the shell function (`system/shell/seed.sh|.ps1` ->
+  `acorn.sh|.ps1`, and the line the installer writes into your profile), and
+  the entry point `seed-cli` -> `acorn-cli`.
+
+  **There is no compatibility shim.** `seed` is gone, and an install made
+  before this release is not migrated -- its profile still sources the old
+  hook and its home is still driven by the old code, which continues to work
+  on its own. To move: run `seed purge` on the old install first, then
+  install fresh.
+
+  The English verb survived the rename: settings are still *seeded* from
+  `global.conf`, and VS Code is still *pre-seeded* into a bundle. Those 103
+  uses were protected explicitly, since `seed` would have eaten them.
+
+
 ### Added
 
 - **Several versions of one package can go in a bundle.** `packages =

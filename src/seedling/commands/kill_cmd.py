@@ -1,5 +1,5 @@
 """
-`seed kill-processes` -- an escape hatch for when a venv, a runaway script, or
+`acorn kill-processes` -- an escape hatch for when a venv, a runaway script, or
 VS Code itself is stuck and you just want a clean slate.
 
 Scoped by DEFAULT to processes belonging to the seedling tree; `--system` is
@@ -19,7 +19,7 @@ and WMI on Windows) rather than a third-party dependency like psutil, to stay
 consistent with seedling's "nothing pre-installed required" design.
 
 Always excludes seedling's own running process (and its parent) so it can't
-kill itself mid-cleanup on platforms where seed-cli's own process image is
+kill itself mid-cleanup on platforms where acorn-cli's own process image is
 literally a python interpreter.
 """
 
@@ -262,7 +262,7 @@ def list_matching(target) -> list[str]:
 
 def kill_python_and_vscode() -> list:
     """Force-closes every Python/VS Code process, sparing seedling's own.
-    Shared by `seed kill-processes --system` and `seed remove-user` (which uses
+    Shared by `acorn kill-processes --system` and `acorn remove-user` (which uses
     this to release any file locks before deleting ~/seedling)."""
     exclude = _self_and_parent()
     if platform.system() == "Windows":
@@ -283,9 +283,9 @@ def kill_seedling_processes() -> list[tuple[int, str]]:
 def run(args) -> int:
     """Three modes, narrowest first:
 
-      seed kill-processes            only seedling's own processes  (default)
-      seed kill-processes --system   every python/VS Code on the machine
-      seed kill-processes <name>     every process named <name>
+      acorn kill-processes            only seedling's own processes  (default)
+      acorn kill-processes --system   every python/VS Code on the machine
+      acorn kill-processes <name>     every process named <name>
 
     The default is scoped because that is what an ordinary "something is
     stuck" actually calls for; closing a colleague's editor and every unrelated
@@ -325,7 +325,7 @@ def run(args) -> int:
         if system_wide or target:
             print(colors.warn(f"This force-closes {description}") + " --")
             print("not just seedling's -- including any unsaved work.")
-            print("Use `seed kill-processes` with no arguments to close only "
+            print("Use `acorn kill-processes` with no arguments to close only "
                   "seedling's.")
         else:
             print(f"This force-closes {description} " +

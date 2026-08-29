@@ -58,16 +58,16 @@
   <text x="40" y="79" class="body fmute" font-size="13.5" font-style="italic">The non-Python tools -- ripgrep, pandoc, ffmpeg, gh, compilers.</text>
 
 <rect x="40" y="128" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed forge &lt;command&gt; [args...]</text>
+<text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn forge &lt;command&gt; [args...]</text>
 <text x="364" y="146" class="body" font-size="12.5" fill="#52796F">Runs an installed conda-forge tool by its exact path -- works immediately, no PATH or fresh terminal needed.</text>
 <rect x="40" y="168" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="188" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed forge-install &lt;name&gt;[=ver]</text>
+<text x="52" y="188" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn forge-install &lt;name&gt;[=ver]</text>
 <text x="364" y="186" class="body" font-size="12.5" fill="#52796F">Installs a command-line tool from conda-forge via micromamba, plus PATH launchers -- same shape as tool-install.</text>
 <rect x="40" y="208" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
-<text x="52" y="228" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">seed forge-list</text>
+<text x="52" y="228" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn forge-list</text>
 <text x="364" y="226" class="body" font-size="12.5" fill="#52796F">Lists installed conda-forge tools and the command(s) each provides.</text>
 <text x="40" y="282" class="body" font-size="12.5" font-weight="700" fill="#9C4A3C" letter-spacing="0.4">DANGER ZONE</text>
 <rect x="40" y="294" width="300" height="30" rx="8" fill="#F5E8E5" stroke="#9C4A3C" stroke-width="1" opacity="0.95"/>
-<text x="52" y="314" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">seed forge-remove &lt;name&gt;</text>
+<text x="52" y="314" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#9C4A3C">acorn forge-remove &lt;name&gt;</text>
 <text x="364" y="312" class="body" font-size="12.5" fill="#52796F">Removes a conda-forge tool: its environment, launchers, and record.</text>
 </svg>

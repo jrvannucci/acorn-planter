@@ -14,7 +14,7 @@ from seedling import fsutil
 
 def test_rmtree_clears_read_only_files(home):
     """git marks .git/objects read-only; deletion must handle whole trees
-    of them (the historical seed purge failure)."""
+    of them (the historical acorn purge failure)."""
     tree = home / "system" / "src" / ".git" / "objects" / "ab"
     tree.mkdir(parents=True)
     for i in range(5):
@@ -32,7 +32,7 @@ def test_rmtree_missing_path_is_noop(home):
 
 def test_rmtree_deletes_a_plain_file(home):
     """A rename-aside leftover (see update_cmd._move_running_self_aside) can
-    be a single FILE (seed-cli.exe) just as easily as a directory (the tool
+    be a single FILE (acorn-cli.exe) just as easily as a directory (the tool
     venv). shutil.rmtree() always raises NotADirectoryError on a plain file
     -- no amount of retrying fixes that -- so this used to burn every
     retry's sleep for nothing, report "failure", and never actually delete
@@ -67,7 +67,7 @@ def test_rmtree_escapes_own_cwd(home, monkeypatch):
 
 
 def test_classifier_accepts_only_cli_paths(home):
-    bin_exe = home / "system" / "bin" / "seed-cli.exe"
+    bin_exe = home / "system" / "bin" / "acorn-cli.exe"
     tool_py = home / "system" / "tool" / "seedling" / "Scripts" / "python.exe"
     a_dir = home / "system"
     for p in (bin_exe, tool_py):
@@ -93,12 +93,12 @@ def test_classifier_rejects_paths_outside_home(home, tmp_path):
 @windows_only
 def test_deferred_delete_finishes_after_locker_exits(home):
     """End-to-end self-deletion: a child process holds a file open (like the
-    running seed-cli), robust_rmtree can't remove it, the deferred helper
+    running acorn-cli), robust_rmtree can't remove it, the deferred helper
     wipes everything shortly after the child exits -- invisibly."""
     tooldir = home / "system" / "tool" / "seedling" / "Scripts"
     tooldir.mkdir(parents=True)
     (home / "system" / "bin").mkdir(parents=True)
-    (home / "system" / "bin" / "seed-cli.exe").write_text("shim")
+    (home / "system" / "bin" / "acorn-cli.exe").write_text("shim")
     lockfile = tooldir / "python.exe"
 
     child = subprocess.Popen(

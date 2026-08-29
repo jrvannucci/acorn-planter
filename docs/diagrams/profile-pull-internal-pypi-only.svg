@@ -71,14 +71,14 @@
 <use href="#ic-doc" x="658" y="337" width="22" height="22" color="#FFFFFF"/>
 <text x="692" y="352" class="body fw" font-size="14.0" font-weight="700">installation-profile/</text>
 <text x="658" y="368" class="body" fill="#CFE3D6" font-size="10" font-style="italic">one file, read at install and every</text>
-<text x="658" y="380" class="body" fill="#CFE3D6" font-size="10" font-style="italic">later `seed apply`</text>
+<text x="658" y="380" class="body" fill="#CFE3D6" font-size="10" font-style="italic">later `acorn apply`</text>
 <line x1="658" y1="390" x2="942" y2="390" stroke="#FFFFFF" stroke-width="1" opacity="0.2"/>
 <rect x="658" y="398" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="667" y="413" class="body fg" font-size="11.5" font-weight="600">python = [...]  →  python/base/</text>
 <rect x="658" y="426" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="667" y="441" class="body fg" font-size="11.5" font-weight="600">[[venv]]  →  python/venvs/</text>
 <rect x="658" y="454" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="667" y="469" class="body fg" font-size="11.5" font-weight="600">editor = ...  →  extensions/</text>
 <rect x="658" y="482" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="667" y="497" class="body fg" font-size="11.5" font-weight="600">tools = [...]  →  system/conda/</text>
 <line x1="800" y1="514" x2="800" y2="544" stroke="#1B4332" stroke-width="1.6" marker-end="url(#arrow)"/>
-<text x="810" y="535" class="body fmute" font-size="10.5" font-style="italic">install + seed apply</text>
+<text x="810" y="535" class="body fmute" font-size="10.5" font-style="italic">install + acorn apply</text>
 <rect x="640" y="548" width="320" height="510" rx="12" fill="#EAF3EE" stroke="#1B4332" stroke-width="1.2"/>
 <use href="#ic-monitor" x="662" y="552" width="24" height="24" color="#1B4332"/>
 <text x="696" y="569" class="body fg" font-size="15" font-weight="700">YOUR MACHINE</text>
@@ -118,10 +118,10 @@
 <text x="84" y="589" class="body fmute" font-size="11.0" font-style="italic">the one live service on this network</text>
 <rect x="54" y="594" width="442" height="32" rx="9" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.8"/><text x="66" y="615" class="body fg" font-size="13.0" font-weight="700">Packages</text>
 <line x1="510" y1="610" x2="636" y2="610" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
-<text x="575" y="604" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">seed install</text>
+<text x="575" y="604" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">acorn install</text>
 <rect x="54" y="634" width="442" height="32" rx="9" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.8"/><text x="66" y="655" class="body fg" font-size="13.0" font-weight="700">Spyder</text>
 <line x1="510" y1="650" x2="636" y2="650" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
-<text x="575" y="644" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">seed apply</text>
+<text x="575" y="644" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">acorn apply</text>
 <rect x="40" y="706" width="470" height="332" rx="12" fill="#EAF3EE" stroke="#1B4332" stroke-width="1.3"/>
 <use href="#ic-box" x="56" y="718" width="20" height="20" color="#1B4332"/>
 <text x="84" y="733" class="body fg" font-size="15.0" font-weight="700">S:\seedling (the offline build)</text>
@@ -134,10 +134,10 @@
 <text x="575" y="802" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">system/bin/</text>
 <rect x="54" y="832" width="442" height="32" rx="9" fill="#1B4332" /><text x="66" y="853" class="body fw" font-size="13.0" font-weight="700">Interpreters</text>
 <line x1="510" y1="848" x2="636" y2="848" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
-<text x="575" y="842" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">seed python</text>
+<text x="575" y="842" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">acorn python</text>
 <rect x="54" y="872" width="442" height="32" rx="9" fill="#1B4332" /><text x="66" y="893" class="body fw" font-size="13.0" font-weight="700">conda-forge tools</text>
 <line x1="510" y1="888" x2="636" y2="888" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
-<text x="575" y="882" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">seed forge-install</text>
+<text x="575" y="882" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">acorn forge-install</text>
 <rect x="54" y="912" width="442" height="32" rx="9" fill="#1B4332" /><text x="66" y="933" class="body fw" font-size="13.0" font-weight="700">Editor</text>
 <line x1="510" y1="928" x2="636" y2="928" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
 <text x="575" y="922" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">extensions/vscode/</text>

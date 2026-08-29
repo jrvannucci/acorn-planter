@@ -1,5 +1,5 @@
 """
-`seed venv-licenses` / `seed whl-licenses` / `seed forge-licenses` --
+`acorn venv-licenses` / `acorn whl-licenses` / `acorn forge-licenses` --
 what is everything here licensed under, and what needs a decision?
 
 Three commands rather than one that switches on its argument, because they
@@ -113,8 +113,8 @@ def venv_licenses(args) -> int:
         active = os.environ.get("VIRTUAL_ENV")
         if not active:
             print("No venv is active, and none was named.")
-            print("  seed venv-licenses -n <name>   # a specific venv")
-            print("  seed activate <name>           # or activate one first")
+            print("  acorn venv-licenses -n <name>   # a specific venv")
+            print("  acorn activate <name>           # or activate one first")
             return 1
         venv_dir, label = Path(active), Path(active).name
 
@@ -129,7 +129,7 @@ def whl_licenses(args) -> int:
     """A flat directory of wheels -- a wheelhouse, or a bundle's wheels/."""
     target = getattr(args, "directory", None)
     if not target:
-        print("Usage: seed whl-licenses <dir> [--all] [--json] "
+        print("Usage: acorn whl-licenses <dir> [--all] [--json] "
               "[--fail-on FAMILY,...]")
         return 1
     directory = Path(target).expanduser()
@@ -158,7 +158,7 @@ def forge_licenses(args) -> int:
         if configured and "://" not in str(configured):
             target = str(configured)
     if not target:
-        print("Usage: seed forge-licenses <channel-dir>")
+        print("Usage: acorn forge-licenses <channel-dir>")
         print("Defaults to the configured conda_channel when it's a "
               "directory (an offline bundle's conda-channel/).")
         return 1

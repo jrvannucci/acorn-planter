@@ -9,7 +9,7 @@ Three claims the prose makes repeatedly, in one picture:
   2. A profile is a SUBSET of it. Drawn nested inside the superset, because
      that is exactly the constraint -- a profile naming something the bundle
      doesn't hold has nowhere to get it from. That is why `--check-profile`
-     and `seed profile-check` exist, and why the profile that asks for more is
+     and `acorn profile-check` exist, and why the profile that asks for more is
      drawn outside the boundary with the crossing struck through.
   3. global.conf is NOT part of that set. It configures each user's machine:
      it holds no packages, it points at where the packages already are. So it
@@ -133,7 +133,7 @@ def build() -> str:
                            cls="body fmute"))
             ly += 19
     o.append(_text(bx + 24, py + 146,
-                   "Every name resolves inside the box, so `seed apply` works "
+                   "Every name resolves inside the box, so `acorn apply` works "
                    "with no network at all.",
                    size=12, cls="body fmute"))
 

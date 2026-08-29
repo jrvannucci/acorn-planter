@@ -34,7 +34,7 @@ them internally.
    `vendor/` and `offline-bundle/` are git-ignored and always empty in a
    fresh clone.
 2. **Downloads come from the publisher, at your direction.** When you run
-   `seed python` or `seed vscode`, seedling fetches from the vendor's own
+   `acorn python` or `acorn vscode`, seedling fetches from the vendor's own
    servers. Your relationship is with that vendor, on their terms, exactly
    as if you had downloaded it yourself.
 3. **seedling grants you no rights to anything it downloads,** and makes no
@@ -86,7 +86,7 @@ distributions built from it.
 
 **conda-forge is a different thing**: a community-run channel whose packaging
 recipes are BSD-licensed and whose hosting is free to use, independent of that
-requirement. `seed forge-install` installs from conda-forge **only** — every
+requirement. `acorn forge-install` installs from conda-forge **only** — every
 call passes `--override-channels`, so `defaults` is never consulted, and the
 default `conda_channel` is `conda-forge`. Point it at your own mirror to stay
 inside your network.
@@ -156,9 +156,9 @@ resolve every package's licence from its own metadata, with no network and
 nothing installed:
 
 ```
-seed whl-licenses S:\tools\wheels     # before it goes on the share
-seed venv-licenses                     # what a machine is running
-seed forge-licenses                    # the conda-forge half
+acorn whl-licenses S:\tools\wheels     # before it goes on the share
+acorn venv-licenses                     # what a machine is running
+acorn forge-licenses                    # the conda-forge half
 ```
 
 They group packages into families (`proprietary`, `copyleft-network`,

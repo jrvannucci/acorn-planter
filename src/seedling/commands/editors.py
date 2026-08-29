@@ -9,7 +9,7 @@ parts that are the same whatever the editor is:
     whose cost is invisible until it happens),
   - the detached launch (an editor must never block the terminal or leak its
     own log spam into it),
-  - the registry `seed help` renders the family from.
+  - the registry `acorn help` renders the family from.
 
 Anything that knows a specific editor's archive layout, CLI flags, settings
 file, or extension mechanism belongs in that editor's own module, not here.
@@ -49,7 +49,7 @@ class Editor:
     another venv) that a shared signature would be a fiction, and the family
     would end up passing options nobody else understands.
 
-    `label` is a plain string rather than a callable because `seed help`
+    `label` is a plain string rather than a callable because `acorn help`
     renders it: resolving a configured value here (VS Code's flavor, say)
     would let a misconfigured setting crash the help screen, which must
     always work. Commands that need the precise build name resolve it
@@ -58,7 +58,7 @@ class Editor:
 
     key: str                      # registry key, e.g. "vscode"
     label: str                    # human name for help, e.g. "VS Code"
-    command: str                  # `seed <command>`
+    command: str                  # `acorn <command>`
     summary: str                  # one-line help description
     download_note: str            # e.g. "~300 MB download"
     is_installed: Callable[[], bool]
@@ -72,7 +72,7 @@ class Editor:
     # cli.py already calls both through it.
     run: Callable[[object], int]
     args_hint: str = ""           # e.g. "[path] [--reinstall]"
-    repo_command: str | None = None      # `seed <repo_command> <name>`
+    repo_command: str | None = None      # `acorn <repo_command> <name>`
     repo_summary: str = ""
 
 
@@ -119,7 +119,7 @@ def confirm_first_install(args, *, label: str, note: str,
     print(f"{label} isn't installed yet ({note}).")
     if confirm.ask(args, f"Install {label} now?"):
         return True
-    print(f"Skipped. To install it later:  seed {_install_hint(label)} -y")
+    print(f"Skipped. To install it later:  acorn {_install_hint(label)} -y")
     return False
 
 
@@ -148,7 +148,7 @@ def open_detached(argv: list[str], path: str) -> None:
 
 
 def help_rows() -> list[tuple[str, str, str]]:
-    """The family's rows for `seed help`, as (name, args-hint, description).
+    """The family's rows for `acorn help`, as (name, args-hint, description).
 
     Every registered editor is listed whether or not it is installed --
     hiding a command the user could run destroys discovery, and an

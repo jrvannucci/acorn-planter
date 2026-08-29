@@ -29,7 +29,7 @@ Three files do the work. **The profile** describes the environment:
 
 ```toml
 # profile.toml -- the standard environment, applied at install and
-# re-applied with `seed apply` whenever this file changes.
+# re-applied with `acorn apply` whenever this file changes.
 
 schema = 1
 
@@ -88,7 +88,7 @@ install = "analysis"
 [config]
 # Every key a profile is allowed to set. The install-time settings -- the
 # mirror, the index, TLS, the update source -- belong in global.conf
-# instead: they have to be right before seed-cli runs at all.
+# instead: they have to be right before acorn-cli runs at all.
 default_base = "312"
 default_venv = "dev"
 venv_default_packages = ["ipython", "ruff", "ipykernel"]
@@ -103,14 +103,14 @@ vscode_extensions = [
 ]
 ```
 
-**`global.conf`** carries everything that must be true *before* seed-cli
+**`global.conf`** carries everything that must be true *before* acorn-cli
 exists — the share paths, TLS, and the multi-user layout:
 
 ```sh
 # GET_STARTED/global.conf -- shipped in the copy on the share.
 
 # Install from the share itself: a directory, not a git URL, so neither git
-# nor a network is needed to install, or to `seed update-commands` later.
+# nor a network is needed to install, or to `acorn update-commands` later.
 SEEDLING_REPO_URL="S:\seedling\seedling"
 
 # One root, a private folder per person. The {user} token is also what
@@ -140,7 +140,7 @@ SEEDLING_PROFILE="installation-profile"   # the FOLDER: each profile says who ge
 ```
 
 **What the share holds**, declared once and independently of any profile.
-This is the file `--check-profile` and `seed profile-check` validate against:
+This is the file `--check-profile` and `acorn profile-check` validate against:
 
 ```toml
 # offline-bundle.toml -- in GET_STARTED_OFFLINE_BUNDLE/ in the copy you distribute.
@@ -215,18 +215,18 @@ someone asks. For internal use that is normally fine; it matters if the share
 crosses a legal-entity boundary. Check it yourself at any point with:
 
 ```
-seed whl-licenses S:\seedling\wheels
+acorn whl-licenses S:\seedling\wheels
 ```
 
 **What each piece buys**
 
 | Piece | What it makes work with no internet |
 |---|---|
-| `python-builds/` | `seed python 3.12` — interpreters |
-| `wheels/` | `seed install`, every venv's packages, **and `seed tool-install`** |
-| `conda-channel/` + vendored micromamba | `seed forge-install ripgrep` |
+| `python-builds/` | `acorn python 3.12` — interpreters |
+| `wheels/` | `acorn install`, every venv's packages, **and `acorn tool-install`** |
+| `conda-channel/` + vendored micromamba | `acorn forge-install ripgrep` |
 | `vendor/vscode/` | VS Code and its extensions, pre-seeded |
-| `vendor/git/` (`--mingit`) | `seed repo-clone` on Windows with no system git |
+| `vendor/git/` (`--mingit`) | `acorn repo-clone` on Windows with no system git |
 | `vendor/certs/` | HTTPS through a TLS-inspecting proxy |
 | `vendor/uv/` | all of it — uv itself is bundled |
 
@@ -235,7 +235,7 @@ seed whl-licenses S:\seedling\wheels
 - **`--packages spyder`** is what makes the Spyder half of `editor` work.
   Spyder is a PyPI application, so it resolves from `wheels/` like anything
   else — there is no separate artifact for it, but its wheels do have to be
-  staged. Without this, `seed apply` reaches the Spyder step and finds
+  staged. Without this, `acorn apply` reaches the Spyder step and finds
   nothing to install from.
 - **`--deploy-root`** writes the bundle's `global.conf` with the paths the
   *target* will see, which are not where you built it. Get it wrong and every
@@ -256,8 +256,8 @@ seed whl-licenses S:\seedling\wheels
   The file to hand a security review rather than reconstructing the answer.
 
 **What still needs the internet:** nothing, once the bundle is on the share.
-Users install from `S:\seedling\seedling`, `seed apply` provisions entirely
-from the bundled sources, and `seed update-commands` re-reads that same
+Users install from `S:\seedling\seedling`, `acorn apply` provisions entirely
+from the bundled sources, and `acorn update-commands` re-reads that same
 directory — so updating the fleet is copying a new bundle over the old one.
 
 **What the bundle looks like**
@@ -324,7 +324,7 @@ Where each lands on the target:
 Note `numpy` appearing twice: the wheel set is resolved **once per mirrored
 interpreter**, because compiled dependencies ship `cp312`/`cp311`-tagged
 wheels. A flat folder holds every tag happily, and this is what makes
-`seed venv --python 311` work offline.
+`acorn venv --python 311` work offline.
 
 **What a cert file looks like.** Any PEM-encoded certificate, one or more per
 file. The installer concatenates *every* `.pem` and `.crt` in the folder into
@@ -354,6 +354,6 @@ a manual edit.
 Check what actually landed once a target is installed:
 
 ```
-seed summary --json
-seed health-check
+acorn summary --json
+acorn health-check
 ```

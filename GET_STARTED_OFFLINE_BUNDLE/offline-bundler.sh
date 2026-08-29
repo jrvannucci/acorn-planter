@@ -2,7 +2,7 @@
 # POSIX launcher for the offline bundle builder (invoked by
 # offline-bundler.cmd's line 1 on macOS/Linux). Finds a Python 3 and hands off
 # to installers/build_offline.py, the engine one directory up.
-# This is NOT a `seed` command -- it prepares the distribution before seedling
+# This is NOT a `acorn` command -- it prepares the distribution before seedling
 # is installed anywhere.
 set -e
 

@@ -117,7 +117,7 @@ def test_public_repo_matches_installer_defaults():
     against PUBLIC_REPO to decide whether an install came from public GitHub,
     and prints one-liners or share instructions accordingly. If the installers
     stamped a different URL, every public install would be misidentified and
-    handed the wrong reinstall advice -- on the last screen `seed` ever shows.
+    handed the wrong reinstall advice -- on the last screen `acorn` ever shows.
     """
     import re
 
@@ -224,7 +224,7 @@ def test_a_secret_setting_never_reaches_the_daily_log(run_cli, home):
 
 
 def test_summary_masks_secrets_in_both_output_forms(run_cli, home):
-    """`seed config` masked them from the start; `seed summary` prints the
+    """`acorn config` masked them from the start; `acorn summary` prints the
     same settings and did not."""
     from seedling import config
     config.set_value("package_upload_token", "s3cr3t-token-value")

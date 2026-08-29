@@ -49,7 +49,7 @@ platforms = ["Windows/x86_64"]
 pythons = ["3.12"]
 
 # THE package set: every distribution any profile may name, plus whatever
-# users should be able to `seed install` later -- on an isolated network
+# users should be able to `acorn install` later -- on an isolated network
 # nobody can add one afterwards.
 #
 # hatchling, ipython, ruff, ipykernel and pip are always bundled and never
@@ -72,7 +72,7 @@ packages = [
 ]
 
 # conda-forge command-line tools. Vendors micromamba and builds a channel into
-# the bundle, so `seed forge-install` works with no network.
+# the bundle, so `acorn forge-install` works with no network.
 tools = []
 
 # NOTE: repos are not declared here. A profile's [[repo]] entries are cloned

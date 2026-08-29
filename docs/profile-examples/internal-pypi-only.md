@@ -138,7 +138,7 @@ wheel set that *is* staged is reported per package:
 The GPL entry arrives with Spyder. On this network it matters twice over: once
 for the share, and again if you take the **publish** route below, since
 uploading wheels into your internal index is another act of redistribution.
-`seed whl-licenses S:\seedling\wheels --fail-on copyleft,unknown` makes that
+`acorn whl-licenses S:\seedling\wheels --fail-on copyleft,unknown` makes that
 a gate rather than a memory.
 
 **Two ways to feed the index.** The wheel step is the one that's optional
@@ -155,12 +155,12 @@ here, and which way you go decides what `package_index` points at:
    alongside the proxy:
 
    ```sh
-   seed config set package_upload_url https://artifactory.corp.example/api/pypi/pypi-local/
-   seed config set package_upload_token <a token with write access>
-   seed upload-whls S:\seedling\wheels
+   acorn config set package_upload_url https://artifactory.corp.example/api/pypi/pypi-local/
+   acorn config set package_upload_token <a token with write access>
+   acorn upload-whls S:\seedling\wheels
    ```
 
-   [`seed upload-whls`](../commands/offline-utilities.md) runs `uvx twine
+   [`acorn upload-whls`](../commands/offline-utilities.md) runs `uvx twine
    upload` for you, honors the `ca_cert` this network needs, and passes the
    token through the environment rather than a command line. Set the token
    **only on this publishing machine**: leaving
@@ -176,7 +176,7 @@ here, and which way you go decides what `package_index` points at:
    `--check-profile` is doing real work in this flow: it verifies the wheel
    set covers every profile *before* you publish it, so a missing package is
    caught on the build machine rather than by the first user whose
-   `seed apply` can't resolve.
+   `acorn apply` can't resolve.
 
 Either way, staging the wheels is harmless — it also gives you a fallback if
 the mirror goes down, though using it as the fallback means pointing
@@ -207,7 +207,7 @@ the two can be the package source at a time.
 to fail — the URL and the bundled directories:
 
 ```
-seed health-check
+acorn health-check
 ```
 
 It verifies the CA bundle exists and parses, that the mirror directories are
@@ -253,7 +253,7 @@ offline-bundle/                    -> copied to S:\seedling
 ```
 
 Spyder is the interesting absence too: it never appears in the bundle,
-because `seed apply` installs it from the internal index at provisioning
+because `acorn apply` installs it from the internal index at provisioning
 time, the same way it installs `pandas`.
 
 Where each lands on the target:

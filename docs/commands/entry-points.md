@@ -1,14 +1,14 @@
 # Entry points — the files you run directly
 
-Everything else in this reference is a `seed` subcommand, which needs seedling
+Everything else in this reference is a `acorn` subcommand, which needs seedling
 to already be installed. These four files are the other kind: you run them
-*directly*, and three of the four exist precisely for the moments when `seed`
+*directly*, and three of the four exist precisely for the moments when `acorn`
 isn't available — before the first install, or after something broke it.
 
 | File | What it's for |
 |---|---|
 | [`GET_STARTED/install.cmd`](#get_startedinstallcmd) | Install seedling from a copy of the repo |
-| [`GET_STARTED/uninstall.cmd`](#get_starteduninstallcmd) | Remove it when `seed purge` can't run |
+| [`GET_STARTED/uninstall.cmd`](#get_starteduninstallcmd) | Remove it when `acorn purge` can't run |
 | [`GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd`](#get_started_offline_bundleoffline-bundlercmd) | Build an air-gapped bundle on a connected machine |
 | [the one-line installers](#the-one-line-installers) | Install with no copy of the repo at all |
 
@@ -48,14 +48,14 @@ hands off to `installers/install.sh` instead.
 
 Either way the real installer then reads
 [`GET_STARTED/global.conf`](../DEPLOYMENT.md#deployment-configuration-globalconf),
-lays out `~/seedling`, installs uv, builds `seed-cli` from a private copy of
+lays out `~/seedling`, installs uv, builds `acorn-cli` from a private copy of
 the source, writes the shell hook, and — unless told otherwise — installs
 Python and creates the auto-activating `dev` venv.
 
 **After a successful run on Windows** it opens a *new* PowerShell window with
-a short welcome banner and leaves it open. That isn't decoration: `seed` is a
+a short welcome banner and leaves it open. That isn't decoration: `acorn` is a
 shell function defined in your `$PROFILE`, and the window `install.cmd` ran in
-is plain `cmd.exe` (with `-NoProfile` besides), so `seed` could never work
+is plain `cmd.exe` (with `-NoProfile` besides), so `acorn` could never work
 there. The fresh window loads your profile, so it works immediately.
 
 **On failure it pauses** before closing, so a double-clicked install that
@@ -71,7 +71,7 @@ fails is readable instead of vanishing.
 | `SEEDLING_AUTO_SETUP` | `false` skips the ready-made Python and `dev` venv |
 | `SEEDLING_AUTO_VSCODE` | `false` skips the VS Code download |
 | `SEEDLING_CUSTOM_COMMANDS` | Path to a [custom commands](../CUSTOM-COMMANDS.md) file |
-| `SEEDLING_VSCODE_CONFIG_DIR` | Folder of `settings.json`/`keybindings.json` to seed |
+| `SEEDLING_VSCODE_CONFIG_DIR` | Folder of `settings.json`/`keybindings.json` to acorn |
 
 Any arguments you pass are forwarded to the underlying installer.
 
@@ -86,10 +86,10 @@ Removes `~/seedling` and the shell-hook line from your shell profile.
 sh ./GET_STARTED/uninstall.cmd
 ```
 
-**Prefer [`seed purge`](lifecycle.md#seed-purge--y---preview---non-interactive).**
+**Prefer [`acorn purge`](lifecycle.md#acorn-purge--y---preview---non-interactive).**
 It is more thorough, it knows its own install location, and it supports
-`--preview`. This file is the **fallback for when `seed` itself is broken** and
-can't run at all — a half-finished install, a corrupted `seed-cli`, a shell
+`--preview`. This file is the **fallback for when `acorn` itself is broken** and
+can't run at all — a half-finished install, a corrupted `acorn-cli`, a shell
 hook that never loaded.
 
 It resolves the install location exactly the way the installer did:
@@ -117,7 +117,7 @@ beside it — what the share will hold, and every build setting that used to be
 a flag. See
 [what the share contains](../OFFLINE.md#offline-bundletoml--what-the-share-contains).
 
-**It is not a `seed` command**, deliberately: it prepares the distribution
+**It is not a `acorn` command**, deliberately: it prepares the distribution
 *before* seedling is installed anywhere, so it can't depend on seedling being
 installed. It needs Python 3.12+ on the build machine — the same floor
 seedling itself requires, since it imports seedling's own modules to read the

@@ -1,14 +1,14 @@
 """
-`seed spyder` / `seed spyder-repo` -- the Spyder IDE, as a bundled editor.
+`acorn spyder` / `acorn spyder-repo` -- the Spyder IDE, as a bundled editor.
 
-Spyder is a Python application, so the install itself is just `seed
+Spyder is a Python application, so the install itself is just `acorn
 tool-install spyder` underneath. What this module adds is the wiring that
 makes Spyder actually usable against a seedling venv, which a generic
 application install cannot know to do:
 
   1. Containment. Spyder writes its settings to ~/.config/spyder-6 (or
      %APPDATA%) by default. Pointed at SPYDER_CONFDIR instead, everything
-     stays inside ~/seedling, so `seed purge` really does leave nothing.
+     stays inside ~/seedling, so `acorn purge` really does leave nothing.
   2. The interpreter. Unlike VS Code -- whose Python extension discovers
      environments on its own -- Spyder must be told which interpreter to
      use, via its own config file.
@@ -20,7 +20,7 @@ application install cannot know to do:
      here, so it can't drift when Spyder is upgraded.
 
 Steps 2 and 3 are the reason this is a command rather than a line in the
-docs telling people to run `seed tool-install spyder`.
+docs telling people to run `acorn tool-install spyder`.
 """
 
 from __future__ import annotations
@@ -43,9 +43,9 @@ DOWNLOAD_NOTE = "~200 MB download"
 # anything mentioning Qt, which is a miserable thing to debug.
 _X86_ONLY_NOTE = (
     "Spyder installs from PyPI, and its Qt dependency publishes no arm64 "
-    "wheels, so `seed spyder` can't work on this machine.\n"
+    "wheels, so `acorn spyder` can't work on this machine.\n"
     "  Use the conda-forge build instead, which does ship arm64:\n"
-    "    seed forge-install spyder")
+    "    acorn forge-install spyder")
 
 
 def is_installed() -> bool:
@@ -93,9 +93,9 @@ def resolve_venv(args=None) -> tuple[object | None, str | None]:
     """The venv Spyder should run code in, and whether a failure is fatal.
 
     The precedence -- `--venv <name>`, then VIRTUAL_ENV, then `default_venv`
-    -- is shared with `seed run` and `seed which` and lives in venv_target.
+    -- is shared with `acorn run` and `acorn which` and lives in venv_target.
     VIRTUAL_ENV is honored even when it points outside ~/seedling, because
-    `seed install` installs into whatever is active and it would be strange
+    `acorn install` installs into whatever is active and it would be strange
     for Spyder to disagree about what "the current environment" is. Because
     the kernel is prepared before Spyder launches, switching venvs and
     reopening switches the console with it.
@@ -108,8 +108,8 @@ def resolve_venv(args=None) -> tuple[object | None, str | None]:
       - Anything else degrades. Spyder is an editor, and refusing to launch
         because `default_venv` names a deleted venv is the wrong trade --
         it opens with its own interpreter and says so. That is why this
-        asks venv_target for `lenient` resolution, where `seed run` and
-        `seed which` take the strict default.
+        asks venv_target for `lenient` resolution, where `acorn run` and
+        `acorn which` take the strict default.
 
     Returns (target, None) or (None, fatal message). A (None, None) result
     means "no venv, but carry on".
@@ -222,7 +222,7 @@ def _write_config(interpreter) -> None:
 
     Merges rather than overwrites: this file is Spyder's live configuration
     once it has run, and clobbering it would throw away the user's settings
-    every time they ran `seed spyder`.
+    every time they ran `acorn spyder`.
     """
     paths.SPYDER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     ini_path = paths.SPYDER_CONFIG_DIR / "spyder.ini"
@@ -264,7 +264,7 @@ def _prepare(args) -> bool:
         print(colors.warn(
             f"No usable venv named '{getattr(args, 'venv', '')}'. "
             "Nothing was changed."))
-        print("  See what exists with:  seed venv-list")
+        print("  See what exists with:  acorn venv-list")
         return False
     name = target.name if target else None
     interpreter = target.python if target else None
@@ -276,8 +276,8 @@ def _prepare(args) -> bool:
         print(colors.warn(
             "No venv is active and no default is set, so Spyder will use its "
             "own interpreter and won't see your packages."))
-        print("  Activate one first (seed activate <name>), or set a default "
-              "with:  seed venv-default <name>")
+        print("  Activate one first (acorn activate <name>), or set a default "
+              "with:  acorn venv-default <name>")
         return True
 
     print(f"Spyder will run code in the '{name}' venv.")
@@ -298,7 +298,7 @@ def run(args) -> int:
         return 0
     open_path = getattr(args, "path", None) or os.getcwd()
     if getattr(args, "no_open", False):
-        print("Spyder is installed and ready. Open it with:  seed spyder")
+        print("Spyder is installed and ready. Open it with:  acorn spyder")
         return 0
     print(f"Opening Spyder -> {open_path}")
     _launch(open_path, as_project=False)
@@ -306,10 +306,10 @@ def run(args) -> int:
 
 
 def spyder_repo(args) -> int:
-    """`seed spyder-repo <name>` -- open a cloned repo as a Spyder project."""
+    """`acorn spyder-repo <name>` -- open a cloned repo as a Spyder project."""
     name = getattr(args, "name", None)
     if not name:
-        print("Usage: seed spyder-repo <name>")
+        print("Usage: acorn spyder-repo <name>")
         return 1
 
     target = paths.repo_dir(name)

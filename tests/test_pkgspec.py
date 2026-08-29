@@ -1,4 +1,4 @@
-"""The `thing[extra,extra]` spelling, shared by `seed repo-install` and
+"""The `thing[extra,extra]` spelling, shared by `acorn repo-install` and
 `[[repo]] install` so the two can't drift apart."""
 
 from __future__ import annotations

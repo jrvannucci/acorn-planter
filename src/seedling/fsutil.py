@@ -8,7 +8,7 @@ modes this works around:
 
 1. Windows refuses to delete a directory that is any running process's
    current working directory -- including the calling process itself. If
-   the terminal that ran `seed remove-user`/`seed purge` happens to have its
+   the terminal that ran `acorn remove-user`/`acorn purge` happens to have its
    cwd inside the tree being deleted (a common case: someone `cd`s into a
    project under a venv/repo, activates it, then runs the remove command
    from right there), deletion of that specific directory silently fails
@@ -20,8 +20,8 @@ modes this works around:
    file in .git/objects read-only, so any tree containing a git checkout
    (cloned repos, seedling's own source copy) hits this on every single
    run. The error handler clears the read-only bit and retries.
-4. A process cannot delete its own running executable on Windows. `seed
-   purge`/`seed remove-user` run AS seed-cli.exe (plus the tool venv's
+4. A process cannot delete its own running executable on Windows. `acorn
+   purge`/`acorn remove-user` run AS acorn-cli.exe (plus the tool venv's
    python.exe underneath it), which live inside the very tree being
    deleted. See schedule_deferred_delete()/failures_are_only_running_cli()
    for how the callers finish the job after this process exits.
@@ -51,7 +51,7 @@ def robust_rmtree(path: Path, retries: int = 3, delay: float = 0.75) -> list[str
 
     if not path.is_dir():
         # A rename-aside leftover (see update_cmd._move_running_self_aside)
-        # can be a single FILE (seed-cli.exe) just as easily as a directory
+        # can be a single FILE (acorn-cli.exe) just as easily as a directory
         # (the tool venv) -- shutil.rmtree() always raises
         # NotADirectoryError on a plain file, which no amount of retrying
         # or chmod'ing can fix, so a file target used to burn every retry's
@@ -129,7 +129,7 @@ def remove_tree(path: Path, *, label: str = "", allow_sledgehammer: bool = True,
          failed to free the tree.
 
     The point of the ordering is that the destructive rungs are reached on
-    evidence rather than on suspicion. `seed remove-venv scratch` used to close
+    evidence rather than on suspicion. `acorn remove-venv scratch` used to close
     every editor window on the machine before it had established that anything
     was wrong; now it closes nothing at all unless a delete actually fails."""
     from . import winlocks
@@ -171,7 +171,7 @@ def remove_tree(path: Path, *, label: str = "", allow_sledgehammer: bool = True,
 
 def failures_are_only_running_cli(failures: list[str], home: Path) -> bool:
     """True when everything robust_rmtree couldn't delete is seedling's own
-    currently-running program -- the seed-cli shim in system/bin and the
+    currently-running program -- the acorn-cli shim in system/bin and the
     tool venv (whose python.exe is literally executing this code) -- plus
     the directories those files keep non-empty. That's not an error the
     user can fix by closing something; it's inherent to a program deleting
@@ -187,7 +187,7 @@ def failures_are_only_running_cli(failures: list[str], home: Path) -> bool:
         if p.is_dir():
             continue
         rel = os.path.relpath(f, home_str).replace("\\", "/").lower()
-        if rel.startswith("system/bin/seed-cli") or rel.startswith("system/tool/"):
+        if rel.startswith("system/bin/acorn-cli") or rel.startswith("system/tool/"):
             continue
         return False
     return True
@@ -225,7 +225,7 @@ def schedule_deferred_delete(path: Path) -> None:
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
     else:
-        # The marker file lets the `seed` shell function (the only thing
+        # The marker file lets the `acorn` shell function (the only thing
         # still alive in the user's terminal after purge) detect that a
         # cleanup is pending, wait for it, and confirm the result. On
         # Windows the .bat file itself plays that role -- it self-deletes

@@ -52,7 +52,7 @@ def require_elevation() -> bool:
     else:
         print(colors.danger("This is an admin command.") +
               " It touches other users' files, so it must run as root.")
-        print("Re-run it with sudo, e.g.:  sudo seed <command>")
+        print("Re-run it with sudo, e.g.:  sudo acorn <command>")
     return False
 
 

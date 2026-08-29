@@ -80,9 +80,9 @@ def test_installer_runs_and_writes_the_hook_to_the_fake_profile(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
     result = run({"SEEDLING_AUTO_SETUP": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
-    assert (home / "system" / "shell" / "seed.ps1").is_file()
+    assert (home / "system" / "shell" / "acorn.ps1").is_file()
     assert fake_profile.is_file(), "the fake profile should have been written"
-    assert "seed.ps1" in fake_profile.read_text(encoding="utf-8")
+    assert "acorn.ps1" in fake_profile.read_text(encoding="utf-8")
 
 
 def test_reinstall_does_not_stack_hook_lines(ps_install_env):
@@ -90,12 +90,12 @@ def test_reinstall_does_not_stack_hook_lines(ps_install_env):
     run({"SEEDLING_AUTO_SETUP": "false"})
     run({"SEEDLING_AUTO_SETUP": "false"})
     text = fake_profile.read_text(encoding="utf-8")
-    assert text.count("seed.ps1") == 1
+    assert text.count("acorn.ps1") == 1
 
 
 # --- sibling PowerShell-edition profile hook --------------------------------
 # Windows PowerShell 5.1 ("Desktop") and PowerShell 6+ ("Core") keep separate
-# profile files; installing from one must also hook the other so `seed`
+# profile files; installing from one must also hook the other so `acorn`
 # isn't missing in whichever edition wasn't used to install.
 
 def test_no_sibling_hook_without_pwsh_installed(tmp_path):
@@ -139,7 +139,7 @@ def test_sibling_hook_under_core_edition(tmp_path):
 
     sibling = tmp_path / "profile" / "WindowsPowerShell" / "Microsoft.PowerShell_profile.ps1"
     assert sibling.is_file()
-    assert "seed.ps1" in sibling.read_text(encoding="utf-8")
+    assert "acorn.ps1" in sibling.read_text(encoding="utf-8")
 
 
 # --- auto-setup / default environment --------------------------------------
@@ -149,9 +149,9 @@ def test_auto_setup_runs_the_expected_cli_sequence(ps_install_env):
     result = run({"SEEDLING_AUTO_VSCODE": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
     calls = _calls(home)
-    assert "seed-cli python" in calls
-    assert "seed-cli venv dev" in calls
-    assert "seed-cli config set default_venv dev" in calls
+    assert "acorn-cli python" in calls
+    assert "acorn-cli venv dev" in calls
+    assert "acorn-cli config set default_venv dev" in calls
 
 
 # --- persistent PATH (system\bin), real registry -----------------------------
@@ -327,20 +327,20 @@ def test_conf_profile_is_applied_and_replaces_dev_venv(ps_install_env):
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     calls = _calls(home)
-    assert "seed-cli apply" in calls
-    assert "seed-cli venv dev" not in calls
+    assert "acorn-cli apply" in calls
+    assert "acorn-cli venv dev" not in calls
     assert _settings(home)["profile"].endswith("profile.toml")
 
 
 def test_env_var_lets_a_user_supply_their_own_profile(ps_install_env, tmp_path):
     """The one-liner path: no conf edit, profile named by env var, copied into
-    the seedling home so `seed apply` keeps working afterward."""
+    the seedling home so `acorn apply` keeps working afterward."""
     copy, home, fake_profile, run = ps_install_env
     mine = tmp_path / "mine.toml"
     mine.write_text('[[venv]]\nname = "mine"\n', encoding="utf-8")
     result = run({"SEEDLING_PROFILE": str(mine), "SEEDLING_AUTO_VSCODE": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "seed-cli apply" in _calls(home)
+    assert "acorn-cli apply" in _calls(home)
     copied = home / "system" / "config" / "profile.toml"
     assert copied.is_file() and "mine" in copied.read_text(encoding="utf-8")
     assert _settings(home)["profile"].endswith("profile.toml")
@@ -377,4 +377,4 @@ def test_a_missing_conf_profile_falls_back(ps_install_env):
     assert result.returncode == 0, result.stdout + result.stderr
     assert "falling back to the default setup" in result.stdout
     assert "profile" not in (_settings(home) or {})
-    assert "seed-cli venv dev" in _calls(home)
+    assert "acorn-cli venv dev" in _calls(home)

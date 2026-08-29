@@ -90,17 +90,17 @@ class TestPassthroughForwarding:
     def test_install_empty_still_shows_usage(self, run_cli, uv_args):
         code, out = run_cli("install")
         assert code == 1
-        assert "Usage: seed install" in out
+        assert "Usage: acorn install" in out
         assert not uv_args
 
     def test_install_help_flag_shows_argparse_help(self, run_cli, uv_args):
         code, out = run_cli("install", "-h")
-        assert "usage: seed install" in out
+        assert "usage: acorn install" in out
         assert not uv_args  # -h never reaches uv
 
 
 class TestShowCommand:
-    """seed show -- passthrough to `uv pip show`, the read-only counterpart
+    """acorn show -- passthrough to `uv pip show`, the read-only counterpart
     of install/uninstall/package-list."""
 
     @pytest.fixture
@@ -135,12 +135,12 @@ class TestShowCommand:
     def test_show_empty_shows_usage(self, run_cli, uv_show):
         code, out = run_cli("show")
         assert code == 1
-        assert "Usage: seed show" in out
+        assert "Usage: acorn show" in out
         assert not uv_show
 
     def test_show_help_flag_shows_argparse_help(self, run_cli, uv_show):
         code, out = run_cli("show", "-h")
-        assert "usage: seed show" in out
+        assert "usage: acorn show" in out
         assert not uv_show  # -h never reaches uv
 
     def test_show_returns_uvs_own_exit_code_for_a_missing_package(
@@ -180,7 +180,7 @@ def test_help_shows_admin_note_only_when_multi_user(run_cli, home):
     assert config.is_multi_user() is True
     code, out = run_cli("help")
     assert "shared multi-user install" in out
-    assert "seed help --admin" in out
+    assert "acorn help --admin" in out
 
 
 def test_summary_shows_install_type(run_cli, home):
@@ -215,7 +215,7 @@ def test_where(run_cli, home):
 @pytest.mark.parametrize("flag", ["--version", "-V"])
 def test_version_flag(run_cli, flag):
     """Both spellings print the running version and exit cleanly. (-V survives
-    the PowerShell `seed` wrapper because it's a simple function -- no
+    the PowerShell `acorn` wrapper because it's a simple function -- no
     parameter binding -- so it can't be eaten as a -Verbose prefix.)"""
     import seedling
     code, out = run_cli(flag)
@@ -225,7 +225,7 @@ def test_version_flag(run_cli, flag):
 
 def test_version_matches_the_packaged_metadata():
     """__init__.py is the single source of truth: pyproject must stay dynamic,
-    or the two drift and `seed --version` starts lying about what's installed."""
+    or the two drift and `acorn --version` starts lying about what's installed."""
     import re
     pyproject = (REPO_ROOT / "src" / "pyproject.toml").read_text(encoding="utf-8")
     assert 'dynamic = ["version"]' in pyproject
@@ -308,7 +308,7 @@ def test_config_set_startup_commands_roundtrip(run_cli, home):
 def test_config_set_startup_commands_warns_on_unknown_name(run_cli, home):
     """A name that isn't declared in custom_commands is a warning, not a
     rejection -- the org may be about to declare it, and a typo here must
-    still leave the shell able to `seed config get` it back to see what's
+    still leave the shell able to `acorn config get` it back to see what's
     actually stored."""
     code, out = run_cli("config", "set", "startup_commands", "ghost")
     assert code == 0

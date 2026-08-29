@@ -1,5 +1,5 @@
 """
-`seed health-check` -- verifies every moving part seedling depends on and
+`acorn health-check` -- verifies every moving part seedling depends on and
 reports one line per check: a STATUS (OK / WARN / FAIL), an AREA (what the
 check is about, e.g. uv, venv, updates), and the detail. Exit code 0 when
 nothing FAILed (warnings are informational), 1 otherwise.
@@ -11,7 +11,7 @@ but degradable (no git yet, no shell hook found in the usual profiles).
 `collect()` runs the checks and returns plain data; the renderers turn that
 into either the aligned text report or JSON (`--json`). The checks
 themselves never print -- they append a record -- so a new check shows up in
-both outputs automatically, the same split `seed summary` uses.
+both outputs automatically, the same split `acorn summary` uses.
 """
 
 from __future__ import annotations
@@ -108,7 +108,7 @@ def _check_git() -> None:
     if git:
         _ok("git", f"git available at {git}")
     else:
-        _warn("git", "git not found (Windows: auto-downloaded on first `seed repo-clone`; "
+        _warn("git", "git not found (Windows: auto-downloaded on first `acorn repo-clone`; "
               "macOS/Linux: install it with your package manager)")
 
 
@@ -129,19 +129,19 @@ def _check_config() -> None:
 def _check_base_pythons() -> None:
     alias_files = sorted(paths.BASE_DIR.glob("*.alias.json")) if paths.BASE_DIR.exists() else []
     if not alias_files:
-        _warn("python", "no base Pythons installed yet (run `seed python <version>`)")
+        _warn("python", "no base Pythons installed yet (run `acorn python <version>`)")
         return
     for alias in alias_files:
         tag = alias.name[: -len(".alias.json")]
         try:
             target = json.loads(alias.read_text())["target"]
         except (json.JSONDecodeError, KeyError, OSError):
-            _fail("python", f"base '{tag}': alias file is corrupt -- re-run `seed python {tag}`")
+            _fail("python", f"base '{tag}': alias file is corrupt -- re-run `acorn python {tag}`")
             continue
         base_dir = paths.BASE_DIR / target
         if not base_dir.exists():
             _fail("python", f"base '{tag}': points at {target}, which is missing -- "
-                  f"re-run `seed python {tag}`")
+                  f"re-run `acorn python {tag}`")
             continue
         exe = (base_dir / "python.exe") if os.name == "nt" else (base_dir / "bin" / "python3")
         if exe.exists():
@@ -154,7 +154,7 @@ def _check_venvs() -> None:
     venvs = (sorted(d for d in paths.VENVS_DIR.iterdir() if d.is_dir())
              if paths.VENVS_DIR.exists() else [])
     if not venvs:
-        _warn("venv", "no venvs created yet (run `seed venv <name>`)")
+        _warn("venv", "no venvs created yet (run `acorn venv <name>`)")
         return
     for v in venvs:
         exe = (v / "Scripts" / "python.exe") if os.name == "nt" else (v / "bin" / "python")
@@ -182,7 +182,7 @@ def _check_update_source(source_str: str) -> None:
     bounded `git ls-remote` reachability probe (prompt-proofed so it can
     never hang on credentials); a directory path gets existence + shape
     checks -- an unmounted share must say so, not pass as an "assumed git
-    URL". Everything here WARNs rather than FAILs: `seed update-commands`
+    URL". Everything here WARNs rather than FAILs: `acorn update-commands`
     deliberately falls back to reinstalling the current copy when its source
     is unavailable, so a bad source degrades updates without breaking
     seedling itself."""
@@ -193,17 +193,17 @@ def _check_update_source(source_str: str) -> None:
             _ok("updates", f"update_source directory {source} looks usable")
         elif source.is_dir():
             _warn("updates", f"update_source directory {source} has no src/pyproject.toml -- "
-                  "`seed update-commands` will refuse it")
+                  "`acorn update-commands` will refuse it")
         else:
             _warn("updates", f"update_source directory {source_str} doesn't exist right now "
-                  "(unmounted share? moved?) -- `seed update-commands` can only "
+                  "(unmounted share? moved?) -- `acorn update-commands` can only "
                   "reinstall the existing copy until it's reachable again")
         return
 
     git = git_tool.find_git()
     if not git:
         _warn("updates", f"update_source is {source_str}, but git isn't available to "
-              "verify it -- `seed update-commands` needs git for URL sources")
+              "verify it -- `acorn update-commands` needs git for URL sources")
         return
     env = dict(os.environ)
     env.setdefault("GIT_TERMINAL_PROMPT", "0")               # no credential prompt hangs
@@ -214,7 +214,7 @@ def _check_update_source(source_str: str) -> None:
             capture_output=True, text=True, env=env, timeout=10)
     except (subprocess.TimeoutExpired, OSError):
         _warn("updates", f"update_source {source_str} didn't respond within 10s -- "
-              "`seed update-commands` will fall back to reinstalling the "
+              "`acorn update-commands` will fall back to reinstalling the "
               "current copy")
         return
     if result.returncode == 0:
@@ -223,7 +223,7 @@ def _check_update_source(source_str: str) -> None:
         detail = (result.stderr or "").strip().splitlines()
         suffix = f" ({detail[-1].strip()})" if detail else ""
         _warn("updates", f"update_source {source_str} is not reachable{suffix} -- "
-              "`seed update-commands` will fall back to reinstalling the "
+              "`acorn update-commands` will fall back to reinstalling the "
               "current copy")
 
 
@@ -231,7 +231,7 @@ def _check_defaults() -> None:
     default_base = config.get_default_base()
     if default_base and not paths.base_alias_file(default_base).exists():
         _fail("defaults", f"config default_base '{default_base}' isn't installed -- "
-              f"`seed python {default_base}` or `seed config set default_base <tag>`")
+              f"`acorn python {default_base}` or `acorn config set default_base <tag>`")
     elif default_base:
         _ok("defaults", f"default_base '{default_base}' is installed")
 
@@ -246,9 +246,9 @@ def _check_defaults() -> None:
     if update_source:
         _check_update_source(str(update_source))
     else:
-        _warn("updates", "no update_source recorded -- `seed update-commands` can only "
+        _warn("updates", "no update_source recorded -- `acorn update-commands` can only "
               "reinstall the existing copy, not fetch newer versions; set one "
-              "with `seed config set update_source <git-url-or-directory>`")
+              "with `acorn config set update_source <git-url-or-directory>`")
 
     ca_cert = config.get("ca_cert")
     if ca_cert:
@@ -258,10 +258,10 @@ def _check_defaults() -> None:
             _fail("certs", f"config ca_cert file {ca_cert} doesn't exist -- HTTPS to "
                   "your internal hosts will fail certificate verification; "
                   "re-run the installer (which rebuilds the bundle from "
-                  "vendor/certs) or `seed config unset ca_cert`")
+                  "vendor/certs) or `acorn config unset ca_cert`")
 
     # Offline sources: a directory-path value that doesn't exist means the
-    # next `seed python`/`seed install` fails with an obscure uv error.
+    # next `acorn python`/`acorn install` fails with an obscure uv error.
     for key in ("python_mirror", "package_index"):
         value = config.get(key)
         if not value or "://" in str(value):
@@ -270,11 +270,11 @@ def _check_defaults() -> None:
             _ok("offline", f"{key} directory {value} exists")
         else:
             _fail("offline", f"config {key} directory {value} doesn't exist -- installs "
-                  "that need it will fail; fix it or `seed config unset "
+                  "that need it will fail; fix it or `acorn config unset "
                   f"{key}`")
 
 
-_HOOK_PATH_RE = re.compile(r'["\']([^"\']*seed\.(?:ps1|sh))["\']')
+_HOOK_PATH_RE = re.compile(r'["\']([^"\']*acorn\.(?:ps1|sh))["\']')
 
 
 def _check_shell_hook() -> None:
@@ -298,7 +298,7 @@ def _check_shell_hook() -> None:
         for line in text.splitlines():
             if home_str not in line:
                 continue
-            if "seed.ps1" not in line and "seed.sh" not in line:
+            if "acorn.ps1" not in line and "acorn.sh" not in line:
                 continue
             match = _HOOK_PATH_RE.search(line)
             target = Path(match.group(1)) if match else None
@@ -313,8 +313,8 @@ def _check_shell_hook() -> None:
                       "shell will print an error until that line is removed "
                       "(re-running the installer cleans it up)")
     if not found_working:
-        _warn("shell", "no working `seed` shell hook found in the usual shell profiles "
-              "-- `seed activate` won't affect your shell; re-run the "
+        _warn("shell", "no working `acorn` shell hook found in the usual shell profiles "
+              "-- `acorn activate` won't affect your shell; re-run the "
               "installer if so")
 
 

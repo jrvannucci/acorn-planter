@@ -1,5 +1,5 @@
 """
-`seed auto-activate [True|False]` -- show or set whether new shells
+`acorn auto-activate [True|False]` -- show or set whether new shells
 auto-activate the `default_venv` at startup. Sugar over the `auto_activate`
 setting, promoted to its own command because it's a thing people reach for
 directly ("stop activating dev in every terminal") without wanting to think
@@ -7,7 +7,7 @@ about config keys.
 
 Distinct from `default_venv`: that names WHICH venv; this decides WHETHER it
 activates automatically. Turning auto-activation off leaves the default venv
-set -- `seed activate` still works, and turning it back on resumes activating
+set -- `acorn activate` still works, and turning it back on resumes activating
 the same venv.
 """
 
@@ -31,12 +31,12 @@ def run(args) -> int:
             else:
                 print("Auto-activation is ON, but no default venv is set, so "
                       "new shells start with none active.")
-                print("Set one with:  seed venv-default <name>")
+                print("Set one with:  acorn venv-default <name>")
         else:
             suffix = f" (would be '{default}')" if default else ""
             print(f"Auto-activation is OFF{suffix}: new shells start with no "
                   "venv active.")
-        print("Change it with:  seed auto-activate True|False")
+        print("Change it with:  acorn auto-activate True|False")
         return 0
 
     raw = state.strip().lower()
@@ -46,7 +46,7 @@ def run(args) -> int:
         value = False
     else:
         print(f"error: expected True or False, got '{state}'.")
-        print("Usage:  seed auto-activate True|False")
+        print("Usage:  acorn auto-activate True|False")
         return 1
 
     config.set_value("auto_activate", value)

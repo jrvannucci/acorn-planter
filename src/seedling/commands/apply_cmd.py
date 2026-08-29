@@ -1,7 +1,7 @@
 """
-`seed apply` -- bring this machine in line with a deployment profile.
+`acorn apply` -- bring this machine in line with a deployment profile.
 
-Deliberately an ORCHESTRATOR: every step below is an existing `seed` command
+Deliberately an ORCHESTRATOR: every step below is an existing `acorn` command
 (`python`, `venv`, `install`, `repo-clone`, `repo-install`, `config set`)
 driven through its own entry point. Nothing here reimplements interpreter
 resolution, venv creation or package installation, so a profile can only do
@@ -11,11 +11,11 @@ error handling, logging and offline behavior for free.
 Idempotent by design. Applying a profile twice is a no-op, because the same
 file is both the initial provisioning step at install time AND the mechanism
 for keeping a fleet converged afterwards: the admin edits the profile, users
-re-run `seed apply`, and only the difference is acted on.
+re-run `acorn apply`, and only the difference is acted on.
 
 It never destroys. An existing venv is left exactly as it is; --force adds
 the profile's missing packages to it but still won't recreate or delete
-anything. Removing something is `seed remove-venv`, explicitly, by a person
+anything. Removing something is `acorn remove-venv`, explicitly, by a person
 who meant it.
 """
 
@@ -34,10 +34,10 @@ from . import editors, forge_cmd, python_cmd, repo_cmd, venv_cmd
 def _install_into(venv_name: str, packages: list[str]) -> bool:
     """Install into a SPECIFIC venv.
 
-    Deliberately not `seed install`: that command targets whatever
-    VIRTUAL_ENV points at, which during `seed apply` is either nothing or
+    Deliberately not `acorn install`: that command targets whatever
+    VIRTUAL_ENV points at, which during `acorn apply` is either nothing or
     the user's current shell -- so routing profile packages through it would
-    install them into the wrong environment. This mirrors how `seed venv`
+    install them into the wrong environment. This mirrors how `acorn venv`
     installs its own default packages: an explicit --python at the venv's
     interpreter."""
     venv_python = _venv_python(venv_name)
@@ -133,7 +133,7 @@ def _repo_actions(prof: profile_mod.Profile, *, force: bool) -> list[_RepoAction
 
     A repo is installed into a target venv when that venv doesn't already
     have it -- which covers the two cases that matter: a venv being created
-    for the first time, and a venv being REBUILT after `seed remove-venv`.
+    for the first time, and a venv being REBUILT after `acorn remove-venv`.
     The clone survives a venv rebuild, so keying the install off the clone
     (as this used to) left the new venv without the repo it was supposed to
     have."""
@@ -291,7 +291,7 @@ def run(args) -> int:
                   "`[distribution] users`.")
             return 0
         print("No profile to apply.")
-        print("Pass one explicitly (`seed apply <file>`), or put a "
+        print("Pass one explicitly (`acorn apply <file>`), or put a "
               "profile.toml in this directory.")
         return 1
 
@@ -410,7 +410,7 @@ def _apply_one(args, path) -> int:
                       "that venv isn't there.")
                 continue
             # The repo's extras go through as the same `name[extras]` spec a
-            # user would type, so a profile can only ask for what `seed
+            # user would type, so a profile can only ask for what `acorn
             # repo-install` already does.
             spec = action.name + target.spec_suffix
             if repo_cmd.install_repo(
@@ -453,10 +453,10 @@ def _apply_one(args, path) -> int:
     if failed:
         # Partial success is reported as failure: a half-applied profile
         # means this machine is NOT what the admin specified, and a script
-        # driving `seed apply` needs to know that from the exit code.
+        # driving `acorn apply` needs to know that from the exit code.
         print(colors.warn(f"{len(failed)} step(s) did not complete: "
                           + ", ".join(failed)))
-        print("Fix the cause and re-run `seed apply` -- what already "
+        print("Fix the cause and re-run `acorn apply` -- what already "
               "succeeded is left alone.")
         return 1
     print(colors.ok("Profile applied."))

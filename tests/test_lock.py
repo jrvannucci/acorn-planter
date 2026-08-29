@@ -64,7 +64,7 @@ def test_waiting_is_announced_on_stderr(home, monkeypatch, capsys):
             with lock.file_lock("k", "venv 'dev'", timeout=0.3):
                 pass
     captured = capsys.readouterr()
-    assert "Waiting for another seed command" in captured.err
+    assert "Waiting for another acorn command" in captured.err
     assert captured.out == ""
 
 
@@ -75,7 +75,7 @@ def test_no_announcement_when_uncontended(home, capsys):
 
 
 def test_venv_locks_are_keyed_by_path_not_name(home, tmp_path):
-    """`seed install` follows VIRTUAL_ENV wherever it points, so two
+    """`acorn install` follows VIRTUAL_ENV wherever it points, so two
     unrelated venvs that happen to share a leaf name must not block each
     other."""
     elsewhere = tmp_path / "unrelated" / "dev"

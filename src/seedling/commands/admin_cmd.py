@@ -1,6 +1,6 @@
 """
 The `admin-*` command family: elevated, cross-user teardown of a
-shared-root install. Hidden from normal help (see `seed help --admin`).
+shared-root install. Hidden from normal help (see `acorn help --admin`).
 
 Every command here:
   - refuses to run unless elevated (Administrator / root),
@@ -54,7 +54,7 @@ def purge_all_users(args) -> int:
             [str(h) for h in homes],
             notes=["ownership is taken first, so other users' protected files "
                    "are removed too",
-                   "every user's `seed` shell hook is stripped from their profile",
+                   "every user's `acorn` shell hook is stripped from their profile",
                    "running Python/VS Code processes (all users) are force-closed"],
         )
         return 0
@@ -98,7 +98,7 @@ def remove_user(args) -> int:
         return 1
     user = getattr(args, "user", None)
     if not user:
-        print("Usage: seed admin-remove-user <user>")
+        print("Usage: acorn admin-remove-user <user>")
         return 1
     home = admin.resolve_user_home(user)
     if home is None:
@@ -182,7 +182,7 @@ def _user_home_or_none(args):
         return None
     user = getattr(args, "user", None)
     if not user:
-        print("Usage: seed admin-<command> <user> ...")
+        print("Usage: acorn admin-<command> <user> ...")
         return None
     home = admin.resolve_user_home(user)
     if home is None:
@@ -243,7 +243,7 @@ def _confirm_and_delete(args, title, targets, close_procs=False) -> int:
 
 def _strip_all_hooks(shared_root) -> int:
     """Remove seedling hook lines from every user's profile. A hook line
-    here references the shared root and a seed shell script."""
+    here references the shared root and a acorn shell script."""
     marker = str(shared_root)
     count = 0
     for profile in admin.all_user_profiles():
@@ -259,7 +259,7 @@ def _strip_all_hooks(shared_root) -> int:
             continue
         kept = [ln for ln in lines
                 if not (ln.strip() == "# seedling"
-                        or (marker in ln and ("seed.ps1" in ln or "seed.sh" in ln)))]
+                        or (marker in ln and ("acorn.ps1" in ln or "acorn.sh" in ln)))]
         if kept != lines:
             try:
                 profile.write_text("\n".join(kept).rstrip() + "\n" if kept else "")

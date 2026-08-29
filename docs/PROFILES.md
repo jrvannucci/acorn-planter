@@ -3,7 +3,7 @@
 **One file that says what environment your users should end up with.** The
 admin writes it, distributes it with seedling, and every user gets the same
 interpreters, venvs, packages and repos from the single command they already
-run. Later, when the standard changes, they re-run `seed apply` and pick up
+run. Later, when the standard changes, they re-run `acorn apply` and pick up
 the difference.
 
 `global.conf` says *where seedling gets things from*. A profile says *what
@@ -14,10 +14,10 @@ On an air-gapped network a third file joins them:
 [`offline-bundle.toml`](OFFLINE.md#offline-bundletoml--what-the-share-contains)
 says *what the share contains* — the superset every profile is validated
 against, both when the bundle is built and later, from inside, with
-[`seed profile-check`](commands/status.md#seed-profile-check-profile---bundle-path).
+[`acorn profile-check`](commands/status.md#acorn-profile-check-profile---bundle-path).
 
 A third, optional file — [**custom commands**](CUSTOM-COMMANDS.md) — lets
-you add your own verbs to `seed` itself (`seed lint`, `seed reset`, ...).
+you add your own verbs to `acorn` itself (`acorn lint`, `acorn reset`, ...).
 See it in use in the [software team](profile-examples/software-team.md) and
 [classroom](profile-examples/classroom.md) examples.
 
@@ -46,7 +46,7 @@ See it in use in the [software team](profile-examples/software-team.md) and
 # profile.toml -- the standard environment for the data team.
 schema = 1
 
-# Interpreters to install. Omit to use whatever `seed python` picks.
+# Interpreters to install. Omit to use whatever `acorn python` picks.
 python = ["3.12"]
 
 # conda-forge command-line tools to install (the non-Python ones). Must sit
@@ -56,7 +56,7 @@ tools = ["ripgrep", "pandoc"]
 
 # Which bundled editor(s) everyone gets: "vscode" (VS Code / VSCodium) and/or
 # "spyder". A bare string or a list, whichever reads better. Omit it and
-# `seed apply` installs none -- whether VS Code is set up at install time
+# `acorn apply` installs none -- whether VS Code is set up at install time
 # then stays SEEDLING_AUTO_VSCODE's decision.
 editor = "spyder"
 # editor = ["vscode", "spyder"]   # a mixed team
@@ -113,7 +113,7 @@ Two things happen that are worth knowing:
 
 - **The file is copied into `~/seedling/system/config/profile.toml`.** The
   original might be a downloads folder, a temp file or a mounted share, and
-  `seed apply` has to keep working long after that goes away — the same
+  `acorn apply` has to keep working long after that goes away — the same
   reason seedling copies its own source in.
 - **A path that doesn't exist stops the install.** This is deliberately
   unlike the [distributed](#distributing-it) case, which warns and falls back
@@ -150,7 +150,7 @@ Point `SEEDLING_PROFILE` at the **folder** rather than a file:
 SEEDLING_PROFILE="installation-profile"
 ```
 
-`seed apply` then resolves the set for whoever is running it: the default
+`acorn apply` then resolves the set for whoever is running it: the default
 first, then each opt-in profile they're listed in, applied in that order —
 the default establishes the baseline, an opt-in profile layers on top of it.
 
@@ -159,7 +159,7 @@ the default establishes the baseline, an opt-in profile layers on top of it.
 - `default` and `users` together are rejected: a profile is either everyone's
   or opt-in, not both.
 - A profile with **no** `[distribution]` reaches nobody automatically. It
-  exists to be applied by path (`seed apply ./scratch.toml`), which is what
+  exists to be applied by path (`acorn apply ./scratch.toml`), which is what
   you want for one-off or experimental environments.
 - Matching is **case-insensitive**, against the same login name the `{user}`
   token in `SEEDLING_HOME_DIR` expands to — so a shared-root deployment and a
@@ -190,8 +190,8 @@ When a profile is set it **replaces** the built-in default setup (a single
 carry a `dev` venv you never asked for alongside the ones you declared.
 
 The profile is copied into `~/seedling/system/src` along with the rest of the
-source, so `seed apply` keeps working after the share it was installed from
-is unmounted, and `seed update-commands` refreshes it.
+source, so `acorn apply` keeps working after the share it was installed from
+is unmounted, and `acorn update-commands` refreshes it.
 
 > If the conf names a profile that isn't there, the installer warns and falls
 > back to the default setup rather than failing. A missing profile shouldn't
@@ -202,18 +202,18 @@ is unmounted, and `seed update-commands` refreshes it.
 ## Applying it later
 
 ```sh
-seed apply                  # everything this user is distributed
-seed apply ./team.toml      # a specific file
-seed apply --preview        # show what would change, do nothing
-seed apply --force          # also add missing packages to existing venvs
+acorn apply                  # everything this user is distributed
+acorn apply ./team.toml      # a specific file
+acorn apply --preview        # show what would change, do nothing
+acorn apply --force          # also add missing packages to existing venvs
 ```
 
 This is what makes a profile a *fleet-management* tool rather than a one-shot
 installer input. Add a package, publish the updated profile, tell people to
-run `seed apply` — only the difference is acted on, and running it twice
+run `acorn apply` — only the difference is acted on, and running it twice
 changes nothing the second time.
 
-`seed apply --preview` prints the plan and exits. Use it before rolling a
+`acorn apply --preview` prints the plan and exits. Use it before rolling a
 change out to anyone.
 
 ---
@@ -240,13 +240,13 @@ What that means per declaration, when the thing is already there:
 **Nothing is ever deleted or recreated.** An existing venv is left alone even
 if its packages have drifted — someone may need what they added. `--force`
 closes the gap in one direction only: it adds what's missing, never removes.
-Getting rid of something is `seed remove-venv`, run deliberately by a person.
+Getting rid of something is `acorn remove-venv`, run deliberately by a person.
 
 **A clone is never pulled**, only cloned when absent. If upstream moved and
 the fleet needs the new commit, that's `git pull` in the repo, not a profile
 change. The *install*, though, follows the venv rather than the clone: a repo
 is installed into any venv `install` names that doesn't already have it, so a
-venv rebuilt after `seed remove-venv` comes back with the repo in it.
+venv rebuilt after `acorn remove-venv` comes back with the repo in it.
 
 > Whether a venv "already has it" is answered by looking for the repo's own
 > distribution (the `[project] name` in its `pyproject.toml`). A repo with
@@ -260,7 +260,7 @@ venv rebuilt after `seed remove-venv` comes back with the repo in it.
 value differs — that's how you change a fleet's default venv or VS Code flavor
 after the fact. Settings the profile doesn't mention are left alone.
 
-**Partial application is reported as failure.** If a step fails, `seed apply`
+**Partial application is reported as failure.** If a step fails, `acorn apply`
 exits non-zero and names what didn't finish, because a half-applied profile
 means the machine isn't what you specified. Re-running is safe: what already
 succeeded is skipped.
@@ -282,7 +282,7 @@ profile itself is invalid.
 | `[[venv]] default` | bool | Make this the venv new shells auto-activate. At most one. |
 | `[[venv]] default_packages` | bool | `false` skips `venv_default_packages` for this venv. |
 | `tools` | list | conda-forge command-line tools to install (e.g. `["ripgrep", "pandoc=3.2"]`). Top-level key — put it before any `[[table]]`. |
-| `editor` | string or list | The bundled editor(s) this deployment standardizes on: `"vscode"` and/or `"spyder"`. A bare string is treated as a one-element list. Installed by `seed apply` last, in the order given, since they're the largest downloads. Any value that isn't a bundled editor stops the whole profile rather than deploying part of it. Omit for no editor. Top-level key. |
+| `editor` | string or list | The bundled editor(s) this deployment standardizes on: `"vscode"` and/or `"spyder"`. A bare string is treated as a one-element list. Installed by `acorn apply` last, in the order given, since they're the largest downloads. Any value that isn't a bundled editor stops the whole profile rather than deploying part of it. Omit for no editor. Top-level key. |
 | `[[repo]] url` | string | **Required.** Git URL to clone. |
 | `[[repo]] install` | string or list | The venv(s) to install the repo into after cloning (`uv pip install -e`, or its `requirements.txt`), in the order given. Every name must be a venv this profile declares. A name may carry extras — `"dev[gui,test]"` — which apply only to that venv, so one clone can land with different optional dependencies in each. Leave the key out to clone without installing — `true` and `false` are **not** accepted: a profile either says where the repo goes or doesn't ask for it. |
 | `[distribution] default` | bool | `true` distributes this profile to **everyone**. At most one profile in a folder. |
@@ -295,7 +295,7 @@ profile itself is invalid.
 
 Install-time settings — `update_source`, `package_index`, `python_mirror`,
 `native_tls`, `ca_cert` — deliberately **cannot** be set from a profile. They
-must be correct *before* seed-cli runs, so `global.conf` owns them; letting
+must be correct *before* acorn-cli runs, so `global.conf` owns them; letting
 a profile rewrite them would create two sources of truth for one value.
 
 **Validation is strict.** An unknown key, a duplicate venv name, two default
@@ -316,7 +316,7 @@ declares the superset on its own, and a profile is *validated* against it,
 never folded into it. Every profile in `installation-profile/` is checked when
 the bundle is built — before anything downloads, and again against what
 actually landed — and
-[`seed profile-check`](commands/status.md#seed-profile-check-profile---bundle-path)
+[`acorn profile-check`](commands/status.md#acorn-profile-check-profile---bundle-path)
 from inside the air gap afterwards. A profile naming a package the share
 doesn't carry is an error you see on the connected machine, not a failed
 install in a locked room.
@@ -326,6 +326,6 @@ including everything the profiles need — and the build refuses a profile that
 asks for more. That direction is the whole point: a superset that grew to fit
 whatever a profile asked could never answer "will this work here?"
 
-Either way, on the target `seed apply` installs the profile's tools from the
+Either way, on the target `acorn apply` installs the profile's tools from the
 bundle, with no internet and no separate folder to carry, and the preflight
 check verifies the wheel side before the bundle leaves.

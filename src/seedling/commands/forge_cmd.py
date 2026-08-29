@@ -1,13 +1,13 @@
 """
-`seed forge / forge-install / forge-list / forge-remove / download-forge` --
+`acorn forge / forge-install / forge-list / forge-remove / download-forge` --
 command-line tools from conda-forge (ripgrep, pandoc, ffmpeg, gh, compilers,
-...), the things that aren't Python packages and so aren't `seed install`-able.
+...), the things that aren't Python packages and so aren't `acorn install`-able.
 
 Each tool gets its own isolated micromamba environment; seedling then writes a
 small launcher for every command the tool provides into a shims directory that
-the shell hook puts on PATH, so the tool runs as a bare command. `seed forge
+the shell hook puts on PATH, so the tool runs as a bare command. `acorn forge
 <cmd>` runs an installed tool directly without any PATH setup, and
-`seed download-forge` stages a tool and its dependencies into a local channel
+`acorn download-forge` stages a tool and its dependencies into a local channel
 for an offline install. Removal is exact: the manifest records which shims
 were created.
 
@@ -112,15 +112,15 @@ def _remove_shims(commands: list[str]) -> None:
 
 
 def download_tool(args) -> int:
-    """`seed download-forge <name>...` -- the conda analogue of download-whls:
+    """`acorn download-forge <name>...` -- the conda analogue of download-whls:
     resolve a tool and its dependencies on a connected machine and write them
     into a local channel to carry to an air-gapped one."""
     specs = getattr(args, "specs", None) or []
     if not specs:
-        print("Usage: seed download-forge <name>[=version] [<name> ...] "
+        print("Usage: acorn download-forge <name>[=version] [<name> ...] "
               "[--dest <dir>]")
         print("Downloads each conda-forge tool AND its dependencies into a "
-              "local channel for an offline `seed forge-install`.")
+              "local channel for an offline `acorn forge-install`.")
         return 1
 
     dest = Path(getattr(args, "dest", None) or "conda-channel").resolve()
@@ -149,15 +149,15 @@ def download_tool(args) -> int:
     print(colors.ok(f"Downloaded {len(records)} package(s) into {dest}"))
     print("To install on an offline machine:")
     print("  1. Copy this folder to the target machine or a shared drive.")
-    print(f"  2. seed config set conda_channel {dest}")
-    print(f"  3. seed forge-install {_spec_name(specs[0])}   "
+    print(f"  2. acorn config set conda_channel {dest}")
+    print(f"  3. acorn forge-install {_spec_name(specs[0])}   "
           "# resolves from the folder, offline")
     return 0
 
 
 def _command_index() -> dict[str, str]:
     """{command name -> the tool/env that provides it} across every installed
-    tool, so `seed forge <cmd>` can find and run it."""
+    tool, so `acorn forge <cmd>` can find and run it."""
     index: dict[str, str] = {}
     if not paths.FORGE_MANIFEST_DIR.is_dir():
         return index
@@ -172,7 +172,7 @@ def _command_index() -> dict[str, str]:
 
 
 def run_tool(args) -> int:
-    """`seed forge <command> [args...]` -- run an installed conda-forge tool
+    """`acorn forge <command> [args...]` -- run an installed conda-forge tool
     without needing it on PATH or a fresh terminal. The convenient, always-
     works counterpart to the PATH shims."""
     command = getattr(args, "name", None)
@@ -180,13 +180,13 @@ def run_tool(args) -> int:
     index = _command_index()
 
     if not command:
-        print("Usage: seed forge <command> [args...]   "
-              "(e.g. seed forge gh pr create)")
+        print("Usage: acorn forge <command> [args...]   "
+              "(e.g. acorn forge gh pr create)")
         if index:
             print("Available commands: " + ", ".join(sorted(index)))
         else:
             print("No conda-forge tools installed yet "
-                  "(seed forge-install <name>).")
+                  "(acorn forge-install <name>).")
         return 1
 
     env_name = index.get(command)
@@ -195,7 +195,7 @@ def run_tool(args) -> int:
               f"'{command}'.")
         if index:
             print("Available commands: " + ", ".join(sorted(index)))
-        print("Install one with:  seed forge-install <name>")
+        print("Install one with:  acorn forge-install <name>")
         return 1
 
     try:
@@ -209,8 +209,8 @@ def run_tool(args) -> int:
 def install(args) -> int:
     spec = getattr(args, "spec", None)
     if not spec:
-        print("Usage: seed forge-install <name>[=version]   "
-              "(e.g. seed forge-install ripgrep)")
+        print("Usage: acorn forge-install <name>[=version]   "
+              "(e.g. acorn forge-install ripgrep)")
         return 1
 
     name = _spec_name(spec)
@@ -221,7 +221,7 @@ def install(args) -> int:
     paths.ensure_layout()
     if paths.forge_env_dir(name).exists() or paths.forge_manifest_file(name).exists():
         print(f"A tool named '{name}' is already installed.")
-        print(f"Remove it first with:  seed forge-remove {name}")
+        print(f"Remove it first with:  acorn forge-remove {name}")
         return 1
 
     try:
@@ -235,7 +235,7 @@ def install(args) -> int:
     create = ["create", "-y", "-n", name, "--override-channels",
               "-c", conda_tool.channel_arg(ch), spec]
     if conda_tool.channel_is_local(ch):
-        # A channel built by `seed download-forge`: force offline so micromamba
+        # A channel built by `acorn download-forge`: force offline so micromamba
         # never reaches for the network on an air-gapped box.
         create.insert(1, "--offline")
     result = conda_tool.run(create, check=False)
@@ -275,7 +275,7 @@ def list_tools(args) -> int:
                  if paths.FORGE_MANIFEST_DIR.is_dir() else [])
     if not manifests:
         print("No conda-forge tools installed.")
-        print("Install one with:  seed forge-install <name>   "
+        print("Install one with:  acorn forge-install <name>   "
               "(e.g. ripgrep, pandoc, ffmpeg)")
         return 0
 
@@ -294,7 +294,7 @@ def list_tools(args) -> int:
 def remove(args) -> int:
     name = getattr(args, "name", None)
     if not name:
-        print("Usage: seed forge-remove <name>")
+        print("Usage: acorn forge-remove <name>")
         return 1
 
     manifest = paths.forge_manifest_file(name)

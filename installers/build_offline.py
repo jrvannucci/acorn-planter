@@ -12,7 +12,7 @@ on the air-gapped side, with no internet access required there. See
 docs/OFFLINE.md for the full deployment story; this tool automates its
 "Putting it together" section.
 
-Not a `seed` subcommand on purpose: it prepares the distribution, so it runs
+Not a `acorn` subcommand on purpose: it prepares the distribution, so it runs
 straight from a repo checkout (`build-offline.cmd`) before seedling is installed
 anywhere.
 """
@@ -81,10 +81,10 @@ PBS_RELEASE_BASE = ("https://github.com/astral-sh/python-build-standalone"
 GIT_WIN_LATEST_API = "https://api.github.com/repos/git-for-windows/git/releases/latest"
 
 # What the offline package index MUST contain (see docs/OFFLINE.md #4):
-#   hatchling  -- uv builds seed-cli from source with it, at install AND every
-#                 `seed update-commands`; without it the install can't finish.
+#   hatchling  -- uv builds acorn-cli from source with it, at install AND every
+#                 `acorn update-commands`; without it the install can't finish.
 #   the default venv packages -- created in every new venv.
-# Extra packages your users will `seed install` get appended with --packages.
+# Extra packages your users will `acorn install` get appended with --packages.
 #
 # Imported rather than restated: bundle.py's validator credits a bundle with
 # holding these, so if the two lists ever disagreed, a profile would be told
@@ -206,8 +206,8 @@ def check_python_versions(versions: list[str],
 
     The mirrored interpreters serve two different purposes, which is why this
     isn't a blanket rejection:
-      1. the one uv uses to install seed-cli itself -- MUST satisfy the floor,
-      2. base Pythons your users install for their own venvs (`seed python 3.9`)
+      1. the one uv uses to install acorn-cli itself -- MUST satisfy the floor,
+      2. base Pythons your users install for their own venvs (`acorn python 3.9`)
          -- any version is legitimate.
     So the rule is: at least one mirrored version has to satisfy the floor.
     Mirroring older ones alongside it is fine and supported.
@@ -229,7 +229,7 @@ def check_python_versions(versions: list[str],
             f"seedling's own requires-python (>={floor_str}).\n"
             f"    The bundle would build fine here and then FAIL on the "
             f"air-gapped machine: `uv tool install` needs >={floor_str} to "
-            f"build seed-cli, and the mirror would offer nothing new enough.\n"
+            f"build acorn-cli, and the mirror would offer nothing new enough.\n"
             f"    Add a supported version -- e.g. --python {floor_str},"
             f"{parsed[0][0]} -- to mirror both. Older interpreters are still "
             f"useful for your users' own venvs; there just has to be one "
@@ -483,7 +483,7 @@ def archive_bundle(output: Path, fmt: str) -> Path | None:
     Archives from the bundle's PARENT directory with the bundle's own name
     as the base_dir, so the archive contains one top-level folder (e.g.
     offline-bundle/...), not its contents spilled loose at the root --
-    the same layout `seed apply`/install.cmd expect after extraction.
+    the same layout `acorn apply`/install.cmd expect after extraction.
 
     Returns the archive's path, or None if it couldn't be written (never
     fatal to the overall build -- the folder on disk is still complete and
@@ -810,7 +810,7 @@ def build_wheels(uv_exe: Path, packages: list[str], wheels_dir: Path,
                  py_versions: list[str], cache: Path,
                  foreign: list[tuple[str, list[str]]] | None = None) -> bool:
     """Download every wheel (and its dependencies) the offline index needs, via
-    `uvx pip download` -- the same mechanism as `seed download-whls`.
+    `uvx pip download` -- the same mechanism as `acorn download-whls`.
 
     Runs once PER mirrored interpreter into the same flat wheelhouse. That
     matters whenever more than one version is mirrored: `--python-version`
@@ -818,7 +818,7 @@ def build_wheels(uv_exe: Path, packages: list[str], wheels_dir: Path,
     version-agnostic (`py3-none-any`, or `py3-none-<platform>` for ruff), their
     compiled dependencies are not -- ipykernel alone pulls pyzmq, tornado,
     debugpy and psutil, all of which ship cp3XX-tagged wheels. Resolving for
-    only the first interpreter produced a bundle where `seed venv --python 3.9`
+    only the first interpreter produced a bundle where `acorn venv --python 3.9`
     failed offline even though 3.9 had been mirrored. A flat wheelhouse holds
     every tag happily, so the fix is just to loop.
 
@@ -878,7 +878,7 @@ def build_wheels(uv_exe: Path, packages: list[str], wheels_dir: Path,
 
 def build_mingit(vendor_git: Path) -> bool:
     """Download portable MinGit (Windows) into vendor/git/. Optional -- only
-    needed for `seed repo-clone` / URL-based updates where there's no system
+    needed for `acorn repo-clone` / URL-based updates where there's no system
     git on the offline machines."""
     if any(vendor_git.rglob("git.exe")):
         ok(f"git already present in {vendor_git} -- skipping.")
@@ -973,7 +973,7 @@ def _install_extensions(app_dir: Path, extensions=None) -> bool:
 
 
 def build_vscode(vendor_vscode: Path, staging: Path, editor=None) -> bool:
-    """Pre-seed portable VS Code AND the default extensions into vendor/vscode/.
+    """Pre-acorn portable VS Code AND the default extensions into vendor/vscode/.
     Rather than reimplement the VS Code update-API download + marketplace
     extension install, drive seedling's OWN vscode installer against a throwaway
     home (SEEDLING_HOME=staging), then move the finished tree into place. Heavy:
@@ -1028,7 +1028,7 @@ def build_vscode(vendor_vscode: Path, staging: Path, editor=None) -> bool:
         app_dir = staging / "extensions" / "vscode" / "app"
         if result.returncode != 0 or not app_dir.exists():
             warn("VS Code setup didn't complete (see the output above). Skipped; "
-                 "you can pre-seed it by hand later (see docs/OFFLINE.md #6).")
+                 "you can pre-acorn it by hand later (see docs/OFFLINE.md #6).")
             return False
 
         if not _extensions_present(app_dir):
@@ -1049,11 +1049,11 @@ def build_conda_channel(vendor_micromamba: Path, channel_dir: Path,
                         tools: list[str]) -> tuple[bool, int]:
     """Vendor micromamba and build a conda channel of `tools` + their
     dependencies under `channel_dir`, so the offline machine can
-    `seed forge-install` them with no network. Returns (ok, package_count).
+    `acorn forge-install` them with no network. Returns (ok, package_count).
 
     The channel is downloaded from the builder's configured conda source
     (conda-forge by default, or an internal mirror), and its repodata.json is
-    synthesized from the solve -- the same mechanism as `seed download-forge`,
+    synthesized from the solve -- the same mechanism as `acorn download-forge`,
     reused here so the bundle carries one artifact instead of a side folder."""
     from seedling import conda_tool
     mm_name = "micromamba.exe" if platform.system() == "Windows" else "micromamba"
@@ -1206,17 +1206,17 @@ def verify_bundle(output: Path, seedling_copy: Path, uv_exe: Path,
             else:
                 failures.append(
                     f"Python {version}: venv packages missing from the wheel "
-                    f"index ({tail}). A `seed venv --python {version}` would "
+                    f"index ({tail}). A `acorn venv --python {version}` would "
                     "fail on the air-gapped machine.")
 
-        # 2. seed-cli itself must BUILD from the bundled source using hatchling
+        # 2. acorn-cli itself must BUILD from the bundled source using hatchling
         #    from the wheelhouse -- the step that actually blocks an install.
         target = next((v for v in usable
                        if floor is None or (parse_version(v) or ()) >= floor), None)
         if target is None:
             failures.append(
                 "No mirrored interpreter both installs and satisfies "
-                "seedling's requires-python, so seed-cli could not be built.")
+                "seedling's requires-python, so acorn-cli could not be built.")
         else:
             venv = tmp / "seedcli"
             ok_venv, _ = _run_offline(
@@ -1225,10 +1225,10 @@ def verify_bundle(output: Path, seedling_copy: Path, uv_exe: Path,
                 uv_exe, ["pip", "install", "--python", str(venv),
                          str(seedling_copy / "src")], env)
             if ok_venv and ok_build:
-                ok(f"seed-cli builds offline on Python {target} "
+                ok(f"acorn-cli builds offline on Python {target} "
                    "(hatchling resolved from the bundle).")
             else:
-                failures.append(f"seed-cli could not be built offline: {tail}")
+                failures.append(f"acorn-cli could not be built offline: {tail}")
 
     if failures:
         warn("Preflight FAILED -- this bundle would not install air-gapped:")
@@ -1322,7 +1322,7 @@ def main(argv=None) -> int:
         "--tools", default="",
         help="conda-forge command-line tools to bundle (comma-separated, e.g. "
              "ripgrep,pandoc). Vendors micromamba and builds a conda channel "
-             "into the bundle so `seed forge-install` works offline. A profile's "
+             "into the bundle so `acorn forge-install` works offline. A profile's "
              "[tools] are included automatically.")
     parser.add_argument(
         "--no-vscode", action="store_true",
@@ -1673,7 +1673,7 @@ def main(argv=None) -> int:
 
     # 3. Python interpreter mirror (required for a working default env).
     step(3, "Python interpreters (SEEDLING_PYTHON_MIRROR)")
-    info("`seed python` downloads CPython from the internet; offline it reads "
+    info("`acorn python` downloads CPython from the internet; offline it reads "
          "these mirrored archives instead.")
     mirrored_versions: list[str] = []
     if uv_exe and ask("Mirror the Python interpreter archive(s) now?",
@@ -1684,9 +1684,9 @@ def main(argv=None) -> int:
         warn("Skipped -- needs uv (step 2).")
     mirror_ok = bool(mirrored_versions)
 
-    # 4. Wheel index (required -- hatchling builds seed-cli).
+    # 4. Wheel index (required -- hatchling builds acorn-cli).
     step(4, "Python packages (SEEDLING_PACKAGE_INDEX)")
-    info("Every package install (incl. building seed-cli with hatchling, and "
+    info("Every package install (incl. building acorn-cli with hatchling, and "
          "each new venv) resolves from this wheel folder offline.")
     wheels_ok = False
     if uv_exe and ask("Download the wheels now?", default=True, auto=auto):
@@ -1710,14 +1710,14 @@ def main(argv=None) -> int:
     elif ask(f"Bundle {len(conda_tools)} conda-forge tool(s) now? "
              f"({', '.join(conda_tools)})", default=True, auto=auto):
         info("Vendors micromamba and builds a conda channel into the bundle so "
-             "`seed forge-install` runs with no internet on the target machine.")
+             "`acorn forge-install` runs with no internet on the target machine.")
         conda_ok, conda_pkg_count = build_conda_channel(
             vendor / "micromamba", conda_channel_dir, conda_tools)
 
     # 6. MinGit (optional, Windows).
     step(6, "git for Windows (optional)")
     info("Only needed if your offline machines have no system git and you use "
-         "`seed repo-clone` or URL-based `seed update-commands`.")
+         "`acorn repo-clone` or URL-based `acorn update-commands`.")
     if system == "Windows":
         # Off unless asked for: most fleets already have git. --mingit flips the
         # default, which is also what makes this step reachable under --yes.

@@ -7,31 +7,31 @@ from typing import Any
 
 from . import paths
 
-# Every key seedling understands, with a description shown by `seed config`.
+# Every key seedling understands, with a description shown by `acorn config`.
 # Anything else in settings.json is preserved but flagged as unknown.
 KNOWN_KEYS: dict[str, str] = {
     "default_base": (
-        "Base Python tag `seed venv` builds from when --python isn't given "
-        "(e.g. \"312\"). Set automatically by the first `seed python` install."),
+        "Base Python tag `acorn venv` builds from when --python isn't given "
+        "(e.g. \"312\"). Set automatically by the first `acorn python` install."),
     "default_venv": (
         "Venv name every new shell auto-activates on startup. Empty/null "
         "means no auto-activation."),
     "auto_activate": (
         "Whether new shells auto-activate `default_venv` at startup. "
-        "true/false (default true). Toggle with `seed auto-activate "
+        "true/false (default true). Toggle with `acorn auto-activate "
         "True|False`; when false, a default_venv is left set but not "
         "activated automatically."),
     "update_source": (
-        "Where `seed update-commands` fetches seedling's own source from: a "
+        "Where `acorn update-commands` fetches seedling's own source from: a "
         "git URL (including self-hosted GitHub/GitLab on another network) "
         "OR a plain directory path (e.g. a mounted network drive holding a "
         "copy of the repo). Recorded automatically at install time. "
         "Empty/null means updates can only reinstall the existing copy."),
     "venv_default_packages": (
         "Packages installed into every new venv (list). Skip per-venv with "
-        "`seed venv <name> --no-default-packages`."),
+        "`acorn venv <name> --no-default-packages`."),
     "python_mirror": (
-        "Where `seed python` downloads interpreter builds from, instead of "
+        "Where `acorn python` downloads interpreter builds from, instead of "
         "the internet: a URL or a directory of python-build-standalone "
         "archives (e.g. a network share). Applied to every uv call as "
         "UV_PYTHON_INSTALL_MIRROR. Empty/null means the internet."),
@@ -41,13 +41,13 @@ KNOWN_KEYS: dict[str, str] = {
         "network share -- becomes the one and only package source, with "
         "the internet index disabled). Empty/null means pypi.org."),
     "package_upload_url": (
-        "Where `seed upload-whls` publishes wheels: the UPLOAD endpoint of "
+        "Where `acorn upload-whls` publishes wheels: the UPLOAD endpoint of "
         "your internal index, which is usually NOT the same URL as "
         "package_index (Artifactory .../api/pypi/<repo>/ vs .../simple). "
         "Empty/null means uploads need --repository-url."),
     "package_upload_token": (
         "API token for package_upload_url. A WRITE credential -- set it on "
-        "the machine that publishes, with `seed config set`, and leave it "
+        "the machine that publishes, with `acorn config set`, and leave it "
         "out of the global.conf you distribute, or every user gets publish "
         "rights. Masked wherever seedling prints settings. Empty/null falls "
         "back to twine's own TWINE_USERNAME/TWINE_PASSWORD or ~/.pypirc."),
@@ -64,12 +64,12 @@ KNOWN_KEYS: dict[str, str] = {
         "time when SEEDLING_HOME_DIR used a {user} token. Only set for "
         "shared multi-user installs; enables the admin-* commands."),
     "vscode_flavor": (
-        "Which editor build `seed vscode` installs: \"microsoft\" (the "
+        "Which editor build `acorn vscode` installs: \"microsoft\" (the "
         "official VS Code build, Microsoft's proprietary licence) or "
         "\"vscodium\" (the MIT-licensed community build, freely "
         "redistributable and preconfigured for the Open VSX registry). "
         "Changing this only affects the NEXT install -- rerun "
-        "`seed vscode --reinstall` to switch an existing one."),
+        "`acorn vscode --reinstall` to switch an existing one."),
     "extension_gallery": (
         "Where the editor installs extensions from, instead of its build's "
         "default registry: a base URL (e.g. \"https://open-vsx.org/vscode\", "
@@ -89,18 +89,18 @@ KNOWN_KEYS: dict[str, str] = {
         "Recorded at install time from SEEDLING_VSCODE_CONFIG_DIR. "
         "Empty/null means neither file is seeded."),
     "conda_channel": (
-        "Channel `seed forge-install` fetches conda-forge tools from. Defaults "
+        "Channel `acorn forge-install` fetches conda-forge tools from. Defaults "
         "to \"conda-forge\" (the community channel, distinct from Anaconda's "
         "`defaults`). Point it at a URL or a local directory for an internal "
         "mirror or an offline network. seedling never consults `defaults`."),
     "profile": (
-        "Path to the deployment profile `seed apply` uses by default -- the "
+        "Path to the deployment profile `acorn apply` uses by default -- the "
         "TOML file describing the interpreters, venvs, packages and repos "
         "this deployment expects. Recorded at install time from "
-        "SEEDLING_PROFILE. Empty/null means `seed apply` looks for "
+        "SEEDLING_PROFILE. Empty/null means `acorn apply` looks for "
         "profile.toml in the current directory instead."),
     "custom_commands": (
-        "Path to a TOML file declaring your organization's own `seed custom "
+        "Path to a TOML file declaring your organization's own `acorn custom "
         "<name>` commands -- one [[command]] entry each, run = [...] for a "
         "fixed argv or script = \"...\" (a .py/.sh/.ps1 file, resolved "
         "relative to this TOML file's own directory) for anything that "
@@ -120,13 +120,13 @@ KNOWN_KEYS: dict[str, str] = {
         "name) prints a warning and stops just that entry's chain, never "
         "the rest of the list or the shell from opening. Recorded at "
         "install time from SEEDLING_STARTUP_COMMANDS; change it later with "
-        "`seed config set startup_commands \"a&&b,c\"`. Empty/null means "
+        "`acorn config set startup_commands \"a&&b,c\"`. Empty/null means "
         "nothing runs at startup. See docs/CUSTOM-COMMANDS.md."),
 }
 
 # Settings whose VALUE must never be printed. seedling tees command output
 # into ~/seedling/system/logs, so an unmasked token would be written to disk
-# by the very act of running `seed config`.
+# by the very act of running `acorn config`.
 SECRET_KEYS = {"package_upload_token"}
 
 

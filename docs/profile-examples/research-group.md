@@ -15,7 +15,7 @@ want the collection rig to keep working.
 | Spyder (from PyPI) | ✅ | the editor for this deployment |
 | conda-forge tools | ❌ | nothing outside PyPI |
 | Corporate CA certificate | ❌ | default trust store |
-| Bundled git (MinGit) | ❌ | Windows bootstraps it if `seed repo-clone` is used |
+| Bundled git (MinGit) | ❌ | Windows bootstraps it if `acorn repo-clone` is used |
 | A reachable git host | ❌ | no `[[repo]]` entries |
 | Multi-user share root | ❌ | each person installs to their own `~/seedling` |
 | Offline bundle to build | ❌ | installs straight from the internet |
@@ -44,7 +44,7 @@ name = "collect"
 packages = ["pyserial", "pyvisa", "pandas"]
 
 # Analysing: the heavy stack. This is the one people are in most of the day,
-# so it's the default -- new terminals land here, and `seed spyder` opens
+# so it's the default -- new terminals land here, and `acorn spyder` opens
 # against it.
 [[venv]]
 name = "analyse"
@@ -56,11 +56,11 @@ default = true
 **Why it's shaped this way**
 
 - `default = true` on `analyse` sets what new terminals activate. Spyder
-  follows the *activated* venv, so `seed activate collect && seed spyder`
+  follows the *activated* venv, so `acorn activate collect && acorn spyder`
   opens against the rig instead — the switch is one command, no
   reconfiguration.
 - Spyder's console needs a matching `spyder-kernels` in whichever venv it
-  runs code in. `seed spyder` installs it for you; you don't list it here.
+  runs code in. `acorn spyder` installs it for you; you don't list it here.
 - `openpyxl` because someone always has an `.xlsx`.
 
 > **Spyder is x86_64 only** — its Qt dependency publishes no arm64 wheels. On

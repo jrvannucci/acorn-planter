@@ -73,7 +73,7 @@ profile-examples/just-python
 on your own machine before it reaches anyone else:
 
 ```
-seed apply ./profile.toml --preview
+acorn apply ./profile.toml --preview
 ```
 
 An invalid profile exits `2` and names the problem. That matters more than it

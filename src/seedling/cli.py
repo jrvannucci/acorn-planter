@@ -82,7 +82,7 @@ _HELP_GROUPS: list[tuple[str, list[tuple[str, str, str]]]] = [
         ("tool-remove", "<name>", "Remove a PyPI application"),
     ]),
     ("Command-line tools from conda-forge (ripgrep, pandoc, ffmpeg, ...)", [
-        ("forge", "<cmd> [args...]", "Run an installed tool (e.g. seed forge gh ...)"),
+        ("forge", "<cmd> [args...]", "Run an installed tool (e.g. acorn forge gh ...)"),
         ("forge-install", "<name>[=version]", "Install a CLI tool from conda-forge"),
         ("forge-list", "", "List installed conda-forge tools"),
         ("forge-remove", "<name>", "Remove a conda-forge tool"),
@@ -115,7 +115,7 @@ _HELP_GROUPS: list[tuple[str, list[tuple[str, str, str]]]] = [
         ("profile-check", "[profile]", "Check a profile against an offline bundle's contents"),
         ("config", "[get|set|unset]", "View or change seedling settings"),
         ("kill-processes", "[name] [--system]", "Force-close seedling's processes (or all, or named)"),
-        ("update-commands", "[--from-branch B]", "Update the seed CLI itself"),
+        ("update-commands", "[--from-branch B]", "Update the acorn CLI itself"),
     ]),
     ("Danger zone -- these delete things (all support --preview)", [
         ("remove-repo", "<name>", "Delete a cloned repo"),
@@ -130,7 +130,7 @@ _HELP_GROUPS: list[tuple[str, list[tuple[str, str, str]]]] = [
 
 # The admin family is hidden from normal help -- it's elevated, cross-user
 # teardown of a shared-root install, not something a normal user runs.
-# `seed help --admin` reveals it.
+# `acorn help --admin` reveals it.
 _ADMIN_HELP_GROUP: tuple[str, list[tuple[str, str, str]]] = (
     "Admin (elevated; shared-root installs) -- run as Administrator/root", [
         ("admin-purge-all-users", "", "Remove EVERY user's install under the shared root"),
@@ -171,9 +171,9 @@ def _help_groups() -> list[tuple[str, list[tuple[str, str, str]]]]:
 
 
 def print_grouped_help(show_admin: bool = False) -> None:
-    print(colors.bold("seed") + " -- a tidy, single-folder global Python distributor and local environment manager")
+    print(colors.bold("acorn") + " -- a tidy, single-folder global Python distributor and local environment manager")
     print()
-    print("Usage: seed <command> [arguments]")
+    print("Usage: acorn <command> [arguments]")
     print()
     for title, commands in _help_groups():
         _print_group(title, commands)
@@ -187,19 +187,19 @@ def print_grouped_help(show_admin: bool = False) -> None:
         # install it would just be noise (and refuses to run anyway).
         print(colors.header("This is a shared multi-user install.") +
               " Managing it as an admin?")
-        print("  Run " + colors.bold("seed help --admin") +
+        print("  Run " + colors.bold("acorn help --admin") +
               " for the elevated commands that remove other users' installs.")
         print()
-    print("Run any command with -h for its full options, e.g. `seed venv -h`.")
-    print("Scripting, CI, or an AI agent? `seed activate` needs a shell to "
-          "mutate -- `seed run`/`seed which` don't. See the \"Scripting & "
+    print("Run any command with -h for its full options, e.g. `acorn venv -h`.")
+    print("Scripting, CI, or an AI agent? `acorn activate` needs a shell to "
+          "mutate -- `acorn run`/`acorn which` don't. See the \"Scripting & "
           f"automation\" section of {paths.SRC_DIR / 'docs' / 'COMMANDS.md'}")
-    print(f"seedling {__version__} -- `seed --version` prints this on its own.")
+    print(f"seedling {__version__} -- `acorn --version` prints this on its own.")
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="seed",
+        prog="acorn",
         description="seedling: a tidy, single-folder global Python "
                      "distributor and local environment manager.",
     )
@@ -239,7 +239,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_venv.add_argument("--no-default-packages", "--bare",
                          dest="no_default_packages", action="store_true",
                          help="Don't install the default packages "
-                              "(see `seed config get venv_default_packages`)")
+                              "(see `acorn config get venv_default_packages`)")
 
     p_venv_list = sub.add_parser(
         "venv-list", help="List every venv seedling has created")
@@ -266,7 +266,7 @@ def build_parser() -> argparse.ArgumentParser:
                             "(VIRTUAL_ENV), then to default_venv.")
     p_run.add_argument("cmd", nargs=argparse.REMAINDER,
                        help="The command to run. Put it after `--` if it "
-                            "starts with a dash, e.g. `seed run -- python -V`.")
+                            "starts with a dash, e.g. `acorn run -- python -V`.")
 
     p_which = sub.add_parser(
         "which",
@@ -307,7 +307,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_custom.add_argument("cmdargs", nargs=argparse.REMAINDER,
                           help="Arguments passed straight through to the command")
     # Internal: the shell hook's startup-commands block uses this to run
-    # every configured startup_commands entry in ONE seed-cli process
+    # every configured startup_commands entry in ONE acorn-cli process
     # instead of spawning one per command -- see custom_cmd.run_startup().
     p_custom.add_argument("--startup", action="store_true", help=argparse.SUPPRESS)
 
@@ -454,7 +454,7 @@ def build_parser() -> argparse.ArgumentParser:
         "repo-clone", help="Clone a git repo into ~/seedling/repo")
     p_clone_repo.add_argument("url", nargs="?", help="Git URL to clone")
 
-    sub.add_parser("repo-list", help="List every repo cloned with `seed repo-clone`")
+    sub.add_parser("repo-list", help="List every repo cloned with `acorn repo-clone`")
 
     p_cd_repo = sub.add_parser(
         "repo-cd", help="Change directory to a cloned repo (or ~/seedling/repo with no name)")
@@ -472,7 +472,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_vscode_repo = sub.add_parser("vscode-repo", help="Open a cloned repo in VS Code")
     p_vscode_repo.add_argument("name", nargs="?", help="Name of the repo to open")
-    # Can trigger the same first-run VS Code download as `seed vscode`.
+    # Can trigger the same first-run VS Code download as `acorn vscode`.
     p_vscode_repo.add_argument("-y", "--yes", action="store_true",
                                 help="Don't ask before downloading VS Code the "
                                      "first time (~300 MB)")
@@ -591,7 +591,7 @@ def build_parser() -> argparse.ArgumentParser:
              "package_index is a directory of wheels inside one.")
 
     p_update = sub.add_parser("update-commands",
-                    help="Update the seed CLI itself from its source in ~/seedling/system/src")
+                    help="Update the acorn CLI itself from its source in ~/seedling/system/src")
     p_update.add_argument(
         "--from-branch", dest="from_branch", metavar="BRANCH", default=None,
         help="When update_source is a git URL, clone this branch (or tag) "
@@ -637,7 +637,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # --- Admin family: elevated, cross-user teardown of a shared-root
     #     install. Registered so they dispatch, but omitted from the grouped
-    #     help unless `seed help --admin` is used. All support the danger
+    #     help unless `acorn help --admin` is used. All support the danger
     #     flags (-y / --preview / --non-interactive).
     sub.add_parser("admin-purge-all-users", parents=[danger],
                    help="[admin] Remove EVERY user's install under the shared root")
@@ -687,7 +687,7 @@ def main(argv=None) -> int:
 
 # Commands that forward everything after the verb straight to uv's pip
 # interface. They deliberately bypass argparse: argparse.REMAINDER mishandles a
-# LEADING option-like token, so `seed install -e .` would otherwise fail with
+# LEADING option-like token, so `acorn install -e .` would otherwise fail with
 # "unrecognized arguments: -e". _dispatch_main slices their tail off argv and
 # passes it through verbatim, so any flag order works (-e ., -U pkg, --no-deps).
 def _passthrough_handlers() -> dict:
@@ -703,7 +703,7 @@ def _passthrough_handlers() -> dict:
 
 
 def _reserved_command_names(parser: argparse.ArgumentParser) -> set[str]:
-    """Every top-level `seed <command>` name build_parser() already
+    """Every top-level `acorn <command>` name build_parser() already
     registers -- the single source of truth a `toplevel` custom command must
     never be allowed to shadow. There is no separate registry of built-in
     names to import (they're spread across `_passthrough_handlers()`, the
@@ -747,12 +747,12 @@ def _invoke(handler, args) -> int:
 
 
 def _dispatch_main(argv: list[str]) -> int:
-    # Show the custom grouped help for a bare `seed`, `seed -h`, or
-    # `seed --help` -- argparse's own auto-generated help (which would
+    # Show the custom grouped help for a bare `acorn`, `acorn -h`, or
+    # `acorn --help` -- argparse's own auto-generated help (which would
     # otherwise fire for -h/--help before we get a chance to intercept it)
     # lists every subcommand as one flat block, which stops being readable
     # somewhere around a dozen commands. Subcommand-specific help, e.g.
-    # `seed venv -h`, is untouched and still uses argparse's normal output.
+    # `acorn venv -h`, is untouched and still uses argparse's normal output.
     if not argv or argv[0] in ("-h", "--help"):
         print_grouped_help(show_admin="--admin" in argv)
         return 0
@@ -774,13 +774,13 @@ def _dispatch_main(argv: list[str]) -> int:
 
     parser = build_parser()
 
-    # A `toplevel = true` custom command runs as bare `seed <name>`, in
-    # addition to `seed custom <name>`. Checked here, before argparse parses
+    # A `toplevel = true` custom command runs as bare `acorn <name>`, in
+    # addition to `acorn custom <name>`. Checked here, before argparse parses
     # anything -- the name isn't known to build_parser() at all, it comes
     # from an org's own custom-commands.toml/scripts folder. Built-ins
     # always win: skipped entirely when argv[0] is already one of the
     # reserved names every subparser below registers, so a custom command
-    # can never silently shadow (or break) a real `seed` command.
+    # can never silently shadow (or break) a real `acorn` command.
     if argv[0] not in _reserved_command_names(parser):
         cmd = custom_cmd.toplevel_map().get(argv[0])
         if cmd is not None:

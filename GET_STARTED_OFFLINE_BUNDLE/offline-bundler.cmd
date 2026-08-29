@@ -6,7 +6,7 @@ rem   macOS/Linux: run `sh ./offline-bundler.cmd` (line 1 hands off to
 rem                offline-bundler.sh; cmd.exe reads it as a label)
 rem
 rem Everything it needs is in offline-bundle.toml next to this file -- there
-rem are no arguments to remember. This is NOT a `seed` command: it prepares
+rem are no arguments to remember. This is NOT a `acorn` command: it prepares
 rem the distribution before seedling is installed anywhere. Needs Python
 rem 3.12+ on THIS machine.
 where py >nul 2>nul

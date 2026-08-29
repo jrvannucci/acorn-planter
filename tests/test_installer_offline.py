@@ -94,7 +94,7 @@ class TestDefaultInstall:
         settings = _settings(home)
         assert set(settings) == {"update_source"}
         # Installed from a local checkout with no override -> update_source is
-        # the checkout DIRECTORY, not the public URL, so `seed update-commands`
+        # the checkout DIRECTORY, not the public URL, so `acorn update-commands`
         # re-copies from that working tree (the developer-iteration path).
         # (bash `pwd` may render it MSYS-style /c/... on Windows -- compare by
         # trailing dir name, which survives that.)
@@ -102,26 +102,26 @@ class TestDefaultInstall:
         assert settings["update_source"].replace("\\", "/").rstrip("/").endswith("/copy")
         # hook written and registered
         assert "seedling" in (fake_home / ".bashrc").read_text()
-        assert (home / "system" / "shell" / "seed.sh").exists()
+        assert (home / "system" / "shell" / "acorn.sh").exists()
 
     def test_auto_setup_runs_expected_cli_sequence(self, install_env):
         copy, fake_home, home, run_install = install_env
         result = run_install()
         assert result.returncode == 0
         calls = _calls(home)
-        assert "seed-cli python" in calls
-        assert "seed-cli venv dev" in calls
-        assert "seed-cli config set default_venv dev" in calls
-        assert "seed-cli vscode --no-open" in calls
+        assert "acorn-cli python" in calls
+        assert "acorn-cli venv dev" in calls
+        assert "acorn-cli config set default_venv dev" in calls
+        assert "acorn-cli vscode --no-open" in calls
 
     def test_auto_setup_skips(self, install_env):
         copy, fake_home, home, run_install = install_env
         run_install("SEEDLING_AUTO_SETUP=false")
-        assert "seed-cli python" not in _calls(home)
+        assert "acorn-cli python" not in _calls(home)
         (home / "system" / "bin" / "calls.log").unlink(missing_ok=True)
         run_install("SEEDLING_AUTO_VSCODE=false")
         calls = _calls(home)
-        assert "seed-cli venv dev" in calls
+        assert "acorn-cli venv dev" in calls
         assert "vscode --no-open" not in calls
 
     def test_reinstall_never_stacks_hooks(self, install_env):
@@ -129,7 +129,7 @@ class TestDefaultInstall:
         run_install("SEEDLING_AUTO_SETUP=false")
         run_install("SEEDLING_AUTO_SETUP=false")
         bashrc = (fake_home / ".bashrc").read_text()
-        assert bashrc.count("seed.sh") == 1
+        assert bashrc.count("acorn.sh") == 1
 
 
 class TestOrgConf:
@@ -318,12 +318,12 @@ class TestProfile:
         _write_conf(copy, SEEDLING_PROFILE="profile.toml")
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
-        # Recorded against the COPY inside ~/seedling, so `seed apply` keeps
+        # Recorded against the COPY inside ~/seedling, so `acorn apply` keeps
         # working after the install share goes away.
         recorded = _settings(home)["profile"]
         assert recorded.endswith("profile.toml")
         assert "system" in recorded.replace("\\", "/")
-        assert "seed-cli apply" in _calls(home)
+        assert "acorn-cli apply" in _calls(home)
 
     def test_profile_replaces_the_default_dev_venv_setup(self, install_env):
         """Otherwise every machine carries a 'dev' venv the admin never
@@ -333,8 +333,8 @@ class TestProfile:
         _write_conf(copy, SEEDLING_PROFILE="profile.toml")
         run_install()
         calls = _calls(home)
-        assert "seed-cli apply" in calls
-        assert "seed-cli venv dev" not in calls
+        assert "acorn-cli apply" in calls
+        assert "acorn-cli venv dev" not in calls
 
     def test_a_missing_profile_falls_back_instead_of_failing(self, install_env):
         """A conf naming a profile that wasn't distributed must not brick the
@@ -345,7 +345,7 @@ class TestProfile:
         assert result.returncode == 0, result.stdout + result.stderr
         assert "falling back to the default setup" in result.stdout
         assert "profile" not in (_settings(home) or {})
-        assert "seed-cli venv dev" in _calls(home)
+        assert "acorn-cli venv dev" in _calls(home)
 
     def test_no_profile_key_when_unset(self, install_env):
         copy, fake_home, home, run_install = install_env
@@ -361,11 +361,11 @@ class TestProfile:
         mine.write_text('[[venv]]\nname = "mine"\ndefault = true\n', encoding="utf-8")
         result = run_install(f"SEEDLING_PROFILE='{mine.as_posix()}'")
         assert result.returncode == 0, result.stdout + result.stderr
-        assert "seed-cli apply" in _calls(home)
-        assert "seed-cli venv dev" not in _calls(home)
+        assert "acorn-cli apply" in _calls(home)
+        assert "acorn-cli venv dev" not in _calls(home)
 
     def test_a_user_profile_is_copied_into_the_seedling_home(self, install_env, tmp_path):
-        """The original may be a temp file or a mounted share; `seed apply`
+        """The original may be a temp file or a mounted share; `acorn apply`
         has to keep working after that goes away."""
         copy, fake_home, home, run_install = install_env
         mine = tmp_path / "mine.toml"
@@ -462,19 +462,19 @@ class TestBoolSettings:
         copy, fake_home, home, run_install = install_env
         _write_conf(copy, SEEDLING_AUTO_SETUP="true", SEEDLING_AUTO_VSCODE="false")
         run_install()
-        assert "seed-cli python" in _calls(home)
+        assert "acorn-cli python" in _calls(home)
 
     def test_auto_setup_false_via_conf_skips(self, install_env):
         copy, fake_home, home, run_install = install_env
         _write_conf(copy, SEEDLING_AUTO_SETUP="false")
         run_install()
-        assert "seed-cli python" not in _calls(home)
+        assert "acorn-cli python" not in _calls(home)
 
     def test_bool_is_case_insensitive(self, install_env):
         copy, fake_home, home, run_install = install_env
         _write_conf(copy, SEEDLING_AUTO_SETUP="FALSE")
         run_install()
-        assert "seed-cli python" not in _calls(home)
+        assert "acorn-cli python" not in _calls(home)
 
 
 class TestVendorPayloads:

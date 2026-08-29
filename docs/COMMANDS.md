@@ -1,6 +1,6 @@
 # Command reference
 
-Every `seed` command and flag, as currently implemented. For the guided
+Every `acorn` command and flag, as currently implemented. For the guided
 tour, start with **[Using seedling](GUIDE.md)**.
 
 ```{raw} html
@@ -15,13 +15,13 @@ lists) — except **everything that deletes is a `remove-*` command**, so every
 destructive action reads the same way (`remove-venv`, `remove-python`,
 `remove-repo`, `remove-user`) and they group together in help's Danger Zone.
 
-Grouped the same way `seed help` groups them, and split across a page per
+Grouped the same way `acorn help` groups them, and split across a page per
 group below — one 1,500-line reference was worse to search than eleven
 shorter ones:
 
 | Family | Commands |
 |---|---|
-| **[Entry points](commands/entry-points.md)** *(the files you run directly, before `seed` exists)* | `GET_STARTED/install.cmd`, `GET_STARTED/uninstall.cmd`, `GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd`, the one-line installers |
+| **[Entry points](commands/entry-points.md)** *(the files you run directly, before `acorn` exists)* | `GET_STARTED/install.cmd`, `GET_STARTED/uninstall.cmd`, `GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd`, the one-line installers |
 | **[Python interpreters](commands/interpreters.md)** *(structural — the base installs venvs are built from)* | `python [ver]` *(install)*, `python-list`, `remove-python` |
 | **[Venvs & packages](commands/venvs-and-packages.md)** *(day-to-day environment work)* | `venv <name>` *(create)*, `venv-list`, `activate`, `deactivate`, `run`, `which`, `venv-default`, `auto-activate`, `install`, `uninstall`, `package-list`, `show`, `venv-licenses`, `remove-venv`, `remove-venv-all` |
 | **[Python applications](commands/python-apps.md)** *(run, not imported — each in its own env)* | `tool-install <name>` *(install)*, `tool-list`, `tool-remove` |
@@ -32,7 +32,7 @@ shorter ones:
 | **[Custom commands](commands/custom.md)** *(your organization's own — see [CUSTOM-COMMANDS.md](CUSTOM-COMMANDS.md))* | `custom <name>` *(run)* |
 | **[Fleet & lifecycle](commands/lifecycle.md)** | `kill-processes`, `update-commands`, `remove-user`, `purge`, `purge-and-reinstall` |
 | **[Status & profiles](commands/status.md)** | `summary`, `health-check`, `logs-viewer`, `config`, `apply`, `where`, `--version` |
-| **[Scripting & automation](commands/scripting-and-automation.md)** *(the machine-facing surface, in one place)* | `seed run`, `seed which`, `--json`, never blocking on a prompt, concurrency |
+| **[Scripting & automation](commands/scripting-and-automation.md)** *(the machine-facing surface, in one place)* | `acorn run`, `acorn which`, `--json`, never blocking on a prompt, concurrency |
 
 ```{toctree}
 :maxdepth: 1

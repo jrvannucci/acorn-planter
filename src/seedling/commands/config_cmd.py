@@ -1,16 +1,16 @@
 """
-`seed config` -- view and change seedling's own settings.
+`acorn config` -- view and change seedling's own settings.
 
-    seed config                     show every setting (and where the file is)
-    seed config get <key>           print one value
-    seed config set <key> <value>   change a value
-    seed config unset <key>         reset a value to its built-in default
+    acorn config                     show every setting (and where the file is)
+    acorn config get <key>           print one value
+    acorn config set <key> <value>   change a value
+    acorn config unset <key>         reset a value to its built-in default
 
 List-valued keys (venv_default_packages) take comma-separated input:
-    seed config set venv_default_packages "ipython,ruff,requests"
+    acorn config set venv_default_packages "ipython,ruff,requests"
 
 The keys worth knowing about:
-  - update_source: lets `seed update-commands` work on networks with their
+  - update_source: lets `acorn update-commands` work on networks with their
     own GitHub host (set a git URL) or no git hosting at all (set a plain
     directory path, e.g. a network drive holding a copy of this repo).
   - default_venv: auto-activated by every new shell.
@@ -53,7 +53,7 @@ def _validate(key: str, value) -> str | None:
     if key == "default_base" and isinstance(value, str):
         if not paths.base_alias_file(value).exists():
             return (f"warning-only: no base Python '{value}' is installed yet "
-                    f"(run `seed python {value}`)")
+                    f"(run `acorn python {value}`)")
     if key == "startup_commands" and isinstance(value, list) and value:
         from . import custom_cmd
         known = custom_cmd.known_names()
@@ -81,7 +81,7 @@ def show(args) -> int:
         for key in unknown:
             print(f"  {key} = {json.dumps(data[key])}")
     print()
-    print("Change one with:  seed config set <key> <value>")
+    print("Change one with:  acorn config set <key> <value>")
     return 0
 
 
@@ -91,7 +91,7 @@ def get(args) -> int:
         print(f"Unknown key '{key}'. Known keys: {', '.join(config.KNOWN_KEYS)}")
         return 1
     value = config.get(key)
-    # Masked here too: `seed config get` is the form most likely to end up in
+    # Masked here too: `acorn config get` is the form most likely to end up in
     # a script whose output is captured, pasted, or logged.
     value = config.mask(key, value)
     if isinstance(value, list):

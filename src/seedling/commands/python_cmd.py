@@ -108,11 +108,11 @@ def run(args) -> int:
 
     write_alias(tag, installed.name)
 
-    # First base python installed becomes the default used by `seed venv`.
+    # First base python installed becomes the default used by `acorn venv`.
     if config.get_default_base() is None:
         config.set_default_base(tag)
 
     print(colors.ok(f"Done. Python {version_spec} is available as base '{tag}'") +
           f" (-> {installed.name}).")
-    print("Create a venv from it with:  seed venv <name>")
+    print("Create a venv from it with:  acorn venv <name>")
     return 0
