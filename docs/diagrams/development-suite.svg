@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 390" role="img" aria-labelledby="title" font-family="Arial, Helvetica, sans-serif">
+<title id="title">From shared configuration to your development suite</title>
+<rect width="1000" height="390" rx="16" fill="#FFFFFF"/>
+<text x="36" y="46" font-size="28" fill="#1B4332" font-weight="700">A development suite configured for you</text>
+<rect x="32" y="72" width="936" height="80" rx="10" fill="#E9F5EC"/>
+<text x="52" y="102" font-size="22" fill="#1B4332" font-weight="700">1  Set your defaults</text>
+<text x="52" y="129" font-size="18" fill="#1B4332" font-weight="400">Use global.conf for installation and acorn config for ongoing settings.</text>
+<rect x="32" y="168" width="936" height="80" rx="10" fill="#E9F5EC"/>
+<text x="52" y="198" font-size="22" fill="#1B4332" font-weight="700">2  Choose a profile</text>
+<text x="52" y="225" font-size="18" fill="#1B4332" font-weight="400">Describe the Python environments, packages, and tools you want.</text>
+<rect x="32" y="264" width="936" height="80" rx="10" fill="#E9F5EC"/>
+<text x="52" y="294" font-size="22" fill="#1B4332" font-weight="700">3  Start working</text>
+<text x="52" y="321" font-size="18" fill="#1B4332" font-weight="400">Activate an environment, run your code, and open your editor with acorn.</text>
+</svg>

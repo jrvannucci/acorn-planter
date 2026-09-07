@@ -14,26 +14,21 @@ network.
 
 ---
 
-## Why this is easier
+## Your development suite
 
-![The usual way means hours of setup before your first line of code; with acorn, one command and you're writing Python.](docs/diagrams/why-vs-usual.svg)
+![Shared configuration, a chosen profile, and a ready development suite.](docs/diagrams/development-suite.svg)
 
-Setting Python up yourself means choosing an installer, learning virtual
-environments, wiring up PATH, and finding an editor — before you write a line
-of code. Every one of those is a place to get stuck, and they're all handled
-here:
+- **Global defaults for your environments.** Configure installation with
+  `global.conf`, then manage your settings with `acorn config`.
+- **Python versions and packages together.** Create environments for different
+  projects and keep their dependencies separate.
+- **Development tools within reach.** Open VS Code or Spyder against the
+  environment you are using.
+- **Online and offline installation.** Prepare a bundle of resources and
+  validate profiles before taking your suite to an offline network.
 
-- **You don't need Python to install it.** The one-liner brings its own.
-- **An environment is already waiting.** Open a terminal and `python` works,
-  in a venv, with common packages in it.
-- **An editor comes with it.** `acorn vscode` — or `acorn spyder` — already
-  wired to the environment you're in.
-- **It's one folder, and it's undoable.** Nothing touches the registry,
-  `%APPDATA%`, or `~/.local`. One command removes all of it.
-
-Already fluent in Python? The same install gives you every interpreter, venv
-and cloned repo in one predictable place instead of sprawled across your
-machine — and it's the fastest way to hand a whole team an identical setup.
+Profiles let you describe a repeatable setup for yourself or use one supplied
+by your administrator. Your managed environments and tools live under `~/acorn`.
 
 ---
 
@@ -51,7 +46,7 @@ curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/in
 irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
 ```
 
-![Run the one-liner, acorn sets up everything Python needs, open a new terminal, and python just works.](docs/diagrams/install-flow.svg)
+![Run the online or offline installer, let ACORN prepare your configured suite, then open a new terminal.](docs/diagrams/install-flow.svg)
 
 > On Windows you can also download the repo and double-click `GET_STARTED/install.cmd`.
 > Skip the ready-made environment with `ACORN_AUTO_SETUP=false`.

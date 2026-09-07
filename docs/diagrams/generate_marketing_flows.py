@@ -1,23 +1,7 @@
 #!/usr/bin/env python3
-"""Generate the three small flow diagrams embedded directly in README.md
-(and, via docs/index.md, the docs homepage): why-vs-usual.svg,
-install-flow.svg, lifecycle.svg.
+"""Generate ACORN installation and lifecycle diagrams for README and Sphinx.
 
-These used to be mermaid diagrams (*.mmd rendered by mermaid-cli via
-build.py) -- the only three in the repo. Hand-authoring them as plain SVG,
-same as every other diagram under docs/diagrams/, removes the Node/mermaid-
-cli dependency entirely: nothing under docs/diagrams/ needs anything but
-Python to regenerate anymore, so docs/diagrams/build.py and its *.mmd inputs
-are gone too (see CHANGELOG). Styled to match the rest of the diagram set
-(NAVY/ICE/WHITE/DANGER, Georgia headings, Arial body) instead of mermaid's
-default flowchart look, so a README scroll doesn't visibly change palette
-between a hand-authored diagram and a mermaid one.
-
-Hooked into the same docs/conf.py `_generate_diagrams` build-time pass as
-generate_family_commands.py / generate_profile_
-flows.py -- always fresh, never a stale committed SVG.
-
-    python docs/diagrams/generate_marketing_flows.py
+Run directly or through the Sphinx documentation build.
 """
 
 from __future__ import annotations
@@ -71,14 +55,14 @@ def _varrow(x: float, y1: float, y2: float) -> str:
 def build_install_flow() -> None:
     """Run the one-liner -> acorn sets up everything -> open a terminal
     -> python just works (highlighted). A straight left-to-right chain."""
-    w, h = 1040, 150
+    w, h = 1152, 150
     box_h = 84
     y = (h - box_h) / 2
     boxes = [
-        (190, ["Run the", "one-liner"], ICE, NAVY, NAVY, False),
-        (260, ["acorn sets up everything", "Python needs, automatically"], ICE, NAVY, NAVY, False),
+        (190, ["Run the online or", "offline installer"], ICE, NAVY, NAVY, False),
+        (260, ["ACORN prepares your", "configured Python suite"], ICE, NAVY, NAVY, False),
         (190, ["Open a new", "terminal"], ICE, NAVY, NAVY, False),
-        (330, ["python just works",
+        (330, ["Your suite is ready",
                "acorn install requests adds packages",
                "acorn vscode opens the editor"], NAVY, WHITE, NAVY, True),
     ]
@@ -122,11 +106,11 @@ def build_lifecycle() -> None:
     svg.append(f'<line x1="{up_x:.0f}" y1="{update_y:.0f}" x2="{up_x:.0f}" y2="{row_y+box_h+6:.0f}" '
               f'stroke="#8A8A8A" stroke-width="1.6" marker-end="url(#mf-arrow)"/>')
 
-    svg.append(_wrap_box(install_x, row_y, box_w, box_h, ["Install", "one-liner"],
+    svg.append(_wrap_box(install_x, row_y, box_w, box_h, ["Install", "online or from a bundle"],
                          fill=NAVY, text_fill=WHITE, stroke=NAVY, bold_first=True))
     svg.append(_wrap_box(use_x, row_y, box_w, box_h, ["Use", "acorn venv / install / vscode"],
                          fill=ICE, text_fill=NAVY, stroke=NAVY, bold_first=True))
-    svg.append(_wrap_box(uninstall_x, row_y, box_w, box_h, ["Uninstall", "acorn purge → gone, cleanly"],
+    svg.append(_wrap_box(uninstall_x, row_y, box_w, box_h, ["Remove suite", "acorn purge"],
                          fill=DANGER, text_fill=WHITE, stroke=DANGER, bold_first=True))
     svg.append(_wrap_box(update_x, update_y, box_w, box_h, ["Update (optional)", "acorn update-commands"],
                          fill=ICE, text_fill=NAVY, stroke=NAVY, bold_first=True))
@@ -136,54 +120,9 @@ def build_lifecycle() -> None:
     print(f"wrote lifecycle.svg  ({w}x{h})")
 
 
-def build_why_vs_usual() -> None:
-    """Getting started with Python -> branches into "the usual way" (red)
-    and "with acorn" (green/navy)."""
-    w, h = 760, 300
-    top_w, top_h = 300, 56
-    top_x, top_y = (w - top_w) / 2, 20
-
-    col_w, col_h = 330, 96
-    left_x = w * 0.27 - col_w / 2
-    right_x = w * 0.73 - col_w / 2
-    col_y = 190
-    label_y = col_y - 34
-    branch_y = top_y + top_h + 26
-
-    svg = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" font-family="{FONT_BODY}">', _DEFS]
-
-    mid_x = w / 2
-    left_cx = left_x + col_w / 2
-    right_cx = right_x + col_w / 2
-    svg.append(f'<line x1="{mid_x:.0f}" y1="{top_y+top_h:.0f}" x2="{mid_x:.0f}" y2="{branch_y:.0f}" stroke="#8A8A8A" stroke-width="1.6"/>')
-    svg.append(f'<line x1="{left_cx:.0f}" y1="{branch_y:.0f}" x2="{right_cx:.0f}" y2="{branch_y:.0f}" stroke="#8A8A8A" stroke-width="1.6"/>')
-    svg.append(_varrow(left_cx, branch_y, label_y + 24))
-    svg.append(_varrow(right_cx, branch_y, label_y + 24))
-
-    svg.append(f'<text x="{left_cx:.0f}" y="{label_y:.0f}" text-anchor="middle" class="body" font-size="13.5" font-weight="700" fill="{NAVY}">The usual way</text>')
-    svg.append(f'<text x="{right_cx:.0f}" y="{label_y:.0f}" text-anchor="middle" class="body" font-size="13.5" font-weight="700" fill="{NAVY}">With acorn</text>')
-
-    svg.append(_wrap_box(top_x, top_y, top_w, top_h, ["Getting started with Python"],
-                         fill=NAVY, text_fill=WHITE, stroke=NAVY, bold_first=True))
-    svg.append(_wrap_box(left_x, col_y, col_w, col_h,
-                         ["research, install, and connect several tools —",
-                          "hours of setup and decisions",
-                          "before your first line of code"],
-                         fill=DANGER, text_fill=WHITE, stroke=DANGER))
-    svg.append(_wrap_box(right_x, col_y, col_w, col_h,
-                         ["run one command → open a terminal →",
-                          "you're writing Python"],
-                         fill=NAVY, text_fill=WHITE, stroke=NAVY))
-
-    svg.append("</svg>")
-    (OUT_DIR / "why-vs-usual.svg").write_text("\n".join(svg), encoding="utf-8")
-    print(f"wrote why-vs-usual.svg  ({w}x{h})")
-
-
 def build() -> None:
     build_install_flow()
     build_lifecycle()
-    build_why_vs_usual()
 
 
 if __name__ == "__main__":

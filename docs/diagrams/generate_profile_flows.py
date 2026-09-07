@@ -112,9 +112,9 @@ DEFS = f"""
 def header(title: str, subtitle: str) -> str:
     return f"""
   <g transform="translate(40,20)">
-    <path d="M12 42 V16" stroke="{NAVY}" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-    <path d="M12 23 C12 14 5 12 0 14 C0 21 5 25 12 23 Z" fill="#74C69D" stroke="{NAVY}" stroke-width="1.4" stroke-linejoin="round"/>
-    <path d="M12 19 C12 11 20 9 25 11 C25 18 20 22 12 19 Z" fill="#95D5B2" stroke="{NAVY}" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M2 20 Q2 37 16 44 Q30 37 30 20 Z" fill="#D8A66D" stroke="{NAVY}" stroke-width="1.6"/>
+    <path d="M0 21 Q0 8 16 8 Q32 8 32 21 Z" fill="{NAVY}"/>
+    <path d="M16 9 Q14 2 21 1" stroke="{NAVY}" stroke-width="2" stroke-linecap="round" fill="none"/>
   </g>
   <text x="94" y="54" class="head fg" font-size="25" font-weight="700">{esc(title)}</text>
   <text x="40" y="79" class="body fmute" font-size="13.5" font-style="italic">{esc(subtitle)}</text>
@@ -180,8 +180,8 @@ B_HEAD_H = 40   # height of the "offline-bundle/" header drawn inside the box
 B_BOX_PAD = 16  # gap between the box's outer edge and the header/chips it contains
 
 
-B_CONF_LABEL = "offline-bundler/offline-bundle.toml"
-B_CONF_NOTE = "the spec this build is driven by -- global.conf is checked against it, not read for it"
+B_CONF_LABEL = "offline-bundle.toml"
+B_CONF_NOTE = "in GET_STARTED_OFFLINE_BUNDLE/; declares the bundle resources, checked against global.conf"
 B_CONF_VIA = "declares what to stage"
 B_CONF_GAP = 30  # room for the connector arrow + its label
 
@@ -210,7 +210,7 @@ _BUILD_CONF_KEY_FOR = [
 def _build_conf_lines(rows: list[dict]) -> list[str]:
     caps = {r["cap"] for r in rows}
     return [f"{key}  →  {dest}"
-            for cap, keys, dest in _BUILD_CONF_KEY_FOR if cap in caps
+            for cap, keys, dest in _BUILD_CONF_KEY_FOR if any(c.startswith(cap) for c in caps)
             for key in keys]
 
 
@@ -390,7 +390,7 @@ def subchip(x: float, y: float, w: float, h: float, label: str) -> str:
 
 CONTENT_TOP = 110    # where content starts below the header/subtitle
 CONFIG_GAP = 34      # space for the connector arrow + its label
-CONFIG_NOTE = "one file, read at install and every later `acorn apply`"
+CONFIG_NOTE = "self-contained TOML profiles; default for everyone, others selected by their user lists"
 
 # global.conf, drawn as its own card above profile.toml -- the
 # ACORN_PROFILE key is what makes the profile below get read AT ALL, so
@@ -411,7 +411,7 @@ CONF2_GAP = 30
 # own; a user (or a script) has to run this first, whether that's a
 # double-click on a share/bundle copy or the piped one-liner that
 # downloads and runs it in one step for a public install.
-INSTALL_TRIGGER_LABEL = "install.cmd  /  the one-liner"
+INSTALL_TRIGGER_LABEL = "GET_STARTED/install.cmd"
 INSTALL_TRIGGER_NOTE = "you (or a script) run this -- on each machine, once"
 INSTALL_TRIGGER_GAP = 26
 
@@ -769,10 +769,12 @@ PROFILES = [
     dict(
         slug="internal-pypi-only",
         title="Internal PyPI only",
-        subtitle="Partial bundle -- everything except the wheels",
+        subtitle="Bundle tools and wheels; upload wheels to the internal index",
         build=[
-            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
                 "acorn/", "copied in, refreshed every re-run"),
+            brow("Packages + Spyder", "pypi.org", "acorn upload-whls <wheels-dir>",
+                "wheels/", "upload to the internal index"),
             brow("uv", "astral.sh", "the binary itself",
                 "vendor/uv/", "staged into the bundle"),
             brow("Interpreters", "python-build-standalone", "no internal PBS mirror",
@@ -782,7 +784,7 @@ PROFILES = [
             brow("Editor", "VS Code Marketplace", "Marketplace is blocked here",
                 "vendor/vscode/", "staged into the bundle"),
             brow("Git", "git-for-windows", "no git host to clone from either",
-                "vendor/git/", "staged with --mingit"),
+                "vendor/git/", "[git] mingit = true"),
             brow("CA cert", "you supply it", "the proxy re-signs HTTPS",
                 "vendor/certs/", "staged into the bundle"),
         ],
@@ -815,9 +817,9 @@ PROFILES = [
     dict(
         slug="air-gapped-vscodium",
         title="Air-gapped (VSCodium)",
-        subtitle="No redistribution rights -- built once, carried in",
+        subtitle="VSCodium and Open VSX -- built once, carried in",
         build=[
-            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
                 "acorn/", "copied in, refreshed every re-run"),
             brow("Packages", "pypi.org", "every venv package",
                 "wheels/", "staged into the bundle"),
@@ -827,9 +829,9 @@ PROFILES = [
                 "python-builds/", "staged into the bundle"),
             brow("conda-forge tools", "conda-forge", "ripgrep, pandoc",
                 "conda-channel/", "+ vendored micromamba"),
-            brow("Editor", "VSCodium + Open VSX", "MIT-licensed, no rights needed",
+            brow("Editor", "VSCodium + Open VSX", "review editor and extension licenses",
                 "vendor/vscode/", "staged into the bundle"),
-            brow("Git", "git-for-windows", "optional, --mingit",
+            brow("Git", "git-for-windows", "optional: [git] mingit = true",
                 "vendor/git/", "staged if requested"),
         ],
         pull=dict(
@@ -860,7 +862,7 @@ PROFILES = [
         title="Air-gapped (VS Code)",
         subtitle="Keeps Pylance -- built once, carried in",
         build=[
-            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
                 "acorn/", "copied in, refreshed every re-run"),
             brow("Packages", "pypi.org", "every venv package",
                 "wheels/", "staged into the bundle"),
@@ -872,7 +874,7 @@ PROFILES = [
                 "conda-channel/", "+ vendored micromamba"),
             brow("Editor", "VS Code Marketplace", "official build -- rights held",
                 "vendor/vscode/", "staged, marked RESTRICTED"),
-            brow("Git", "git-for-windows", "optional, --mingit",
+            brow("Git", "git-for-windows", "optional: [git] mingit = true",
                 "vendor/git/", "staged if requested"),
         ],
         pull=dict(
@@ -903,7 +905,7 @@ PROFILES = [
         title="Air-gapped (everything)",
         subtitle="Every capability at once -- the maximal case",
         build=[
-            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
                 "acorn/", "copied in, refreshed every re-run"),
             brow("Packages + Spyder", "pypi.org", "every venv package, per interpreter",
                 "wheels/", "staged into the bundle"),
@@ -915,7 +917,7 @@ PROFILES = [
                 "conda-channel/", "+ vendored micromamba"),
             brow("Editor", "VS Code Marketplace", "official build, Pylance included",
                 "vendor/vscode/", "staged, marked RESTRICTED"),
-            brow("Git", "git-for-windows", "--mingit",
+            brow("Git", "git-for-windows", "[git] mingit = true",
                 "vendor/git/", "staged into the bundle"),
             brow("CA cert", "you supply it", "proxy re-signs HTTPS here",
                 "vendor/certs/", "staged into the bundle"),

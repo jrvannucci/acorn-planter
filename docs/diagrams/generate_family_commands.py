@@ -260,7 +260,7 @@ FAMILIES = [
      ]),
 
     ("custom", "Custom commands",
-     "An organization's own verbs, added to acorn.",
+     "Your own commands and scripts, added to ACORN.",
      [("system", "system/", "acorn's own internals", [("config/", "config")])],
      [], [],
      [
@@ -272,8 +272,8 @@ FAMILIES = [
         ]),
      ]),
 
-    ("lifecycle", "Fleet & lifecycle",
-     "Cleanup, updates, and full-machine teardown.",
+    ("lifecycle", "Suite lifecycle",
+     "Cleanup, updates, and removal of your managed suite.",
      [("system", "system/", "acorn's own internals", [("src/", "src"), ("shell/", "shell")])],
      [
         ("system", "system/", "acorn's own internals", []),
@@ -304,7 +304,7 @@ FAMILIES = [
      ]),
 
     ("status", "Status & profiles",
-     "Read-only status, plus applying a fleet-wide deployment profile.",
+     "Inspect your managed suite and apply a development profile.",
      [("system", "system/", "acorn's own internals", [("config/", "config"), ("logs/", "logs")])],
      [], [],
      [
