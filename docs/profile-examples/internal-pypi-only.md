@@ -4,7 +4,7 @@ The awkward middle: IT runs an Artifactory that proxies **PyPI and only
 PyPI**. No conda-forge mirror, no python-build-standalone mirror, no Marketplace,
 and a proxy that re-signs HTTPS on the way through.
 
-This is a **partial bundle**, and it is the case that shows seedling's offline
+This is a **partial bundle**, and it is the case that shows acorn's offline
 pieces are independent of each other. Each source is configured separately, so
 you point the one you have at a URL and bundle the three you don't:
 
@@ -35,7 +35,7 @@ you point the one you have at a URL and bundle the three you don't:
 
 ![Everything except the wheels: five sources feed the bundle, one row apiece.](../diagrams/profile-build-internal-pypi-only.svg)
 
-![Two origins on the target: artifactory.corp.example stays live for packages and Spyder, while S:\seedling -- the bundle -- hands out everything else from one grouped box.](../diagrams/profile-pull-internal-pypi-only.svg)
+![Two origins on the target: artifactory.corp.example stays live for packages and Spyder, while S:\acorn -- the bundle -- hands out everything else from one grouped box.](../diagrams/profile-pull-internal-pypi-only.svg)
 
 ```toml
 # profile.toml -- the standard environment.
@@ -67,23 +67,23 @@ side by side**:
 ```sh
 # GET_STARTED/global.conf -- in the copy on the share.
 
-# Install seedling itself from the share: no git, no network.
-SEEDLING_REPO_URL="S:\seedling\seedling"
+# Install acorn itself from the share: no git, no network.
+ACORN_REPO_URL="S:\acorn\acorn"
 
 # The one live service: a URL, so uv treats it as an index and resolves
 # against it normally. Spyder arrives through here.
-SEEDLING_PACKAGE_INDEX="https://artifactory.corp.example/api/pypi/pypi/simple"
+ACORN_PACKAGE_INDEX="https://artifactory.corp.example/api/pypi/pypi/simple"
 
 # The two that aren't mirrored: directories in the bundle, so uv reads them
 # as local sources with the internet disabled.
-SEEDLING_PYTHON_MIRROR="S:\seedling\python-builds"
-SEEDLING_CONDA_CHANNEL="S:\seedling\conda-channel"
+ACORN_PYTHON_MIRROR="S:\acorn\python-builds"
+ACORN_CONDA_CHANNEL="S:\acorn\conda-channel"
 
 # The proxy re-signs HTTPS and IT has NOT pushed the root machine-wide, so
 # ship the PEM in vendor/certs/ and leave native_tls off.
-SEEDLING_NATIVE_TLS="false"
+ACORN_NATIVE_TLS="false"
 
-SEEDLING_PROFILE="installation-profile"
+ACORN_PROFILE="installation-profile"
 ```
 
 **What the share holds.** Even here the bundle declares its own contents —
@@ -138,7 +138,7 @@ wheel set that *is* staged is reported per package:
 The GPL entry arrives with Spyder. On this network it matters twice over: once
 for the share, and again if you take the **publish** route below, since
 uploading wheels into your internal index is another act of redistribution.
-`acorn whl-licenses S:\seedling\wheels --fail-on copyleft,unknown` makes that
+`acorn whl-licenses S:\acorn\wheels --fail-on copyleft,unknown` makes that
 a gate rather than a memory.
 
 **Two ways to feed the index.** The wheel step is the one that's optional
@@ -157,14 +157,14 @@ here, and which way you go decides what `package_index` points at:
    ```sh
    acorn config set package_upload_url https://artifactory.corp.example/api/pypi/pypi-local/
    acorn config set package_upload_token <a token with write access>
-   acorn upload-whls S:\seedling\wheels
+   acorn upload-whls S:\acorn\wheels
    ```
 
    [`acorn upload-whls`](../commands/offline-utilities.md) runs `uvx twine
    upload` for you, honors the `ca_cert` this network needs, and passes the
    token through the environment rather than a command line. Set the token
    **only on this publishing machine**: leaving
-   `SEEDLING_PACKAGE_UPLOAD_TOKEN` empty in the conf you distribute is what
+   `ACORN_PACKAGE_UPLOAD_TOKEN` empty in the conf you distribute is what
    keeps write access off every user's machine.
 
    `package_index` still points at the index URL -- the
@@ -180,13 +180,13 @@ here, and which way you go decides what `package_index` points at:
 
 Either way, staging the wheels is harmless — it also gives you a fallback if
 the mirror goes down, though using it as the fallback means pointing
-`package_index` at `S:\seedling\wheels` instead of the URL, since only one of
+`package_index` at `S:\acorn\wheels` instead of the URL, since only one of
 the two can be the package source at a time.
 
 **Why it's shaped this way**
 
 - **A URL and a directory in the same conf is normal**, not a workaround.
-  seedling resolves each source independently: `package_index` as a URL
+  acorn resolves each source independently: `package_index` as a URL
   becomes uv's default index, while `python_mirror` and `conda_channel` as
   directories become local sources. Nothing requires them to agree.
 - **Spyder needs no bundling** on this network, which is the quiet advantage
@@ -220,9 +220,9 @@ present, and that the index is reachable.
 Note what is *absent*: no `wheels/`, because the internal PyPI serves those.
 
 ```
-offline-bundle/                    -> copied to S:\seedling
+offline-bundle/                    -> copied to S:\acorn
 ├── MANIFEST.json
-├── seedling/                      users run GET_STARTED/install.cmd from here
+├── acorn/                      users run GET_STARTED/install.cmd from here
 │   ├── GET_STARTED/global.conf              the mixed URL + directory conf above
 │   ├── installation-profile/profile.toml
 │   └── vendor/
@@ -249,7 +249,7 @@ offline-bundle/                    -> copied to S:\seedling
 │       ├── repodata.json
 │       ├── ripgrep-14.1.1-h.....conda
 │       └── pandoc-3.5-h.....conda
-└── (no wheels/ -- SEEDLING_PACKAGE_INDEX is the Artifactory URL)
+└── (no wheels/ -- ACORN_PACKAGE_INDEX is the Artifactory URL)
 ```
 
 Spyder is the interesting absence too: it never appears in the bundle,
@@ -268,7 +268,7 @@ Where each lands on the target:
 
 **What a cert file looks like.** Any PEM-encoded certificate, one or more per
 file. The installer concatenates *every* `.pem` and `.crt` in the folder into
-`~/seedling/system/certs/ca-bundle.pem`, so a root and an intermediate can be
+`~/acorn/system/certs/ca-bundle.pem`, so a root and an intermediate can be
 separate files:
 
 ```

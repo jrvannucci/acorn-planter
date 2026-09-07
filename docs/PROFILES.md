@@ -1,13 +1,13 @@
 # Deployment profiles
 
 **One file that says what environment your users should end up with.** The
-admin writes it, distributes it with seedling, and every user gets the same
+admin writes it, distributes it with acorn, and every user gets the same
 interpreters, venvs, packages and repos from the single command they already
 run. Later, when the standard changes, they re-run `acorn apply` and pick up
 the difference.
 
-`global.conf` says *where seedling gets things from*. A profile says *what
-to set up once seedling works*. They are separate files because they answer
+`global.conf` says *where acorn gets things from*. A profile says *what
+to set up once acorn works*. They are separate files because they answer
 separate questions and are read at different times.
 
 On an air-gapped network a third file joins them:
@@ -57,7 +57,7 @@ tools = ["ripgrep", "pandoc"]
 # Which bundled editor(s) everyone gets: "vscode" (VS Code / VSCodium) and/or
 # "spyder". A bare string or a list, whichever reads better. Omit it and
 # `acorn apply` installs none -- whether VS Code is set up at install time
-# then stays SEEDLING_AUTO_VSCODE's decision.
+# then stays ACORN_AUTO_VSCODE's decision.
 editor = "spyder"
 # editor = ["vscode", "spyder"]   # a mixed team
 
@@ -90,39 +90,39 @@ profile.
 
 ## Installing with your own profile
 
-You don't need to distribute a modified copy of seedling to use a profile.
-Point the ordinary one-line installer at a file with the `SEEDLING_PROFILE`
+You don't need to distribute a modified copy of acorn to use a profile.
+Point the ordinary one-line installer at a file with the `ACORN_PROFILE`
 environment variable — this is how an admin can email or publish a single
 `.toml` and have people install straight from the public one-liner:
 
 **macOS / Linux:**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/seedling/main/installers/install.sh \
-  | SEEDLING_PROFILE=./team.toml sh
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh \
+  | ACORN_PROFILE=./team.toml sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:SEEDLING_PROFILE = "C:\Users\me\Downloads\team.toml"
-irm https://raw.githubusercontent.com/jrvannucci/seedling/main/installers/install.ps1 | iex
+$env:ACORN_PROFILE = "C:\Users\me\Downloads\team.toml"
+irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
 ```
 
 Relative paths resolve against the directory you ran the installer from.
 
 Two things happen that are worth knowing:
 
-- **The file is copied into `~/seedling/system/config/profile.toml`.** The
+- **The file is copied into `~/acorn/system/config/profile.toml`.** The
   original might be a downloads folder, a temp file or a mounted share, and
   `acorn apply` has to keep working long after that goes away — the same
-  reason seedling copies its own source in.
+  reason acorn copies its own source in.
 - **A path that doesn't exist stops the install.** This is deliberately
   unlike the [distributed](#distributing-it) case, which warns and falls back
   to the default setup: if you explicitly named a profile and silently got a
   plain environment instead, you wouldn't find out until something you
   expected was missing.
 
-The environment variable wins over any `SEEDLING_PROFILE` in `global.conf`,
-matching how `SEEDLING_REPO` and `SEEDLING_HOME` already override their conf
+The environment variable wins over any `ACORN_PROFILE` in `global.conf`,
+matching how `ACORN_REPO` and `ACORN_HOME` already override their conf
 equivalents for one run.
 
 ---
@@ -144,10 +144,10 @@ default = true          # everyone gets this
 users = ["alice", "priya", "sam"]
 ```
 
-Point `SEEDLING_PROFILE` at the **folder** rather than a file:
+Point `ACORN_PROFILE` at the **folder** rather than a file:
 
 ```
-SEEDLING_PROFILE="installation-profile"
+ACORN_PROFILE="installation-profile"
 ```
 
 `acorn apply` then resolves the set for whoever is running it: the default
@@ -162,7 +162,7 @@ the default establishes the baseline, an opt-in profile layers on top of it.
   exists to be applied by path (`acorn apply ./scratch.toml`), which is what
   you want for one-off or experimental environments.
 - Matching is **case-insensitive**, against the same login name the `{user}`
-  token in `SEEDLING_HOME_DIR` expands to — so a shared-root deployment and a
+  token in `ACORN_HOME_DIR` expands to — so a shared-root deployment and a
   user list can't disagree about who someone is.
 - A single file still works if you only ever ship one profile.
 
@@ -174,11 +174,11 @@ for three people is checked as thoroughly as the default.
 
 ## Distributing it
 
-Put the file in the copy of seedling you distribute and name it in
-[`global.conf`](https://github.com/jrvannucci/seedling/blob/main/GET_STARTED/global.conf):
+Put the file in the copy of acorn you distribute and name it in
+[`global.conf`](https://github.com/jrvannucci/acorn/blob/main/GET_STARTED/global.conf):
 
 ```
-SEEDLING_PROFILE="installation-profile"
+ACORN_PROFILE="installation-profile"
 ```
 
 That is the whole handoff. Your users run the same `GET_STARTED/install.cmd` they would
@@ -189,7 +189,7 @@ When a profile is set it **replaces** the built-in default setup (a single
 `dev` venv), rather than layering on top of it. Otherwise every machine would
 carry a `dev` venv you never asked for alongside the ones you declared.
 
-The profile is copied into `~/seedling/system/src` along with the rest of the
+The profile is copied into `~/acorn/system/src` along with the rest of the
 source, so `acorn apply` keeps working after the share it was installed from
 is unmounted, and `acorn update-commands` refreshes it.
 

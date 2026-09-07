@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from conftest import make_repo_copy, needs_bash, plant_stub_uv, run_bash
-from seedling import PUBLIC_REPO
+from acorn import PUBLIC_REPO
 
 pytestmark = needs_bash
 
@@ -23,7 +23,7 @@ PUBLIC_URL = PUBLIC_REPO
 def install_env(tmp_path, monkeypatch):
     """A repo copy + fake HOME with a stub uv pre-planted. Returns a runner
     that executes `sh ./GET_STARTED/install.cmd` (the polyglot entry point) and paths
-    for assertions. The environment is scrubbed of SEEDLING_*/UV_*/SSL_*
+    for assertions. The environment is scrubbed of ACORN_*/UV_*/SSL_*
     so a stray or leaked var (e.g. UV_NATIVE_TLS set by another test's
     config.apply_runtime_env) can't pollute the installer subprocess."""
     import conftest
@@ -31,9 +31,9 @@ def install_env(tmp_path, monkeypatch):
         monkeypatch.delenv(var, raising=False)
     copy = make_repo_copy(tmp_path / "copy")
     fake_home = tmp_path / "home"
-    seedling_home = fake_home / "seedling"
+    acorn_home = fake_home / "acorn"
     fake_home.mkdir()
-    plant_stub_uv(seedling_home)
+    plant_stub_uv(acorn_home)
 
     def run_install(env_extra: str = ""):
         script = (
@@ -43,16 +43,16 @@ def install_env(tmp_path, monkeypatch):
         )
         return run_bash(script)
 
-    return copy, fake_home, seedling_home, run_install
+    return copy, fake_home, acorn_home, run_install
 
 
-def _calls(seedling_home):
-    log = seedling_home / "system" / "bin" / "calls.log"
+def _calls(acorn_home):
+    log = acorn_home / "system" / "bin" / "calls.log"
     return log.read_text() if log.exists() else ""
 
 
-def _settings(seedling_home):
-    f = seedling_home / "system" / "config" / "settings.json"
+def _settings(acorn_home):
+    f = acorn_home / "system" / "config" / "settings.json"
     return json.loads(f.read_text()) if f.exists() else None
 
 
@@ -69,7 +69,7 @@ def _write_conf(copy, **overrides):
 class TestDefaultInstall:
     def test_install_writes_a_captured_block_format_log(self, install_env):
         copy, fake_home, home, run_install = install_env
-        result = run_install("SEEDLING_AUTO_SETUP=false")
+        result = run_install("ACORN_AUTO_SETUP=false")
         assert result.returncode == 0, result.stdout + result.stderr
         logs = list((home / "system" / "logs").glob("install-*.log"))
         assert len(logs) == 1, "install.sh should write exactly one install log"
@@ -77,7 +77,7 @@ class TestDefaultInstall:
         assert text.startswith("=== [")             # block start marker
         assert "installer (bootstrap)" in text
         assert "=== " in text and "exit code 0" in text   # block exit marker
-        assert "seedling is installed" in text       # captured live output
+        assert "acorn is installed" in text       # captured live output
         # Plain text end to end: logs may be shipped to a server, so ANSI is
         # stripped at the source (info() always emits codes, so absence here
         # proves the strip ran).
@@ -85,7 +85,7 @@ class TestDefaultInstall:
 
     def test_pristine_conf_records_local_checkout_dir(self, install_env):
         copy, fake_home, home, run_install = install_env
-        result = run_install("SEEDLING_AUTO_SETUP=false")
+        result = run_install("ACORN_AUTO_SETUP=false")
         assert result.returncode == 0, result.stdout + result.stderr
         # source copied, minus .git and vendor
         assert (home / "system" / "src" / "src" / "pyproject.toml").exists()
@@ -101,7 +101,7 @@ class TestDefaultInstall:
         assert settings["update_source"] != PUBLIC_URL
         assert settings["update_source"].replace("\\", "/").rstrip("/").endswith("/copy")
         # hook written and registered
-        assert "seedling" in (fake_home / ".bashrc").read_text()
+        assert "acorn" in (fake_home / ".bashrc").read_text()
         assert (home / "system" / "shell" / "acorn.sh").exists()
 
     def test_auto_setup_runs_expected_cli_sequence(self, install_env):
@@ -116,18 +116,18 @@ class TestDefaultInstall:
 
     def test_auto_setup_skips(self, install_env):
         copy, fake_home, home, run_install = install_env
-        run_install("SEEDLING_AUTO_SETUP=false")
+        run_install("ACORN_AUTO_SETUP=false")
         assert "acorn-cli python" not in _calls(home)
         (home / "system" / "bin" / "calls.log").unlink(missing_ok=True)
-        run_install("SEEDLING_AUTO_VSCODE=false")
+        run_install("ACORN_AUTO_VSCODE=false")
         calls = _calls(home)
         assert "acorn-cli venv dev" in calls
         assert "vscode --no-open" not in calls
 
     def test_reinstall_never_stacks_hooks(self, install_env):
         copy, fake_home, home, run_install = install_env
-        run_install("SEEDLING_AUTO_SETUP=false")
-        run_install("SEEDLING_AUTO_SETUP=false")
+        run_install("ACORN_AUTO_SETUP=false")
+        run_install("ACORN_AUTO_SETUP=false")
         bashrc = (fake_home / ".bashrc").read_text()
         assert bashrc.count("acorn.sh") == 1
 
@@ -137,16 +137,16 @@ class TestOrgConf:
         copy, fake_home, home, run_install = install_env
         _write_conf(
             copy,
-            SEEDLING_REPO_URL=r"S:\\share\\seedling",
-            SEEDLING_PYTHON_MIRROR=r"S:\\share\\python-builds",
-            SEEDLING_PACKAGE_INDEX=r"S:\\share\\wheels",
-            SEEDLING_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas",
-            SEEDLING_AUTO_SETUP="false",
+            ACORN_REPO_URL=r"S:\\share\\acorn",
+            ACORN_PYTHON_MIRROR=r"S:\\share\\python-builds",
+            ACORN_PACKAGE_INDEX=r"S:\\share\\wheels",
+            ACORN_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas",
+            ACORN_AUTO_SETUP="false",
         )
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
         settings = _settings(home)
-        assert settings["update_source"] == r"S:\share\seedling"
+        assert settings["update_source"] == r"S:\share\acorn"
         assert settings["python_mirror"] == r"S:\share\python-builds"
         assert settings["package_index"] == r"S:\share\wheels"
         assert settings["venv_default_packages"] == ["ipython", "ruff", "pandas"]
@@ -161,14 +161,14 @@ class TestOrgConf:
 
     def test_native_tls_conf(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_NATIVE_TLS="true", SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_NATIVE_TLS="true", ACORN_AUTO_SETUP="false")
         run_install()
         assert _settings(home)["native_tls"] is True
         assert "UV_NATIVE_TLS=1" in (home / "system" / "bin" / "uv-env.log").read_text()
 
     def test_native_tls_false_is_off(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_NATIVE_TLS="false", SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_NATIVE_TLS="false", ACORN_AUTO_SETUP="false")
         run_install()
         s = _settings(home) or {}
         assert "native_tls" not in s
@@ -177,10 +177,10 @@ class TestOrgConf:
 
 
 class TestCustomCommandsAndStartup:
-    """SEEDLING_CUSTOM_COMMANDS and SEEDLING_STARTUP_COMMANDS, wired the
-    same way as SEEDLING_PROFILE (conf-sourced paths resolve against the
+    """ACORN_CUSTOM_COMMANDS and ACORN_STARTUP_COMMANDS, wired the
+    same way as ACORN_PROFILE (conf-sourced paths resolve against the
     copied source tree; a plain comma list becomes a JSON array, same as
-    SEEDLING_VENV_DEFAULT_PACKAGES)."""
+    ACORN_VENV_DEFAULT_PACKAGES)."""
 
     def test_custom_commands_file_is_recorded(self, install_env):
         copy, fake_home, home, run_install = install_env
@@ -188,14 +188,14 @@ class TestCustomCommandsAndStartup:
             '[[command]]\nname = "lint"\nrun = ["x"]\n', encoding="utf-8")
         _write_conf(
             copy,
-            SEEDLING_CUSTOM_COMMANDS="custom-commands.toml",
-            SEEDLING_AUTO_SETUP="false",
+            ACORN_CUSTOM_COMMANDS="custom-commands.toml",
+            ACORN_AUTO_SETUP="false",
         )
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
         settings = _settings(home)
         assert settings["custom_commands"].endswith("custom-commands.toml")
-        # Recorded against the copy inside ~/seedling, like `profile` -- so
+        # Recorded against the copy inside ~/acorn, like `profile` -- so
         # it keeps working after the install share goes away.
         assert "system" in settings["custom_commands"].replace("\\", "/")
 
@@ -213,8 +213,8 @@ class TestCustomCommandsAndStartup:
         (copy / "scripts" / "greet.py").write_text("print('hi')\n")
         _write_conf(
             copy,
-            SEEDLING_CUSTOM_COMMANDS="custom-commands.toml",
-            SEEDLING_AUTO_SETUP="false",
+            ACORN_CUSTOM_COMMANDS="custom-commands.toml",
+            ACORN_AUTO_SETUP="false",
         )
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
@@ -236,7 +236,7 @@ class TestCustomCommandsAndStartup:
         (mine_dir / "scripts").mkdir()
         (mine_dir / "scripts" / "greet.py").write_text("print('hi')\n")
         toml_path = (mine_dir / "custom-commands.toml").as_posix()
-        result = run_install(f"SEEDLING_CUSTOM_COMMANDS='{toml_path}'")
+        result = run_install(f"ACORN_CUSTOM_COMMANDS='{toml_path}'")
         assert result.returncode == 0, result.stdout + result.stderr
         recorded = _settings(home)["custom_commands"]
         script = Path(recorded).parent / "scripts" / "greet.py"
@@ -246,8 +246,8 @@ class TestCustomCommandsAndStartup:
         copy, fake_home, home, run_install = install_env
         _write_conf(
             copy,
-            SEEDLING_STARTUP_COMMANDS="check-mirror, motd",
-            SEEDLING_AUTO_SETUP="false",
+            ACORN_STARTUP_COMMANDS="check-mirror, motd",
+            ACORN_AUTO_SETUP="false",
         )
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
@@ -255,12 +255,12 @@ class TestCustomCommandsAndStartup:
 
     def test_startup_commands_absent_when_unset(self, install_env):
         copy, fake_home, home, run_install = install_env
-        run_install("SEEDLING_AUTO_SETUP=false")
+        run_install("ACORN_AUTO_SETUP=false")
         assert "startup_commands" not in (_settings(home) or {})
 
 
 class TestVscodeConfigDir:
-    """SEEDLING_VSCODE_CONFIG_DIR, wired like SEEDLING_CUSTOM_COMMANDS_DIR
+    """ACORN_VSCODE_CONFIG_DIR, wired like ACORN_CUSTOM_COMMANDS_DIR
     used to be (before it was folded away): the env var names a directory
     directly, so both the env-var and conf-sourced branches copy/reference
     the whole thing, not just one file."""
@@ -272,13 +272,13 @@ class TestVscodeConfigDir:
         (config_dir / "settings.json").write_text('{"editor.fontSize": 14}\n')
         _write_conf(
             copy,
-            SEEDLING_VSCODE_CONFIG_DIR="vscode-config",
-            SEEDLING_AUTO_SETUP="false",
+            ACORN_VSCODE_CONFIG_DIR="vscode-config",
+            ACORN_AUTO_SETUP="false",
         )
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
         recorded = _settings(home)["vscode_config_dir"]
-        # Recorded against the copy inside ~/seedling, like `custom_commands`
+        # Recorded against the copy inside ~/acorn, like `custom_commands`
         # -- so it keeps working after the install share goes away.
         assert "system" in recorded.replace("\\", "/")
         assert (Path(recorded) / "settings.json").is_file()
@@ -286,14 +286,14 @@ class TestVscodeConfigDir:
     def test_env_var_sourced_dir_is_copied_whole(self, install_env, tmp_path):
         """Both settings.json AND keybindings.json survive the copy -- the
         env var names the directory itself, so there's no "sibling file"
-        ambiguity the way there is for SEEDLING_CUSTOM_COMMANDS (which names
+        ambiguity the way there is for ACORN_CUSTOM_COMMANDS (which names
         a file and infers its parent)."""
         copy, fake_home, home, run_install = install_env
         mine_dir = tmp_path / "my-vscode-config"
         mine_dir.mkdir()
         (mine_dir / "settings.json").write_text('{"editor.fontSize": 14}\n')
         (mine_dir / "keybindings.json").write_text("[]\n")
-        result = run_install(f"SEEDLING_VSCODE_CONFIG_DIR='{mine_dir.as_posix()}'")
+        result = run_install(f"ACORN_VSCODE_CONFIG_DIR='{mine_dir.as_posix()}'")
         assert result.returncode == 0, result.stdout + result.stderr
         recorded = Path(_settings(home)["vscode_config_dir"])
         assert (recorded / "settings.json").is_file()
@@ -301,12 +301,12 @@ class TestVscodeConfigDir:
 
     def test_absent_when_unset(self, install_env):
         copy, fake_home, home, run_install = install_env
-        run_install("SEEDLING_AUTO_SETUP=false")
+        run_install("ACORN_AUTO_SETUP=false")
         assert "vscode_config_dir" not in (_settings(home) or {})
 
 
 class TestProfile:
-    """SEEDLING_PROFILE makes the installer apply a deployment profile
+    """ACORN_PROFILE makes the installer apply a deployment profile
     instead of the built-in single-'dev'-venv setup."""
 
     def _profile(self, copy, body: str):
@@ -315,10 +315,10 @@ class TestProfile:
     def test_profile_is_recorded_and_applied(self, install_env):
         copy, fake_home, home, run_install = install_env
         self._profile(copy, '[[venv]]\nname = "team"\ndefault = true\n')
-        _write_conf(copy, SEEDLING_PROFILE="profile.toml")
+        _write_conf(copy, ACORN_PROFILE="profile.toml")
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
-        # Recorded against the COPY inside ~/seedling, so `acorn apply` keeps
+        # Recorded against the COPY inside ~/acorn, so `acorn apply` keeps
         # working after the install share goes away.
         recorded = _settings(home)["profile"]
         assert recorded.endswith("profile.toml")
@@ -330,7 +330,7 @@ class TestProfile:
         asked for, alongside the ones the profile declares."""
         copy, fake_home, home, run_install = install_env
         self._profile(copy, '[[venv]]\nname = "team"\n')
-        _write_conf(copy, SEEDLING_PROFILE="profile.toml")
+        _write_conf(copy, ACORN_PROFILE="profile.toml")
         run_install()
         calls = _calls(home)
         assert "acorn-cli apply" in calls
@@ -340,7 +340,7 @@ class TestProfile:
         """A conf naming a profile that wasn't distributed must not brick the
         install -- it warns and does the normal setup."""
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_PROFILE="nope.toml")
+        _write_conf(copy, ACORN_PROFILE="nope.toml")
         result = run_install()
         assert result.returncode == 0, result.stdout + result.stderr
         assert "falling back to the default setup" in result.stdout
@@ -349,28 +349,28 @@ class TestProfile:
 
     def test_no_profile_key_when_unset(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_AUTO_SETUP="false")
         run_install()
         assert "profile" not in (_settings(home) or {})
 
     def test_env_var_lets_a_user_supply_their_own_profile(self, install_env, tmp_path):
-        """The piped one-liner has no local conf to edit, so SEEDLING_PROFILE
+        """The piped one-liner has no local conf to edit, so ACORN_PROFILE
         as an ENV VAR is the only way a user can point at their own file."""
         copy, fake_home, home, run_install = install_env
         mine = tmp_path / "mine.toml"
         mine.write_text('[[venv]]\nname = "mine"\ndefault = true\n', encoding="utf-8")
-        result = run_install(f"SEEDLING_PROFILE='{mine.as_posix()}'")
+        result = run_install(f"ACORN_PROFILE='{mine.as_posix()}'")
         assert result.returncode == 0, result.stdout + result.stderr
         assert "acorn-cli apply" in _calls(home)
         assert "acorn-cli venv dev" not in _calls(home)
 
-    def test_a_user_profile_is_copied_into_the_seedling_home(self, install_env, tmp_path):
+    def test_a_user_profile_is_copied_into_the_acorn_home(self, install_env, tmp_path):
         """The original may be a temp file or a mounted share; `acorn apply`
         has to keep working after that goes away."""
         copy, fake_home, home, run_install = install_env
         mine = tmp_path / "mine.toml"
         mine.write_text('[[venv]]\nname = "mine"\n', encoding="utf-8")
-        run_install(f"SEEDLING_PROFILE='{mine.as_posix()}'")
+        run_install(f"ACORN_PROFILE='{mine.as_posix()}'")
         copied = home / "system" / "config" / "profile.toml"
         assert copied.is_file()
         assert "mine" in copied.read_text(encoding="utf-8")
@@ -381,10 +381,10 @@ class TestProfile:
         copy, fake_home, home, run_install = install_env
         (copy / "profile.toml").write_text(
             '[[venv]]\nname = "fromconf"\n', encoding="utf-8")
-        _write_conf(copy, SEEDLING_PROFILE="profile.toml")
+        _write_conf(copy, ACORN_PROFILE="profile.toml")
         mine = tmp_path / "mine.toml"
         mine.write_text('[[venv]]\nname = "fromenv"\n', encoding="utf-8")
-        run_install(f"SEEDLING_PROFILE='{mine.as_posix()}'")
+        run_install(f"ACORN_PROFILE='{mine.as_posix()}'")
         copied = (home / "system" / "config" / "profile.toml").read_text(encoding="utf-8")
         assert "fromenv" in copied and "fromconf" not in copied
 
@@ -393,7 +393,7 @@ class TestProfile:
         explicitly named a profile and silently got the DEFAULT environment
         wouldn't find out until something they expected was missing."""
         copy, fake_home, home, run_install = install_env
-        result = run_install(f"SEEDLING_PROFILE='{(tmp_path / 'ghost.toml').as_posix()}'")
+        result = run_install(f"ACORN_PROFILE='{(tmp_path / 'ghost.toml').as_posix()}'")
         assert result.returncode != 0
         combined = result.stdout + result.stderr
         assert "no file exists at" in combined
@@ -401,12 +401,12 @@ class TestProfile:
 
 
 class TestEditorConf:
-    """SEEDLING_VSCODE_FLAVOR / _EXTENSION_GALLERY / _VSCODE_EXTENSIONS reach
+    """ACORN_VSCODE_FLAVOR / _EXTENSION_GALLERY / _VSCODE_EXTENSIONS reach
     settings.json intact, and a pristine conf seeds none of them."""
 
     def test_pristine_editor_conf_seeds_nothing(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_AUTO_SETUP="false")
         run_install()
         s = _settings(home) or {}
         # The conf ships "microsoft" written out for discoverability; that is
@@ -417,30 +417,30 @@ class TestEditorConf:
 
     def test_vscodium_flavor_is_recorded(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_VSCODE_FLAVOR="vscodium",
-                    SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_VSCODE_FLAVOR="vscodium",
+                    ACORN_AUTO_SETUP="false")
         run_install()
         assert _settings(home)["vscode_flavor"] == "vscodium"
 
     def test_flavor_is_normalized_to_lowercase(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_VSCODE_FLAVOR="VSCodium",
-                    SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_VSCODE_FLAVOR="VSCodium",
+                    ACORN_AUTO_SETUP="false")
         run_install()
         assert _settings(home)["vscode_flavor"] == "vscodium"
 
     def test_gallery_url_survives_verbatim(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_EXTENSION_GALLERY="https://openvsx.corp/vscode",
-                    SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_EXTENSION_GALLERY="https://openvsx.corp/vscode",
+                    ACORN_AUTO_SETUP="false")
         run_install()
         assert _settings(home)["extension_gallery"] == "https://openvsx.corp/vscode"
 
     def test_extension_list_becomes_a_json_array(self, install_env):
         copy, fake_home, home, run_install = install_env
         _write_conf(copy,
-                    SEEDLING_VSCODE_EXTENSIONS="ms-python.python, charliermarsh.ruff",
-                    SEEDLING_AUTO_SETUP="false")
+                    ACORN_VSCODE_EXTENSIONS="ms-python.python, charliermarsh.ruff",
+                    ACORN_AUTO_SETUP="false")
         run_install()
         assert _settings(home)["vscode_extensions"] == [
             "ms-python.python", "charliermarsh.ruff"]
@@ -449,8 +449,8 @@ class TestEditorConf:
         """"none" is a deliberate 'install nothing', which must survive as []
         -- an absent key would silently restore the starter kit instead."""
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_VSCODE_EXTENSIONS="none",
-                    SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_VSCODE_EXTENSIONS="none",
+                    ACORN_AUTO_SETUP="false")
         run_install()
         assert _settings(home)["vscode_extensions"] == []
 
@@ -460,19 +460,19 @@ class TestBoolSettings:
 
     def test_auto_setup_true_via_conf_runs(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_AUTO_SETUP="true", SEEDLING_AUTO_VSCODE="false")
+        _write_conf(copy, ACORN_AUTO_SETUP="true", ACORN_AUTO_VSCODE="false")
         run_install()
         assert "acorn-cli python" in _calls(home)
 
     def test_auto_setup_false_via_conf_skips(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_AUTO_SETUP="false")
+        _write_conf(copy, ACORN_AUTO_SETUP="false")
         run_install()
         assert "acorn-cli python" not in _calls(home)
 
     def test_bool_is_case_insensitive(self, install_env):
         copy, fake_home, home, run_install = install_env
-        _write_conf(copy, SEEDLING_AUTO_SETUP="FALSE")
+        _write_conf(copy, ACORN_AUTO_SETUP="FALSE")
         run_install()
         assert "acorn-cli python" not in _calls(home)
 
@@ -503,7 +503,7 @@ class TestVendorPayloads:
         # no pre-planted uv this time: the vendored one must be used
         import shutil
         shutil.rmtree(home / "system" / "bin")
-        result = run_install("SEEDLING_AUTO_SETUP=false")
+        result = run_install("ACORN_AUTO_SETUP=false")
         assert result.returncode == 0, result.stdout + result.stderr
         assert "Using vendored uv" in result.stdout
         assert (home / "system" / "bin" / "calls.log").exists(), \
@@ -521,11 +521,11 @@ class TestVendorPayloads:
     def test_reinstall_keeps_existing_binaries_but_rebuilds_certs(self, install_env):
         copy, fake_home, home, run_install = install_env
         self._plant_vendor(copy)
-        run_install("SEEDLING_AUTO_SETUP=false")
+        run_install("ACORN_AUTO_SETUP=false")
         marker = home / "extensions" / "git" / "cmd" / "git.exe"
         marker.write_text("user-modified")
         bundle = home / "system" / "certs" / "ca-bundle.pem"
         bundle.write_text("stale")
-        run_install("SEEDLING_AUTO_SETUP=false")
+        run_install("ACORN_AUTO_SETUP=false")
         assert marker.read_text() == "user-modified", "binaries must not be clobbered"
         assert "BEGIN CERTIFICATE" in bundle.read_text(), "certs must rotate on reinstall"

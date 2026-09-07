@@ -4,7 +4,7 @@ micromamba.
 
 micromamba itself is never run here: conda_tool.run is stubbed to fabricate the
 environment a real `micromamba create` would produce (an executable in the
-env's bin), so the parts that are seedling's own logic -- command discovery,
+env's bin), so the parts that are acorn's own logic -- command discovery,
 shim generation, the manifest, list, and exact removal -- are exercised
 deterministically with no network and no binary.
 """
@@ -17,8 +17,8 @@ import subprocess
 
 import pytest
 
-from seedling import conda_tool, config, paths
-from seedling.commands import forge_cmd
+from acorn import conda_tool, config, paths
+from acorn.commands import forge_cmd
 
 
 @pytest.fixture

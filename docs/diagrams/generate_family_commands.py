@@ -8,7 +8,7 @@ the family has more than one natural grouping.
 
 This is the same row-per-command shape the all-families command map settled on, and for
 the same reason: an earlier version of this file connected each command to
-the part of ~/seedling it reads or writes with an arrow into a small,
+the part of ~/acorn it reads or writes with an arrow into a small,
 family-scoped folder-tree column on the right (danger-zone commands got
 their own separate target cluster, cards sharing an identical target were
 bracketed into one arrow). It worked better here than it ever did in
@@ -45,7 +45,7 @@ OUT_DIR = Path(__file__).parent
 
 # -- one entry per docs/commands/<slug>.md page.
 #   subtitle:        the page's own intro line.
-#   targets:          VESTIGIAL. These three described which ~/seedling
+#   targets:          VESTIGIAL. These three described which ~/acorn
 #   danger_targets:   folders a family writes to, for the all-families
 #   whole_tree:       command-map.svg -- removed once the interactive
 #                     explorer replaced it. Nothing reads them now; they are
@@ -81,7 +81,7 @@ FAMILIES = [
      "The day-to-day family: creating and switching environments, and installing packages into them.",
      [
         ("python", "python/", "interpreters + venvs", [("venvs/<name>/", "venvs")]),
-        ("system", "system/", "seedling's own internals", [("config/", "config")]),
+        ("system", "system/", "acorn's own internals", [("config/", "config")]),
      ],
      [("python", "python/", "interpreters + venvs", [("venvs/<name>/", "venvs")])],
      [],
@@ -133,11 +133,11 @@ FAMILIES = [
      "Run, not imported -- each installed into its own isolated environment.",
      [
         ("extensions", "extensions/", "editors + PyPI apps", [("apps/<name>/", "apps")]),
-        ("system", "system/", "seedling's own internals", [("shims/", "shims")]),
+        ("system", "system/", "acorn's own internals", [("shims/", "shims")]),
      ],
      [
         ("extensions", "extensions/", "editors + PyPI apps", [("apps/<name>/", "apps")]),
-        ("system", "system/", "seedling's own internals", [("shims/", "shims")]),
+        ("system", "system/", "acorn's own internals", [("shims/", "shims")]),
      ],
      [],
      [
@@ -158,8 +158,8 @@ FAMILIES = [
 
     ("conda-forge-tools", "Command-line tools from conda-forge",
      "The non-Python tools -- ripgrep, pandoc, ffmpeg, gh, compilers.",
-     [("system", "system/", "seedling's own internals", [("conda/", "conda"), ("shims/", "shims")])],
-     [("system", "system/", "seedling's own internals", [("conda/", "conda"), ("shims/", "shims")])],
+     [("system", "system/", "acorn's own internals", [("conda/", "conda"), ("shims/", "shims")])],
+     [("system", "system/", "acorn's own internals", [("conda/", "conda"), ("shims/", "shims")])],
      [],
      [
         (None, [
@@ -180,7 +180,7 @@ FAMILIES = [
 
     ("offline-utilities", "Offline utilities",
      "Stage packages and tools on a connected machine, to install from later with no network at all.",
-     [("outside", "(current directory)", "NOT inside ~/seedling", [
+     [("outside", "(current directory)", "NOT inside ~/acorn", [
          ("./wheelhouse/", "wheelhouse"), ("./conda-channel/", "conda-channel"),
      ])],
      [], [],
@@ -235,19 +235,19 @@ FAMILIES = [
      ]),
 
     ("editors", "Editors & IDEs",
-     "Installed on demand, portable, and self-contained inside ~/seedling.",
+     "Installed on demand, portable, and self-contained inside ~/acorn.",
      [
         ("extensions", "extensions/", "editors + PyPI apps", [
             ("vscode/", "vscode"), ("spyder-config/", "spyder-config"), ("apps/<name>/", "apps"),
         ]),
-        ("system", "system/", "seedling's own internals", [("shims/", "shims")]),
+        ("system", "system/", "acorn's own internals", [("shims/", "shims")]),
      ],
      [], [],
      [
         (None, [
             ("acorn vscode [path]",
              ["Installs a portable VS Code (once) and opens it at a path --",
-              "settings, extensions, and workspace state stay inside ~/seedling."], False, [("extensions", "vscode")]),
+              "settings, extensions, and workspace state stay inside ~/acorn."], False, [("extensions", "vscode")]),
             ("acorn vscode-repo <name>",
              ["Opens a cloned repo in VS Code, installing VS Code first if needed."], False, [("extensions", "vscode")]),
             ("acorn spyder [path] [--venv name]",
@@ -261,7 +261,7 @@ FAMILIES = [
 
     ("custom", "Custom commands",
      "An organization's own verbs, added to acorn.",
-     [("system", "system/", "seedling's own internals", [("config/", "config")])],
+     [("system", "system/", "acorn's own internals", [("config/", "config")])],
      [], [],
      [
         (None, [
@@ -274,9 +274,9 @@ FAMILIES = [
 
     ("lifecycle", "Fleet & lifecycle",
      "Cleanup, updates, and full-machine teardown.",
-     [("system", "system/", "seedling's own internals", [("src/", "src"), ("shell/", "shell")])],
+     [("system", "system/", "acorn's own internals", [("src/", "src"), ("shell/", "shell")])],
      [
-        ("system", "system/", "seedling's own internals", []),
+        ("system", "system/", "acorn's own internals", []),
         ("python", "python/", "interpreters + venvs", []),
         ("extensions", "extensions/", "editors + PyPI apps", []),
         ("repo", "repo/", "one folder per clone", []),
@@ -285,7 +285,7 @@ FAMILIES = [
      [
         (None, [
             ("acorn kill-processes [name] [--system]",
-             ["Force-closes stuck processes -- scoped to seedling by default;",
+             ["Force-closes stuck processes -- scoped to acorn by default;",
               "--system or a name widens it to the whole machine."], False, []),
             ("acorn update-commands",
              ["Updates acorn itself from its recorded source, and reports any",
@@ -293,7 +293,7 @@ FAMILIES = [
         ]),
         ("Danger zone", [
             ("acorn remove-user",
-             ["Deletes ~/seedling entirely -- keeps the shell hook."], True, ["ALL"]),
+             ["Deletes ~/acorn entirely -- keeps the shell hook."], True, ["ALL"]),
             ("acorn purge",
              ["Everything remove-user does, plus removes the shell hook itself --",
               "acorn stops existing as a command."], True, ["ALL"]),
@@ -305,12 +305,12 @@ FAMILIES = [
 
     ("status", "Status & profiles",
      "Read-only status, plus applying a fleet-wide deployment profile.",
-     [("system", "system/", "seedling's own internals", [("config/", "config"), ("logs/", "logs")])],
+     [("system", "system/", "acorn's own internals", [("config/", "config"), ("logs/", "logs")])],
      [], [],
      [
         (None, [
             ("acorn where",
-             ["Prints the seedling home directory."], False, []),
+             ["Prints the acorn home directory."], False, []),
             ("acorn --version",
              ["Prints the version of acorn that's actually running."], False, []),
             ("acorn summary [--sizes] [--json]",
@@ -328,7 +328,7 @@ FAMILIES = [
              ["Checks a profile against what an offline bundle actually holds --",
               "before anyone on the air-gapped side tries to apply it."], False, []),
             ("acorn config [get|set|unset]",
-             ["Views and changes seedling's own settings (default_venv,",
+             ["Views and changes acorn's own settings (default_venv,",
               "package_index, vscode_flavor, ...)."], False, [("system", "config")]),
         ]),
      ]),
@@ -349,7 +349,7 @@ FAMILIES = [
               "package-list -- all agree on shape, all schema-versioned."], False, []),
             ("--non-interactive  /  -y",
              ["Never blocks on a prompt -- aborts instead, or pre-answers it.",
-              "SEEDLING_NONINTERACTIVE=1 / SEEDLING_YES=1 set both for a session."], False, []),
+              "ACORN_NONINTERACTIVE=1 / ACORN_YES=1 set both for a session."], False, []),
             ("Per-venv locking",
              ["install/uninstall/venv/remove-venv take an exclusive lock, so",
               "parallel CI jobs or agents queue instead of corrupting site-packages."], False, []),

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from seedling import pkgspec
+from acorn import pkgspec
 
 
 @pytest.mark.parametrize("spec,expected", [

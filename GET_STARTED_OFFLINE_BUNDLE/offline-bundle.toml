@@ -83,7 +83,7 @@ tools = []
 [editor]
 # "microsoft" (official VS Code + Marketplace) or "vscodium" (MIT + Open VSX).
 # This is a LICENSING choice: staging the official build on a share is
-# redistribution. Must match SEEDLING_VSCODE_FLAVOR in global.conf.
+# redistribution. Must match ACORN_VSCODE_FLAVOR in global.conf.
 flavor = "microsoft"
 
 # The extensions staged into the bundle. Offline, an extension that wasn't
@@ -97,7 +97,7 @@ extensions = [
 ]
 
 # An internal Open VSX mirror, if you run one. Must match
-# SEEDLING_EXTENSION_GALLERY in global.conf.
+# ACORN_EXTENSION_GALLERY in global.conf.
 # gallery = "https://openvsx.corp.example/vscode"
 
 # stage = false          # build a bundle with no editor at all
@@ -132,7 +132,7 @@ unattended = false
 
 # Acknowledge that you hold the rights to redistribute the restricted
 # components this bundle will contain (official VS Code, Marketplace
-# extensions). seedling grants you no such rights; see docs/LICENSING.md.
+# extensions). acorn grants you no such rights; see docs/LICENSING.md.
 #
 # Setting this to true here is the same acknowledgement the
 # --accept-third-party-terms flag makes -- deliberately a separate, explicit

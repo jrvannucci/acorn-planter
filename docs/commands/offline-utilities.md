@@ -16,7 +16,7 @@ install from offline.
              acorn forge-install ripgrep
 ```
 
-seedling solves the request with micromamba, downloads each package
+acorn solves the request with micromamba, downloads each package
 (checksum-verified), and synthesizes the channel's `repodata.json` from the
 solve — so no `conda index` or network is needed on the offline side. When
 `conda_channel` points at a local folder, `forge-install` runs fully offline
@@ -151,7 +151,7 @@ It also takes a bundle's wheel folder directly, which is the
 line:
 
 ```
-acorn upload-whls S:\seedling\wheels
+acorn upload-whls S:\acorn\wheels
 ```
 
 - Uploads every `.whl` **and** source archive in the directory, ignoring
@@ -178,12 +178,12 @@ package_upload_url   https://pypi.corp.example/api/pypi/pypi-local/    (write)
 `TWINE_USERNAME`/`TWINE_PASSWORD` or `~/.pypirc` apply, and twine prompts if
 it finds neither. The token is passed to twine through the environment,
 never on a command line — a command line is visible to `ps`, lands in shell
-history, and is echoed into seedling's own log — and it is masked wherever
-seedling prints settings.
+history, and is echoed into acorn's own log — and it is masked wherever
+acorn prints settings.
 
 > **A publish token is an admin credential.** Every value in `global.conf` is
 > seeded into every user's `settings.json` at install time, so putting
-> `SEEDLING_PACKAGE_UPLOAD_TOKEN` in the copy you distribute grants your
+> `ACORN_PACKAGE_UPLOAD_TOKEN` in the copy you distribute grants your
 > whole fleet write access to the index. Leave it empty there and set it only
 > on the machine that publishes:
 >

@@ -10,8 +10,8 @@ from pathlib import Path
 import pytest
 
 from conftest import REPO_ROOT, make_base_python, make_venv_dirs
-from seedling import config, paths
-from seedling.commands import python_cmd
+from acorn import config, paths
+from acorn.commands import python_cmd
 
 ALL_COMMANDS = [
     "python", "python-list", "remove-python",
@@ -46,7 +46,7 @@ ADMIN_COMMANDS = [
 def test_every_command_is_dispatchable(home):
     """Guards against a rename touching the parser but not the dispatch
     table (or vice versa) -- admin family included."""
-    from seedling import cli
+    from acorn import cli
     parser = cli.build_parser()
     subparsers = next(
         a for a in parser._actions
@@ -62,7 +62,7 @@ class TestPassthroughForwarding:
 
     @pytest.fixture
     def uv_args(self, monkeypatch):
-        from seedling import uv_tool
+        from acorn import uv_tool
         calls: list[list[str]] = []
         monkeypatch.setattr(uv_tool, "run", lambda a, **k: calls.append(list(a)))
         return calls
@@ -105,7 +105,7 @@ class TestShowCommand:
 
     @pytest.fixture
     def uv_show(self, monkeypatch):
-        from seedling import uv_tool
+        from acorn import uv_tool
         calls: list[list[str]] = []
 
         def _fake_run(a, **k):
@@ -147,9 +147,9 @@ class TestShowCommand:
             self, run_cli, monkeypatch):
         """Distinct from install/uninstall: a package that isn't installed
         is the NORMAL, expected way `uv pip show` reports "not found" (it
-        exits non-zero after printing its own warning), not a seedling-level
+        exits non-zero after printing its own warning), not a acorn-level
         failure worth wrapping in a second "error: ... failed" line."""
-        from seedling import uv_tool
+        from acorn import uv_tool
         monkeypatch.setattr(
             uv_tool, "run",
             lambda a, **k: subprocess.CompletedProcess(list(a), 1))
@@ -158,7 +158,7 @@ class TestShowCommand:
         assert "error:" not in out
 
 
-def test_bare_seed_shows_grouped_help(run_cli):
+def test_bare_acorn_shows_grouped_help(run_cli):
     code, out = run_cli()
     assert code == 0
     for family_member in ("python-list", "remove-venv-all", "repo-clone",
@@ -167,7 +167,7 @@ def test_bare_seed_shows_grouped_help(run_cli):
 
 
 def test_help_hides_admin_note_on_single_user(run_cli, home):
-    from seedling import config
+    from acorn import config
     assert config.is_multi_user() is False
     code, out = run_cli("help")
     assert "multi-user" not in out  # no admin note on a plain install
@@ -175,8 +175,8 @@ def test_help_hides_admin_note_on_single_user(run_cli, home):
 
 
 def test_help_shows_admin_note_only_when_multi_user(run_cli, home):
-    from seedling import config
-    config.set_value("shared_root", r"C:\seedling")   # valid JSON via json.dumps
+    from acorn import config
+    config.set_value("shared_root", r"C:\acorn")   # valid JSON via json.dumps
     assert config.is_multi_user() is True
     code, out = run_cli("help")
     assert "shared multi-user install" in out
@@ -184,16 +184,16 @@ def test_help_shows_admin_note_only_when_multi_user(run_cli, home):
 
 
 def test_summary_shows_install_type(run_cli, home):
-    from seedling import config
+    from acorn import config
     code, out = run_cli("summary")
     assert "install type: single-user" in out
-    config.set_value("shared_root", r"C:\seedling")
+    config.set_value("shared_root", r"C:\acorn")
     code, out = run_cli("summary")
-    assert "install type: multi-user" in out and r"C:\seedling" in out
+    assert "install type: multi-user" in out and r"C:\acorn" in out
 
 
 def test_is_multi_user_ignores_corrupt_settings(home):
-    from seedling import config
+    from acorn import config
     paths.ensure_layout()
     paths.CONFIG_FILE.write_text("{ broken json")
     assert config.is_multi_user() is False  # never raises
@@ -217,10 +217,10 @@ def test_version_flag(run_cli, flag):
     """Both spellings print the running version and exit cleanly. (-V survives
     the PowerShell `acorn` wrapper because it's a simple function -- no
     parameter binding -- so it can't be eaten as a -Verbose prefix.)"""
-    import seedling
+    import acorn
     code, out = run_cli(flag)
     assert code == 0
-    assert out.strip() == f"seedling {seedling.__version__}"
+    assert out.strip() == f"acorn {acorn.__version__}"
 
 
 def test_version_matches_the_packaged_metadata():
@@ -230,16 +230,16 @@ def test_version_matches_the_packaged_metadata():
     pyproject = (REPO_ROOT / "src" / "pyproject.toml").read_text(encoding="utf-8")
     assert 'dynamic = ["version"]' in pyproject
     assert '[tool.hatch.version]' in pyproject
-    assert 'path = "seedling/__init__.py"' in pyproject
+    assert 'path = "acorn/__init__.py"' in pyproject
     # no competing hardcoded version = ... line in [project]
     assert not re.search(r'^version\s*=', pyproject, flags=re.M)
 
 
 def test_grouped_help_reports_the_version(run_cli):
-    import seedling
+    import acorn
     code, out = run_cli("help")
     assert code == 0
-    assert f"seedling {seedling.__version__}" in out
+    assert f"acorn {acorn.__version__}" in out
 
 
 def test_empty_state_messages(run_cli):
@@ -323,7 +323,7 @@ def test_config_set_startup_commands_warns_on_unknown_name_inside_a_chain(
     the warning has to look inside it and flag only the undeclared piece
     ('ghost'), not the whole chain string, and not the declared piece
     ('a')."""
-    from seedling import config
+    from acorn import config
     toml = tmp_path / "custom-commands.toml"
     toml.write_text('[[command]]\nname = "a"\nrun = ["x"]\n', encoding="utf-8")
     config.set_value("custom_commands", str(toml))
@@ -448,7 +448,7 @@ def test_summary_json_includes_sizes_when_asked(run_cli, home):
 def test_summary_collect_when_home_absent(home):
     """Going through the CLI would create the home dir, so drive collect()
     directly to cover the not-installed-yet shape."""
-    from seedling.commands import summary_cmd
+    from acorn.commands import summary_cmd
 
     assert not home.exists()
     data = summary_cmd.collect()
@@ -509,7 +509,7 @@ def test_the_documented_install_overrides_are_the_real_ones():
     installer = (REPO_ROOT / "installers" / "install.sh").read_text(
         encoding="utf-8")
     import re
-    documented = set(re.findall(r"`(SEEDLING_[A-Z_]+)`", page))
+    documented = set(re.findall(r"`(ACORN_[A-Z_]+)`", page))
     assert documented, "the overrides table vanished?"
     for var in documented:
         assert f"${{{var}:-}}" in installer or f"${var}" in installer,             f"{var} is documented as an override but install.sh never reads it"

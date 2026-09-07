@@ -104,10 +104,10 @@ venv = "dev"
 description = "Run the test suite"
 ```
 
-Wired in `global.conf` next to `SEEDLING_PROFILE`:
+Wired in `global.conf` next to `ACORN_PROFILE`:
 
 ```sh
-SEEDLING_CUSTOM_COMMANDS="custom-commands.toml"
+ACORN_CUSTOM_COMMANDS="custom-commands.toml"
 ```
 
 `venv = "dev"` pins both to the `dev` venv regardless of what's active in the

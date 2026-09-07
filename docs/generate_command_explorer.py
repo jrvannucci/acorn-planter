@@ -43,7 +43,7 @@ from generate_family_commands import FAMILIES  # noqa: E402
 
 OUT = HERE / "_include" / "command-explorer.html"
 
-# seedling's own diagram palette (diagrams/generate_profile_flows.py), so the
+# acorn's own diagram palette (diagrams/generate_profile_flows.py), so the
 # explorer and the SVGs it stands in for read as one set rather than two
 # unrelated designs.
 NAVY = "#1B4332"

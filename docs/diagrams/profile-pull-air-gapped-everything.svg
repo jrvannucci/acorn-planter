@@ -64,9 +64,9 @@
 <text x="92" y="230" class="body fw" font-size="14" font-weight="700">global.conf</text>
 <text x="58" y="246" class="body" fill="#CFE3D6" font-size="10" font-style="italic">read at install, on every machine</text>
 <line x1="58" y1="256" x2="342" y2="256" stroke="#FFFFFF" stroke-width="1" opacity="0.2"/>
-<rect x="58" y="264" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="67" y="279" class="body fg" font-size="11.5" font-weight="600">SEEDLING_PROFILE  →  installation-profile/</text>
+<rect x="58" y="264" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="67" y="279" class="body fg" font-size="11.5" font-weight="600">ACORN_PROFILE  →  installation-profile/</text>
 <line x1="360" y1="249" x2="796" y2="249" stroke="#1B4332" stroke-width="1.6" marker-end="url(#arrow)"/>
-<text x="580" y="241" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">SEEDLING_PROFILE -&gt; the profile folder</text>
+<text x="580" y="241" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">ACORN_PROFILE -&gt; the profile folder</text>
 <rect x="640" y="324" width="320" height="218" rx="12" fill="#1B4332"/>
 <use href="#ic-doc" x="658" y="337" width="22" height="22" color="#FFFFFF"/>
 <text x="692" y="352" class="body fw" font-size="14.0" font-weight="700">installation-profile/</text>
@@ -83,14 +83,14 @@
 <rect x="640" y="576" width="320" height="720" rx="12" fill="#EAF3EE" stroke="#1B4332" stroke-width="1.2"/>
 <use href="#ic-monitor" x="662" y="580" width="24" height="24" color="#1B4332"/>
 <text x="696" y="597" class="body fg" font-size="15" font-weight="700">YOUR MACHINE</text>
-<text x="662" y="614" class="body fmute" font-size="10.3" font-style="italic">S:\users\{user}\seedling -- a</text>
-<text x="662" y="629" class="body fmute" font-size="10.3" font-style="italic">private folder per person</text>
+<text x="662" y="614" class="body fmute" font-size="10.9" font-style="italic">S:\users\{user}\acorn -- a private</text>
+<text x="662" y="629" class="body fmute" font-size="10.9" font-style="italic">folder per person</text>
 <line x1="662" y1="634" x2="938" y2="634" stroke="#1B4332" stroke-width="1" opacity="0.25"/>
 <text x="662" y="645" class="body fg" font-size="10.5" font-weight="700" letter-spacing="0.6">WHAT THE USER HAS</text>
 <rect x="654" y="659" width="292" height="42" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1"/>
 <use href="#ic-folder" x="662" y="665" width="15" height="15" color="#1B4332"/>
 <text x="681" y="676" class="body fg" font-size="12.0" font-weight="700">system/src/</text>
-<text x="681" y="687" class="body fmute" font-size="9.5" font-style="italic">seedling's own source</text>
+<text x="681" y="687" class="body fmute" font-size="9.5" font-style="italic">acorn's own source</text>
 <rect x="654" y="713" width="292" height="90" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1"/>
 <use href="#ic-folder" x="662" y="719" width="15" height="15" color="#1B4332"/>
 <text x="681" y="730" class="body fg" font-size="12.0" font-weight="700">python/base/</text>
@@ -125,9 +125,9 @@
 <rect x="664" y="1234" width="272" height="21" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="673" y="1248" class="body fg" font-size="11.5" font-weight="600">analysis-lib</text>
 <rect x="40" y="576" width="470" height="372" rx="12" fill="#EAF3EE" stroke="#1B4332" stroke-width="1.3"/>
 <use href="#ic-box" x="56" y="588" width="20" height="20" color="#1B4332"/>
-<text x="84" y="603" class="body fg" font-size="15.0" font-weight="700">S:\seedling (the offline build)</text>
+<text x="84" y="603" class="body fg" font-size="15.0" font-weight="700">S:\acorn (the offline build)</text>
 <text x="84" y="617" class="body fmute" font-size="11.0" font-style="italic">one shared offline build, staged once</text>
-<rect x="54" y="622" width="442" height="32" rx="9" fill="#1B4332" /><text x="66" y="643" class="body fw" font-size="13.0" font-weight="700">seedling itself</text>
+<rect x="54" y="622" width="442" height="32" rx="9" fill="#1B4332" /><text x="66" y="643" class="body fw" font-size="13.0" font-weight="700">acorn itself</text>
 <line x1="510" y1="638" x2="636" y2="638" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
 <text x="575" y="632" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">system/src/</text>
 <rect x="54" y="662" width="442" height="32" rx="9" fill="#1B4332" /><text x="66" y="683" class="body fw" font-size="13.0" font-weight="700">Packages + Spyder</text>
@@ -158,5 +158,5 @@
 <rect x="54" y="1020" width="442" height="32" rx="9" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.8"/><text x="66" y="1041" class="body fg" font-size="13.0" font-weight="700">Repos</text>
 <line x1="510" y1="1036" x2="636" y2="1036" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
 <text x="575" y="1030" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">acorn repo-clone</text>
-<text x="40" y="1330" class="body fmute" font-size="12" font-style="italic">Everything in the offline-build box above lands under S:\users\{user}\seedling -- one shared offline build, a private folder per person.</text>
+<text x="40" y="1330" class="body fmute" font-size="12" font-style="italic">Everything in the offline-build box above lands under S:\users\{user}\acorn -- one shared offline build, a private folder per person.</text>
 </svg>

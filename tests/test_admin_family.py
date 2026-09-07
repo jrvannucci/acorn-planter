@@ -11,14 +11,14 @@ from __future__ import annotations
 import pytest
 
 import conftest
-from seedling import admin
+from acorn import admin
 
 
 @pytest.fixture
 def shared_install(tmp_path, monkeypatch):
     """A shared root with three user homes; the current process is 'admin'.
     Yields (root, users, become_elevated)."""
-    root = tmp_path / "seedling"          # the shared root (C:\seedling)
+    root = tmp_path / "acorn"          # the shared root (C:\acorn)
     users = {}
     for name in ("alice", "bob", "carol"):
         home = root / name
@@ -34,14 +34,14 @@ def shared_install(tmp_path, monkeypatch):
     (admin_home / "system").mkdir(parents=True)
     for var in conftest._ISOLATED_ENV_VARS:
         monkeypatch.delenv(var, raising=False)
-    monkeypatch.setenv("SEEDLING_NO_LOG", "1")
-    monkeypatch.setenv("SEEDLING_YES", "1")
+    monkeypatch.setenv("ACORN_NO_LOG", "1")
+    monkeypatch.setenv("ACORN_YES", "1")
     conftest._rebind_paths(admin_home)
     # a shared-root install records this at install time; the admin family
     # refuses to run without it
-    from seedling import config
+    from acorn import config
     config.set_value("shared_root", str(root))
-    from seedling.commands import kill_cmd
+    from acorn.commands import kill_cmd
     monkeypatch.setattr(kill_cmd, "kill_python_and_vscode", lambda: [])
 
     # record take_ownership calls; skip the real takeown/icacls
@@ -53,7 +53,7 @@ def shared_install(tmp_path, monkeypatch):
 
 
 def _run(*argv):
-    from seedling import cli
+    from acorn import cli
     return cli.main(list(argv))
 
 
@@ -104,7 +104,7 @@ def test_remove_user_targets_only_that_user(shared_install, monkeypatch):
 def test_remove_user_unknown(shared_install, monkeypatch, capsys):
     monkeypatch.setattr(admin, "is_elevated", lambda: True)
     assert _run("admin-remove-user", "nobody", "-y") == 1
-    assert "No seedling install for user 'nobody'" in capsys.readouterr().out
+    assert "No acorn install for user 'nobody'" in capsys.readouterr().out
 
 
 def test_venv_remove_one_user(shared_install, monkeypatch):
@@ -172,14 +172,14 @@ def test_list_user_homes_and_resolve(shared_install):
 
 
 def test_non_shared_layout_refuses(tmp_path, monkeypatch, capsys):
-    """A plain ~/seedling (no shared_root recorded) is not a shared install:
+    """A plain ~/acorn (no shared_root recorded) is not a shared install:
     admin commands must refuse, not guess."""
-    lone = tmp_path / "home" / "seedling"
+    lone = tmp_path / "home" / "acorn"
     (lone / "system").mkdir(parents=True)
     for var in conftest._ISOLATED_ENV_VARS:
         monkeypatch.delenv(var, raising=False)
-    monkeypatch.setenv("SEEDLING_NO_LOG", "1")
-    monkeypatch.setenv("SEEDLING_YES", "1")
+    monkeypatch.setenv("ACORN_NO_LOG", "1")
+    monkeypatch.setenv("ACORN_YES", "1")
     conftest._rebind_paths(lone)
     monkeypatch.setattr(admin, "is_elevated", lambda: True)
     monkeypatch.setattr(admin, "take_ownership", lambda p: None)

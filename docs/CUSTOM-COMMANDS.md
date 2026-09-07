@@ -2,7 +2,7 @@
 
 **Let your organization add its own verbs to `acorn`.** A team's own shortcut
 — `acorn lint`, `acorn data-stack`, `acorn bootstrap` for a brand-new project
-venv — without it becoming an upstream seedling feature, and without asking
+venv — without it becoming an upstream acorn feature, and without asking
 every user to remember a script's full path.
 
 A [deployment profile](PROFILES.md) says *what environment `acorn apply`
@@ -100,7 +100,7 @@ toplevel = true
 `script` names a `.py`/`.sh`/`.ps1` file, resolved relative to the directory
 `custom-commands.toml` itself is in — an absolute path is left alone. `.py`
 is the recommended default: it's the one extension that runs identically on
-every platform, because seedling runs it with **its own interpreter**
+every platform, because acorn runs it with **its own interpreter**
 (`sys.executable`) — whatever acorn-cli itself is running on right now,
 guaranteed present, no dependency on a system `python3` existing. A `.sh`/
 `.ps1` still works for something that's fundamentally a shell one-liner or
@@ -195,7 +195,7 @@ Most custom commands are reached with `acorn custom <name>`. A command can
 `script` entries alike.
 
 **Built-in commands always win.** If a `toplevel` name collides with a real
-`acorn` command (current or, later, a new one seedling ships), the custom
+`acorn` command (current or, later, a new one acorn ships), the custom
 command is silently dropped from the top-level short-circuit — `acorn venv`
 always means the real thing — but it's never dropped entirely: it stays
 reachable via `acorn custom <name>`, and the collision is reported the next
@@ -220,7 +220,7 @@ or set once for a whole fleet in `global.conf` (see
 [distributing it](#distributing-it)):
 
 ```
-SEEDLING_STARTUP_COMMANDS="check-mirror,motd"
+ACORN_STARTUP_COMMANDS="check-mirror,motd"
 ```
 
 Each name is looked up exactly the way `acorn custom <name>` does, whether
@@ -257,13 +257,13 @@ and is skipped.
 ## Distributing it
 
 Same shape as a [profile](PROFILES.md#distributing-it): name the file in
-[`global.conf`](https://github.com/jrvannucci/seedling/blob/main/GET_STARTED/global.conf),
-distribute the copy of seedling that carries it (and any `script` files
+[`global.conf`](https://github.com/jrvannucci/acorn/blob/main/GET_STARTED/global.conf),
+distribute the copy of acorn that carries it (and any `script` files
 alongside it), and every installer run picks it up automatically:
 
 ```
-SEEDLING_CUSTOM_COMMANDS="custom-commands.toml"
-SEEDLING_STARTUP_COMMANDS="check-mirror,motd"
+ACORN_CUSTOM_COMMANDS="custom-commands.toml"
+ACORN_STARTUP_COMMANDS="check-mirror,motd"
 ```
 
 Both are independent and optional. The relative path resolves against the
@@ -277,7 +277,7 @@ gets refreshed. `startup_commands` is a plain list, recorded once into
 `acorn.sh`) itself, not by `acorn-cli` — see [running commands at
 startup](#running-commands-at-startup).
 
-**One thing to know about the piped-one-liner install** (`SEEDLING_CUSTOM_COMMANDS`
+**One thing to know about the piped-one-liner install** (`ACORN_CUSTOM_COMMANDS`
 set as an *environment variable* rather than in `global.conf`): the
 installer copies the TOML file's **whole containing directory**, not just
 the file, so relative `script` entries and their own companion files

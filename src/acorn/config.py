@@ -1,0 +1,244 @@
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+from typing import Any
+
+from . import paths
+
+# Every key acorn understands, with a description shown by `acorn config`.
+# Anything else in settings.json is preserved but flagged as unknown.
+KNOWN_KEYS: dict[str, str] = {
+    "default_base": (
+        "Base Python tag `acorn venv` builds from when --python isn't given "
+        "(e.g. \"312\"). Set automatically by the first `acorn python` install."),
+    "default_venv": (
+        "Venv name every new shell auto-activates on startup. Empty/null "
+        "means no auto-activation."),
+    "auto_activate": (
+        "Whether new shells auto-activate `default_venv` at startup. "
+        "true/false (default true). Toggle with `acorn auto-activate "
+        "True|False`; when false, a default_venv is left set but not "
+        "activated automatically."),
+    "update_source": (
+        "Where `acorn update-commands` fetches acorn's own source from: a "
+        "git URL (including self-hosted GitHub/GitLab on another network) "
+        "OR a plain directory path (e.g. a mounted network drive holding a "
+        "copy of the repo). Recorded automatically at install time. "
+        "Empty/null means updates can only reinstall the existing copy."),
+    "venv_default_packages": (
+        "Packages installed into every new venv (list). Skip per-venv with "
+        "`acorn venv <name> --no-default-packages`."),
+    "python_mirror": (
+        "Where `acorn python` downloads interpreter builds from, instead of "
+        "the internet: a URL or a directory of python-build-standalone "
+        "archives (e.g. a network share). Applied to every uv call as "
+        "UV_PYTHON_INSTALL_MIRROR. Empty/null means the internet."),
+    "package_index": (
+        "Where packages install from, instead of pypi.org: an index URL "
+        "(Artifactory/Nexus/devpi), or a plain directory of wheels (e.g. a "
+        "network share -- becomes the one and only package source, with "
+        "the internet index disabled). Empty/null means pypi.org."),
+    "package_upload_url": (
+        "Where `acorn upload-whls` publishes wheels: the UPLOAD endpoint of "
+        "your internal index, which is usually NOT the same URL as "
+        "package_index (Artifactory .../api/pypi/<repo>/ vs .../simple). "
+        "Empty/null means uploads need --repository-url."),
+    "package_upload_token": (
+        "API token for package_upload_url. A WRITE credential -- set it on "
+        "the machine that publishes, with `acorn config set`, and leave it "
+        "out of the global.conf you distribute, or every user gets publish "
+        "rights. Masked wherever acorn prints settings. Empty/null falls "
+        "back to twine's own TWINE_USERNAME/TWINE_PASSWORD or ~/.pypirc."),
+    "native_tls": (
+        "Use the operating system's certificate trust store for HTTPS "
+        "instead of the bundled one -- for internal mirrors/indexes whose "
+        "corporate CA is installed machine-wide by IT. true/false."),
+    "ca_cert": (
+        "Path to a PEM CA bundle trusted for HTTPS (uv downloads, git "
+        "clones, and acorn's own downloads). Normally installed "
+        "automatically from vendor/certs/ in the distributed repo copy."),
+    "shared_root": (
+        "The directory holding per-user acorn homes, recorded at install "
+        "time when ACORN_HOME_DIR used a {user} token. Only set for "
+        "shared multi-user installs; enables the admin-* commands."),
+    "vscode_flavor": (
+        "Which editor build `acorn vscode` installs: \"microsoft\" (the "
+        "official VS Code build, Microsoft's proprietary licence) or "
+        "\"vscodium\" (the MIT-licensed community build, freely "
+        "redistributable and preconfigured for the Open VSX registry). "
+        "Changing this only affects the NEXT install -- rerun "
+        "`acorn vscode --reinstall` to switch an existing one."),
+    "extension_gallery": (
+        "Where the editor installs extensions from, instead of its build's "
+        "default registry: a base URL (e.g. \"https://open-vsx.org/vscode\", "
+        "or an internal Open VSX mirror). Empty/null means the flavor's own "
+        "default -- Microsoft Marketplace for \"microsoft\", Open VSX for "
+        "\"vscodium\"."),
+    "vscode_extensions": (
+        "Extensions installed into a fresh editor (list). Empty/null means "
+        "the built-in starter kit for the configured flavor. Set to an empty "
+        "list to install none at all."),
+    "vscode_config_dir": (
+        "Path to a folder holding a settings.json and/or keybindings.json "
+        "your organization wants seeded into a fresh editor -- settings.json "
+        "is merged over the built-in defaults (your values win); "
+        "keybindings.json is copied in as-is. Both only apply the first "
+        "time (an existing file a user already edited is never touched). "
+        "Recorded at install time from ACORN_VSCODE_CONFIG_DIR. "
+        "Empty/null means neither file is seeded."),
+    "conda_channel": (
+        "Channel `acorn forge-install` fetches conda-forge tools from. Defaults "
+        "to \"conda-forge\" (the community channel, distinct from Anaconda's "
+        "`defaults`). Point it at a URL or a local directory for an internal "
+        "mirror or an offline network. acorn never consults `defaults`."),
+    "profile": (
+        "Path to the deployment profile `acorn apply` uses by default -- the "
+        "TOML file describing the interpreters, venvs, packages and repos "
+        "this deployment expects. Recorded at install time from "
+        "ACORN_PROFILE. Empty/null means `acorn apply` looks for "
+        "profile.toml in the current directory instead."),
+    "custom_commands": (
+        "Path to a TOML file declaring your organization's own `acorn custom "
+        "<name>` commands -- one [[command]] entry each, run = [...] for a "
+        "fixed argv or script = \"...\" (a .py/.sh/.ps1 file, resolved "
+        "relative to this TOML file's own directory) for anything that "
+        "needs real logic. Recorded at install time from "
+        "ACORN_CUSTOM_COMMANDS. Empty/null means no custom commands. See "
+        "docs/CUSTOM-COMMANDS.md."),
+    "startup_commands": (
+        "Custom command names (list) run automatically, in order, by every "
+        "new shell -- for an offline org that wants a standard startup "
+        "routine (a connectivity check, a sync, a reminder) to run for every "
+        "user with nothing for them to remember or type. Each name must "
+        "already be declared via `custom_commands`. Join names with `&&` "
+        "within one entry to chain them (the next only runs if the previous "
+        "succeeded); `,` still separates independent entries. Runs "
+        "unconditionally (unlike default_venv auto-activation, this isn't "
+        "skipped when a venv is already active). A failure (or an unknown "
+        "name) prints a warning and stops just that entry's chain, never "
+        "the rest of the list or the shell from opening. Recorded at "
+        "install time from ACORN_STARTUP_COMMANDS; change it later with "
+        "`acorn config set startup_commands \"a&&b,c\"`. Empty/null means "
+        "nothing runs at startup. See docs/CUSTOM-COMMANDS.md."),
+}
+
+# Settings whose VALUE must never be printed. acorn tees command output
+# into ~/acorn/system/logs, so an unmasked token would be written to disk
+# by the very act of running `acorn config`.
+SECRET_KEYS = {"package_upload_token"}
+
+
+def mask(key: str, value: Any) -> Any:
+    """The value as it may be displayed: secrets become a fixed placeholder
+    that still distinguishes set from unset."""
+    if key in SECRET_KEYS and value not in (None, ""):
+        return "********  (set)"
+    return value
+
+
+_DEFAULTS: dict[str, Any] = {
+    "default_base": None,
+    "default_venv": None,
+    "auto_activate": True,
+    "conda_channel": "conda-forge",
+    "update_source": None,
+    "venv_default_packages": ["ipython", "ruff", "ipykernel"],
+    "python_mirror": None,
+    "package_index": None,
+    "package_upload_url": None,
+    "package_upload_token": None,
+    "native_tls": None,
+    "ca_cert": None,
+    "shared_root": None,
+    "vscode_flavor": "microsoft",
+    "extension_gallery": None,
+    "vscode_extensions": None,
+    "vscode_config_dir": None,
+    "profile": None,
+    "custom_commands": None,
+    "startup_commands": [],
+}
+
+
+def apply_runtime_env() -> None:
+    """Translate the TLS settings into THIS process's environment, once per
+    invocation (cli calls it before dispatching any command). Process-wide
+    rather than per-subprocess because three different consumers read the
+    same variables: uv (child process), git (child process), and acorn's
+    own urllib downloads (this process). Values already present in the
+    user's environment always win."""
+    ca_cert = get("ca_cert")
+    if ca_cert and Path(str(ca_cert)).expanduser().is_file():
+        os.environ.setdefault("SSL_CERT_FILE", str(ca_cert))
+        os.environ.setdefault("GIT_SSL_CAINFO", str(ca_cert))
+    if get("native_tls"):
+        os.environ.setdefault("UV_NATIVE_TLS", "1")
+
+
+def load() -> dict[str, Any]:
+    paths.ensure_layout()
+    if not paths.CONFIG_FILE.exists():
+        return dict(_DEFAULTS)
+    try:
+        # utf-8-sig, not utf-8: install.ps1 seeds settings.json via PowerShell
+        # 5.1's `Set-Content -Encoding UTF8`, which writes a UTF-8 BOM. Reading
+        # that as plain utf-8 leaves a leading BOM that makes json.loads fail
+        # ("Expecting value: line 1 column 1"), silently discarding every
+        # conf-seeded setting. utf-8-sig strips a BOM and is a no-op without one.
+        data = json.loads(paths.CONFIG_FILE.read_text(encoding="utf-8-sig"))
+    except (json.JSONDecodeError, OSError):
+        data = {}
+    merged = dict(_DEFAULTS)
+    merged.update(data)
+    return merged
+
+
+def save(data: dict[str, Any]) -> None:
+    paths.ensure_layout()
+    paths.CONFIG_FILE.write_text(
+        json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def get(key: str) -> Any:
+    return load().get(key)
+
+
+def set_value(key: str, value: Any) -> None:
+    data = load()
+    data[key] = value
+    save(data)
+
+
+def unset(key: str) -> None:
+    """Reset a key back to its built-in default."""
+    data = load()
+    data[key] = _DEFAULTS.get(key)
+    save(data)
+
+
+def default_of(key: str) -> Any:
+    return _DEFAULTS.get(key)
+
+
+def is_multi_user() -> bool:
+    """True when this is a shared multi-user install -- i.e. ACORN_HOME_DIR
+    used a {user} token, so `shared_root` was recorded at install time.
+    Deliberately side-effect-free (reads the file directly, never creates
+    the layout) so it's safe to call from the help path."""
+    try:
+        if not paths.CONFIG_FILE.exists():
+            return False
+        return bool(json.loads(
+            paths.CONFIG_FILE.read_text(encoding="utf-8-sig")).get("shared_root"))
+    except (json.JSONDecodeError, OSError):
+        return False
+
+
+def set_default_base(tag: str) -> None:
+    set_value("default_base", tag)
+
+
+def get_default_base() -> str | None:
+    return load().get("default_base")

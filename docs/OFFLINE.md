@@ -1,7 +1,7 @@
-# Running seedling on an offline network
+# Running acorn on an offline network
 
 An organization on an isolated network — no github.com, no pypi.org, no
-internet at all — can still install seedling, use it, and keep it updated.
+internet at all — can still install acorn, use it, and keep it updated.
 One person prepares a bundle on a connected machine; everyone else runs
 `GET_STARTED/install.cmd` from a share and gets a complete Python setup.
 
@@ -17,7 +17,7 @@ One person prepares a bundle on a connected machine; everyone else runs
 
 ![The offline bundle drawn as a superset: everything that crosses the air gap sits inside one box, deployment profiles are nested inside it as subsets, a profile naming a package the bundle lacks is drawn outside with the crossing struck through, and global.conf sits outside pointing in.](diagrams/bundle-superset.svg)
 
-**Three files, then one command.** In the copy of seedling you distribute:
+**Three files, then one command.** In the copy of acorn you distribute:
 
 ```
 GET_STARTED_OFFLINE_BUNDLE/offline-bundle.toml    what the share will HOLD
@@ -44,7 +44,7 @@ Then **copy the folder to the share** and re-check the copy that arrived:
 GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd --verify-only -o "S:\tools"
 ```
 
-Users run `GET_STARTED/install.cmd` from `S:\tools\seedling\`. Same command for
+Users run `GET_STARTED/install.cmd` from `S:\tools\acorn\`. Same command for
 everyone; each person gets the profiles distributed to them.
 
 Afterwards: edit a profile on the share, users run `acorn update-commands`
@@ -117,7 +117,7 @@ costs one more resolver pass — everything single-version resolves together in
 the first.
 
 `hatchling`, `ipython`, `ruff`, `ipykernel` and `pip` are always downloaded
-and never need declaring — seedling itself is built with the first, and the
+and never need declaring — acorn itself is built with the first, and the
 rest go into every venv `acorn venv` creates.
 
 **A mixed fleet needs one wheelhouse, not two bundles.** `pip download` can
@@ -201,7 +201,7 @@ destination):
 offline-bundle/
   MANIFEST.json      <- every component staged, its source and licence,
                         and every wheel's licence grouped by obligation
-  seedling/          <- repo copy, with vendor/uv + vendor/micromamba + vendor/vscode
+  acorn/          <- repo copy, with vendor/uv + vendor/micromamba + vendor/vscode
                         filled in and global.conf written
   python-builds/     <- the exact interpreter archive your shipped uv wants
   wheels/            <- hatchling + the default venv packages, plus offline-bundle.toml's
@@ -215,7 +215,7 @@ offline-bundle/
 Declare `tools = [...]` in `offline-bundle.toml` (or pass `--tools
 ripgrep,pandoc`, or — with no bundle spec — declare them in your profile) and
 the builder vendors **micromamba** and a **conda channel** into the bundle and
-points `SEEDLING_CONDA_CHANNEL` at it, so `acorn forge-install` (and any tools a
+points `ACORN_CONDA_CHANNEL` at it, so `acorn forge-install` (and any tools a
 profile declares, via `acorn apply`) work offline from the one bundle.
 
 **Python applications** (`acorn tool-install`, and `acorn spyder`, which uses it)
@@ -235,7 +235,7 @@ the three paths. Useful flags:
 |---|---|
 | `-o`/`--output S:\tools\offline-bundle` | Where to assemble the bundle (default: `./offline-bundle`) |
 | `--yes` | Build unattended, taking the default answer for every step |
-| `--python 3.12,3.11` | Which interpreter version(s) to mirror (default: newest). At least one must satisfy seedling's own `requires-python`; older ones alongside it are fine, and are there for your users' venvs |
+| `--python 3.12,3.11` | Which interpreter version(s) to mirror (default: newest). At least one must satisfy acorn's own `requires-python`; older ones alongside it are fine, and are there for your users' venvs |
 | `--packages pandas,polars` | Extra wheels to stock beyond the defaults |
 | `--tools ripgrep,pandoc` | conda-forge command-line tools to bundle (see [#5](#component-reference)) — a profile's `[tools]` are included automatically, this is for anything beyond that |
 | `--no-vscode` | Skip the VS Code + extensions download (the ~300MB step) |
@@ -251,7 +251,7 @@ the three paths. Useful flags:
 | `--dry-run` | Show the plan and exit without downloading |
 
 It is **not** a `acorn` command — it prepares the distribution, so it runs from
-the checkout before seedling is installed anywhere. It needs Python 3.12+ and
+the checkout before acorn is installed anywhere. It needs Python 3.12+ and
 internet on the build machine. The **wheels** cover every platform in
 `platforms`; **uv, the interpreters and the editor** come from the machine you
 run it on, so a mixed fleet means one run per platform into the same output
@@ -329,23 +329,23 @@ If you'd rather assemble it yourself (or need VS Code pre-seeded), the same
 layout on a connected machine is:
 
 ```
-S:\tools\seedling\                     <- a copy of this repo
-S:\tools\seedling\vendor\uv\           <- pinned uv binary (placed automatically)
-S:\tools\seedling\vendor\git\          <- (optional) extracted MinGit
-S:\tools\seedling\vendor\vscode\       <- (optional) pre-seeded portable VS Code
+S:\tools\acorn\                     <- a copy of this repo
+S:\tools\acorn\vendor\uv\           <- pinned uv binary (placed automatically)
+S:\tools\acorn\vendor\git\          <- (optional) extracted MinGit
+S:\tools\acorn\vendor\vscode\       <- (optional) pre-seeded portable VS Code
 S:\tools\python-builds\                <- python-build-standalone archives
 S:\tools\wheels\                       <- wheels: hatchling + the default venv packages + your org's packages
 ```
 
-And in `S:\tools\seedling\global.conf` — the **only file anyone edits**:
+And in `S:\tools\acorn\global.conf` — the **only file anyone edits**:
 
 ```
-SEEDLING_REPO_URL="S:\tools\seedling"
-SEEDLING_PYTHON_MIRROR="S:\tools\python-builds"
-SEEDLING_PACKAGE_INDEX="S:\tools\wheels"
+ACORN_REPO_URL="S:\tools\acorn"
+ACORN_PYTHON_MIRROR="S:\tools\python-builds"
+ACORN_PACKAGE_INDEX="S:\tools\wheels"
 ```
 
-Then a user runs `S:\tools\seedling\GET_STARTED\install.cmd` and gets the full
+Then a user runs `S:\tools\acorn\GET_STARTED\install.cmd` and gets the full
 experience — newest mirrored Python, `dev` venv with your default
 packages auto-activated, and `acorn update-commands` flowing from the share
 — without their machine ever attempting to reach the internet, and without
@@ -376,9 +376,9 @@ Enterprise / GitLab, plus Artifactory / Nexus / devpi:
 
 | Set | To |
 |---|---|
-| `SEEDLING_REPO_URL` | your seedling repo's git URL |
-| `SEEDLING_PYTHON_MIRROR` | your `python-build-standalone` mirror |
-| `SEEDLING_PACKAGE_INDEX` | your internal package index (must also serve `hatchling`, used to build acorn-cli) |
+| `ACORN_REPO_URL` | your acorn repo's git URL |
+| `ACORN_PYTHON_MIRROR` | your `python-build-standalone` mirror |
+| `ACORN_PACKAGE_INDEX` | your internal package index (must also serve `hatchling`, used to build acorn-cli) |
 | `vendor/uv/` | the `uv` binary (it won't be on your package index) |
 
 **You have only a shared network drive** — no git server, no internal index,
@@ -386,9 +386,9 @@ just a file share everyone can read:
 
 | Set | To |
 |---|---|
-| `SEEDLING_REPO_URL` | a **folder** on the share holding a copy of this repo |
-| `SEEDLING_PYTHON_MIRROR` | a **folder** of `python-build-standalone` archives |
-| `SEEDLING_PACKAGE_INDEX` | a **folder** of wheels (must include `hatchling`) |
+| `ACORN_REPO_URL` | a **folder** on the share holding a copy of this repo |
+| `ACORN_PYTHON_MIRROR` | a **folder** of `python-build-standalone` archives |
+| `ACORN_PACKAGE_INDEX` | a **folder** of wheels (must include `hatchling`) |
 | `vendor/uv/` | the `uv` binary |
 | `vendor/git/` | MinGit — Windows only, if there's no system git |
 
@@ -399,16 +399,16 @@ internal** — only the package (and maybe Python) sources are restricted:
 
 | Set | To |
 |---|---|
-| `SEEDLING_REPO_URL` | leave unset — installs from public GitHub |
-| `SEEDLING_PACKAGE_INDEX` | your internal index or wheels folder |
-| `SEEDLING_PYTHON_MIRROR` | only if interpreter downloads are blocked too |
+| `ACORN_REPO_URL` | leave unset — installs from public GitHub |
+| `ACORN_PACKAGE_INDEX` | your internal index or wheels folder |
+| `ACORN_PYTHON_MIRROR` | only if interpreter downloads are blocked too |
 
 **Your network re-signs HTTPS with a corporate CA** — a TLS-inspecting proxy
 (can combine with any scenario above):
 
 | Set | To |
 |---|---|
-| `SEEDLING_NATIVE_TLS=true` | trust the OS certificate store — **or** — |
+| `ACORN_NATIVE_TLS=true` | trust the OS certificate store — **or** — |
 | `vendor/certs/` | your CA's `.pem`/`.crt` files (bundled and trusted automatically) |
 
 Details: [HTTPS and corporate certificate authorities](#https-and-corporate-certificate-authorities).
@@ -420,7 +420,7 @@ Details: [HTTPS and corporate certificate authorities](#https-and-corporate-cert
 | `vendor/vscode/` | a pre-seeded portable VS Code (ships the editor offline) |
 | `vendor/git/` | MinGit — git on Windows with no system install |
 
-The conf values are recorded in seedling's settings at install time and applied
+The conf values are recorded in acorn's settings at install time and applied
 automatically to every command afterward (view or change them later with `acorn
 config`). Everything that *isn't* a download — venvs, activation, config,
 logging, previews, removal, directory-based updates — already works with zero
@@ -443,16 +443,16 @@ configuration:
 Every payload is a folder whose contents go to the destination:
 
 ```
-vendor/uv/         (uv.exe or uv, uvx too if present) -> ~/seedling/system/bin/
-vendor/micromamba/ (the micromamba binary)             -> ~/seedling/system/bin/
-vendor/git/        (an extracted MinGit)              -> ~/seedling/extensions/git/
-vendor/vscode/     (a pre-seeded portable VS Code)    -> ~/seedling/extensions/vscode/
+vendor/uv/         (uv.exe or uv, uvx too if present) -> ~/acorn/system/bin/
+vendor/micromamba/ (the micromamba binary)             -> ~/acorn/system/bin/
+vendor/git/        (an extracted MinGit)              -> ~/acorn/extensions/git/
+vendor/vscode/     (a pre-seeded portable VS Code)    -> ~/acorn/extensions/vscode/
 vendor/certs/      (corporate CA .pem/.crt files)     -> bundled into
-                    ~/seedling/system/certs/ca-bundle.pem and trusted everywhere
+                    ~/acorn/system/certs/ca-bundle.pem and trusted everywhere
 ```
 
 Reinstalls never overwrite binaries already in place, `vendor/` is
-excluded from seedling's private source copy and from updates (a
+excluded from acorn's private source copy and from updates (a
 pre-seeded VS Code would otherwise bloat `system/src` by hundreds of MB),
 and the folder is gitignored — it exists only on distribution media.
 
@@ -500,24 +500,24 @@ bundle — and for understanding what the bundler is doing.
 
 | Component | Normally from | When it's needed | Point it elsewhere with |
 |---|---|---|---|
-| seedling's own source | github.com | Install; `acorn update-commands` | `SEEDLING_REPO_URL` — a git URL **or a folder** on a share (no git needed) |
+| acorn's own source | github.com | Install; `acorn update-commands` | `ACORN_REPO_URL` — a git URL **or a folder** on a share (no git needed) |
 | `uv` | astral.sh | Install (skipped if already present) | `vendor/uv/` in the copy you distribute |
-| Python interpreters | python-build-standalone releases | `acorn python`; the installer's default setup | `SEEDLING_PYTHON_MIRROR` — a mirror URL or a folder of archives |
-| Python packages | pypi.org | Install; `acorn venv`; `acorn install`; `acorn update-commands` | `SEEDLING_PACKAGE_INDEX` — an index URL, or a folder of wheels (which disables the internet index entirely) |
-| conda-forge tools | conda-forge | First `acorn forge-install` (micromamba once) | `SEEDLING_CONDA_CHANNEL` — a mirror or a local channel folder |
+| Python interpreters | python-build-standalone releases | `acorn python`; the installer's default setup | `ACORN_PYTHON_MIRROR` — a mirror URL or a folder of archives |
+| Python packages | pypi.org | Install; `acorn venv`; `acorn install`; `acorn update-commands` | `ACORN_PACKAGE_INDEX` — an index URL, or a folder of wheels (which disables the internet index entirely) |
+| conda-forge tools | conda-forge | First `acorn forge-install` (micromamba once) | `ACORN_CONDA_CHANNEL` — a mirror or a local channel folder |
 | git (Windows) | git-for-windows releases | First `acorn repo-clone`, if no system git | `vendor/git/` — only needed if the machines have no system git |
 | VS Code + extensions | update.code.visualstudio.com / Marketplace | First `acorn vscode` | `vendor/vscode/` — a pre-seeded portable copy |
 
 Four things about that table are worth knowing before you rely on it.
 
-**The package index must also serve what seedling itself needs**, not just
+**The package index must also serve what acorn itself needs**, not just
 your users' packages: `hatchling` (uv builds `acorn-cli` with it, at install
 and at every `acorn update-commands`) plus the default venv packages
 (`ipython`, `ruff`, `ipykernel`, `pip`) and all of their transitive
 dependencies. A missing transitive dependency fails resolution outright
 offline — there is no index to fall back to.
 
-**At least one mirrored interpreter must satisfy seedling's own
+**At least one mirrored interpreter must satisfy acorn's own
 `requires-python`.** The mirror does two jobs: it supplies the interpreter
 that builds `acorn-cli`, and the base Pythons your users create venvs from.
 Older versions are fine for the second — mirror as many as you like — but if
@@ -547,7 +547,7 @@ acorn download-whls hatchling ipython ruff ipykernel pip pandas
 ```
 
 Wheels land in `./wheelhouse`; copy it to the share and set
-`SEEDLING_PACKAGE_INDEX` to that folder. Cross-platform bundles take
+`ACORN_PACKAGE_INDEX` to that folder. Cross-platform bundles take
 `pip download`'s own flags: `--platform win_amd64 --python-version 312
 --only-binary=:all:`. On a network with an internal index you can publish
 them instead of sharing a folder — `acorn upload-whls ./wheelhouse`.
@@ -561,15 +561,15 @@ A standard install ends by installing the newest Python and creating the
 auto-activated `dev` venv. Offline, this works **only if #3 and #4 are in
 place** (it needs an interpreter archive and the `ipython`/`ruff`
 packages), and the VS Code part only works pre-seeded (#7) — otherwise set
-`SEEDLING_AUTO_VSCODE="false"` alongside it. If none of it is ready yet, set
-`SEEDLING_AUTO_SETUP="false"` in your distributed `global.conf` — the install then finishes bare but working,
+`ACORN_AUTO_VSCODE="false"` alongside it. If none of it is ready yet, set
+`ACORN_AUTO_SETUP="false"` in your distributed `global.conf` — the install then finishes bare but working,
 and the setup can be run later per-machine:
 
 ```
 acorn python && acorn venv dev && acorn config set default_venv dev
 ```
 
-A failed auto-setup is never fatal either way — seedling itself still
+A failed auto-setup is never fatal either way — acorn itself still
 installs; users just see a warning with those same commands.
 
 ---
@@ -583,14 +583,14 @@ both zero-touch for users:
 
 - **Ship the CA with the repo**: drop the `.pem`/`.crt` files into
   `vendor/certs/`. The installer concatenates them into
-  `~/seedling/system/certs/ca-bundle.pem`, records it as the `ca_cert`
-  setting, and every seedling command then trusts it automatically —
+  `~/acorn/system/certs/ca-bundle.pem`, records it as the `ca_cert`
+  setting, and every acorn command then trusts it automatically —
   uv downloads (`SSL_CERT_FILE`), git clones (`GIT_SSL_CAINFO`), and
-  seedling's own downloads all included. Unlike the binary payloads, the
+  acorn's own downloads all included. Unlike the binary payloads, the
   bundle is **rebuilt on every install**, so certificate rotation
   propagates with a plain reinstall.
 - **Use the OS trust store**: if IT already installs the corporate CA
-  machine-wide via policy, set `SEEDLING_NATIVE_TLS="true"` in
+  machine-wide via policy, set `ACORN_NATIVE_TLS="true"` in
   `global.conf` instead — recorded as the `native_tls` setting and
   applied to uv as `UV_NATIVE_TLS`.
 
@@ -610,9 +610,9 @@ equivalent:
 
 | Component | Share-only equivalent |
 |---|---|
-| seedling source + updates | Already file-based (#1) — the ideal case |
-| Python interpreter mirror | `SEEDLING_PYTHON_MIRROR="S:\tools\python-builds"` — a share folder of archives; seedling handles the `file://` conversion |
-| Package index | `SEEDLING_PACKAGE_INDEX="S:\tools\wheels"` — a **directory of wheels** on the share; the internet index is disabled automatically. Populate it on a connected machine with [`acorn download-whls`](#populating-a-wheel-directory-by-hand) (include `hatchling`, the default venv packages, and all transitive deps for your platform) |
+| acorn source + updates | Already file-based (#1) — the ideal case |
+| Python interpreter mirror | `ACORN_PYTHON_MIRROR="S:\tools\python-builds"` — a share folder of archives; acorn handles the `file://` conversion |
+| Package index | `ACORN_PACKAGE_INDEX="S:\tools\wheels"` — a **directory of wheels** on the share; the internet index is disabled automatically. Populate it on a connected machine with [`acorn download-whls`](#populating-a-wheel-directory-by-hand) (include `hatchling`, the default venv packages, and all transitive deps for your platform) |
 | git hosting | git needs no server: **bare repositories on the share** (`git init --bare S:/repos/project.git`) are full remotes — `acorn repo-clone S:/repos/project.git`, push, and pull all work over git's file protocol |
 | VS Code | Pre-seeded portable folder in `vendor/vscode/`, as above (#7) |
 

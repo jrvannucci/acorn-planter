@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-build_offline.py -- assemble a self-contained, air-gapped seedling bundle.
+build_offline.py -- assemble a self-contained, air-gapped acorn bundle.
 
 Run this on a CONNECTED machine (it needs the internet). It downloads every
-piece an offline install needs, lays them out the way seedling expects, writes
+piece an offline install needs, lays them out the way acorn expects, writes
 a matching global.conf, and walks you through each step -- asking before it
 downloads anything (or pass --yes to let it build the whole thing unattended).
 
@@ -13,7 +13,7 @@ docs/OFFLINE.md for the full deployment story; this tool automates its
 "Putting it together" section.
 
 Not a `acorn` subcommand on purpose: it prepares the distribution, so it runs
-straight from a repo checkout (`build-offline.cmd`) before seedling is installed
+straight from a repo checkout (`build-offline.cmd`) before acorn is installed
 anywhere.
 """
 
@@ -37,17 +37,17 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# Deliberately kept equal to seedling's own requires-python; a test asserts they
+# Deliberately kept equal to acorn's own requires-python; a test asserts they
 # match, so relaxing one is a conscious decision rather than drift.
 MIN_PYTHON = (3, 12)
 
 # The floor is enforced HERE, not just in the launchers. build-offline.cmd runs
 # `py -3` with no version check at all, and this file can also be run directly
 # (`python installers/build_offline.py`), so a launcher-only probe left the
-# declared floor untrue on Windows -- seedling's primary platform. One check
+# declared floor untrue on Windows -- acorn's primary platform. One check
 # covers every entry point.
 #
-# It sits above the `seedling` import on purpose: those modules track seedling's
+# It sits above the `acorn` import on purpose: those modules track acorn's
 # requires-python, so importing them on an older interpreter is the failure this
 # is meant to replace with a readable message. Everything above is stdlib that
 # parses on far older Pythons, so an old interpreter reaches this check rather
@@ -67,13 +67,13 @@ if sys.version_info < MIN_PYTHON:
         "whichever you\nlike with --python.\n".format(_want, _have, sys.executable))
     raise SystemExit(1)
 
-# Reuse seedling's own checksum-verifying downloader and color helpers rather
+# Reuse acorn's own checksum-verifying downloader and color helpers rather
 # than reimplementing them -- both are import-only, no install required.
 sys.path.insert(0, str(REPO_ROOT / "src"))
-import seedling  # noqa: E402
-from seedling import colors, download  # noqa: E402
+import acorn  # noqa: E402
+from acorn import colors, download  # noqa: E402
 
-SEEDLING_VERSION = seedling.__version__
+ACORN_VERSION = acorn.__version__
 
 UV_LATEST_URL = "https://github.com/astral-sh/uv/releases/latest/download/{asset}"
 PBS_RELEASE_BASE = ("https://github.com/astral-sh/python-build-standalone"
@@ -89,8 +89,8 @@ GIT_WIN_LATEST_API = "https://api.github.com/repos/git-for-windows/git/releases/
 # Imported rather than restated: bundle.py's validator credits a bundle with
 # holding these, so if the two lists ever disagreed, a profile would be told
 # a package is present that nothing downloaded.
-from seedling import licenses as licences  # noqa: E402
-from seedling.bundle import (  # noqa: E402
+from acorn import licenses as licences  # noqa: E402
+from acorn.bundle import (  # noqa: E402
     ALWAYS_PRESENT as REQUIRED_PACKAGES,
     requirement_name,
 )
@@ -98,7 +98,7 @@ from seedling.bundle import (  # noqa: E402
 SRC_PYPROJECT = REPO_ROOT / "src" / "pyproject.toml"
 
 # Every third-party component a bundle can contain, with the licence it
-# arrives under. seedling ships none of these -- it downloads them from their
+# arrives under. acorn ships none of these -- it downloads them from their
 # publisher at the builder's direction -- but assembling them into a bundle
 # that is copied to a share IS redistribution, performed by whoever runs this
 # tool. See docs/LICENSING.md for the full position.
@@ -183,8 +183,8 @@ def parse_version(text: str) -> tuple[int, ...] | None:
     return tuple(int(p) for p in m.group(1).split("."))
 
 
-def seedling_python_floor(pyproject: Path = SRC_PYPROJECT) -> tuple[int, ...] | None:
-    """seedling's own requires-python floor, read from src/pyproject.toml.
+def acorn_python_floor(pyproject: Path = SRC_PYPROJECT) -> tuple[int, ...] | None:
+    """acorn's own requires-python floor, read from src/pyproject.toml.
 
     Deliberately a regex rather than tomllib: this file is the one piece of the
     project that runs on whatever Python the DEPLOYER's build machine happens to
@@ -202,7 +202,7 @@ def seedling_python_floor(pyproject: Path = SRC_PYPROJECT) -> tuple[int, ...] | 
 
 def check_python_versions(versions: list[str],
                           floor: tuple[int, ...] | None) -> str | None:
-    """Validate the requested --python versions against seedling's floor.
+    """Validate the requested --python versions against acorn's floor.
 
     The mirrored interpreters serve two different purposes, which is why this
     isn't a blanket rejection:
@@ -226,14 +226,14 @@ def check_python_versions(versions: list[str],
         requested = ", ".join(v for v, _ in parsed)
         return (
             f"None of the requested interpreter versions ({requested}) satisfy "
-            f"seedling's own requires-python (>={floor_str}).\n"
+            f"acorn's own requires-python (>={floor_str}).\n"
             f"    The bundle would build fine here and then FAIL on the "
             f"air-gapped machine: `uv tool install` needs >={floor_str} to "
             f"build acorn-cli, and the mirror would offer nothing new enough.\n"
             f"    Add a supported version -- e.g. --python {floor_str},"
             f"{parsed[0][0]} -- to mirror both. Older interpreters are still "
             f"useful for your users' own venvs; there just has to be one "
-            f"seedling itself can run on.")
+            f"acorn itself can run on.")
     return None
 
 
@@ -338,16 +338,16 @@ def third_party_gate(names: list[str], *, accepted: bool,
     print(colors.warn(
         "This bundle will contain components whose terms RESTRICT "
         "redistribution."))
-    print("  seedling ships none of these; it downloads them from their "
+    print("  acorn ships none of these; it downloads them from their "
           "publisher")
     print("  at your direction. Copying the bundle to a share is "
           "redistribution")
     print("  performed by YOU, and it is your responsibility to hold the "
           "rights")
-    print("  to do it. seedling grants you no such rights. See "
+    print("  to do it. acorn grants you no such rights. See "
           "docs/LICENSING.md.")
     print()
-    print("  Avoid this entirely with SEEDLING_VSCODE_FLAVOR=\"vscodium\" "
+    print("  Avoid this entirely with ACORN_VSCODE_FLAVOR=\"vscodium\" "
           "(MIT + Open VSX).")
     print()
 
@@ -370,7 +370,7 @@ def third_party_gate(names: list[str], *, accepted: bool,
     print()
     warn("Not acknowledged; the restricted components were NOT staged.")
     info("Re-run with --no-vscode to build without them, set "
-         "SEEDLING_VSCODE_FLAVOR=\"vscodium\" for an openly-licensed editor, "
+         "ACORN_VSCODE_FLAVOR=\"vscodium\" for an openly-licensed editor, "
          "or pass --accept-third-party-terms for unattended builds.")
     return False
 
@@ -422,10 +422,10 @@ def write_manifest(output: Path, names: list[str], *, staged: dict) -> Path:
         "schema": 1,
         "generated": datetime.datetime.now(datetime.UTC).strftime(
             "%Y-%m-%dT%H:%M:%SZ"),
-        "generated_by": f"seedling build-offline {SEEDLING_VERSION}",
+        "generated_by": f"acorn build-offline {ACORN_VERSION}",
         "platform": f"{platform.system()}/{normalized_arch(platform.machine())}",
         "notice": (
-            "seedling ships no third-party software. Each component below was "
+            "acorn ships no third-party software. Each component below was "
             "downloaded from its publisher at the builder's direction. "
             "Distributing this bundle is an act of whoever distributes it, "
             "under that component's terms. See docs/LICENSING.md."),
@@ -504,7 +504,7 @@ UNPACK_NAME = "UNPACK.cmd"
 # reads that same line as a label and falls through to the batch body.
 UNPACK_TEMPLATE = r""":; exec sh -c 'cd "$(dirname "$0")" && tar -xzf "{archive}" && echo && echo "Unpacked. Next: sh ./{folder}/GET_STARTED/install.cmd" && exit 0' # POSIX shells take this line
 @echo off
-rem Unpack the seedling offline bundle sitting next to this file.
+rem Unpack the acorn offline bundle sitting next to this file.
 rem   Windows:     double-click this file
 rem   macOS/Linux: run `sh ./UNPACK.cmd`
 rem Needs nothing installed: tar has shipped with Windows since 10 1803.
@@ -886,7 +886,7 @@ def build_mingit(vendor_git: Path) -> bool:
     info("Looking up the latest MinGit release ...")
     try:
         req = urllib.request.Request(
-            GIT_WIN_LATEST_API, headers={"User-Agent": "seedling-offline-builder"})
+            GIT_WIN_LATEST_API, headers={"User-Agent": "acorn-offline-builder"})
         import json
         with urllib.request.urlopen(req) as resp:
             data = json.load(resp)
@@ -928,10 +928,10 @@ def _install_extensions(app_dir: Path, extensions=None) -> bool:
       2. Immediately after a 300MB extract the CLI fails while the OS finishes
          scanning the new files; the same tree succeeds ~a minute later. So we
          retry for up to ~2.5 minutes instead of giving up after a few seconds.
-    Reuses seedling's own extension list and CLI resolution."""
+    Reuses acorn's own extension list and CLI resolution."""
     import time
 
-    from seedling.commands import vscode_cmd
+    from acorn.commands import vscode_cmd
 
     cli = vscode_cmd._find_cli(app_dir)
     if not cli:
@@ -975,26 +975,26 @@ def _install_extensions(app_dir: Path, extensions=None) -> bool:
 def build_vscode(vendor_vscode: Path, staging: Path, editor=None) -> bool:
     """Pre-acorn portable VS Code AND the default extensions into vendor/vscode/.
     Rather than reimplement the VS Code update-API download + marketplace
-    extension install, drive seedling's OWN vscode installer against a throwaway
-    home (SEEDLING_HOME=staging), then move the finished tree into place. Heavy:
+    extension install, drive acorn's OWN vscode installer against a throwaway
+    home (ACORN_HOME=staging), then move the finished tree into place. Heavy:
     ~300MB for VS Code plus the extensions.
 
     `editor` is the spec's [editor] table. Seeding it into the throwaway home's
     settings.json is what makes offline-bundle.toml AUTHORITATIVE here: this
-    step used to read whatever the BUILD MACHINE's own seedling settings said,
+    step used to read whatever the BUILD MACHINE's own acorn settings said,
     so an admin who set the flavor in the conf they distribute -- the obvious
     place -- silently got the default build staged instead."""
     if (vendor_vscode / "app").exists():
         ok(f"VS Code already staged in {vendor_vscode} -- skipping.")
         return True
 
-    info("Downloading VS Code via seedling's own installer "
+    info("Downloading VS Code via acorn's own installer "
          "(~300MB; this can take a few minutes) ...")
     env = os.environ.copy()
-    env["SEEDLING_HOME"] = str(staging)
-    env["SEEDLING_NO_LOG"] = "1"
+    env["ACORN_HOME"] = str(staging)
+    env["ACORN_NO_LOG"] = "1"
     if editor:
-        # The subprocess reads settings.json out of SEEDLING_HOME, so writing
+        # The subprocess reads settings.json out of ACORN_HOME, so writing
         # the spec's values there is how they reach vscode_cmd.flavor() and
         # gallery_for() without touching this machine's real settings.
         seeded = {"vscode_flavor": editor.get("flavor", "microsoft")}
@@ -1011,7 +1011,7 @@ def build_vscode(vendor_vscode: Path, staging: Path, editor=None) -> bool:
     # Let install() download + extract, but NOT install extensions -- a
     # just-extracted tree isn't ready for the CLI yet, so the builder installs
     # them itself afterward with a long retry window (_install_extensions).
-    snippet = ("import sys; from seedling.commands import vscode_cmd; "
+    snippet = ("import sys; from acorn.commands import vscode_cmd; "
                "sys.exit(0 if vscode_cmd.install(force=False, "
                "install_extensions=False) else 1)")
     try:
@@ -1055,7 +1055,7 @@ def build_conda_channel(vendor_micromamba: Path, channel_dir: Path,
     (conda-forge by default, or an internal mirror), and its repodata.json is
     synthesized from the solve -- the same mechanism as `acorn download-forge`,
     reused here so the bundle carries one artifact instead of a side folder."""
-    from seedling import conda_tool
+    from acorn import conda_tool
     mm_name = "micromamba.exe" if platform.system() == "Windows" else "micromamba"
     try:
         mm = conda_tool.fetch_micromamba(vendor_micromamba / mm_name)
@@ -1096,7 +1096,7 @@ def build_conda_channel(vendor_micromamba: Path, channel_dir: Path,
 #   * a FRESH uv cache -- the build just populated the normal one, so a warm
 #     cache would happily satisfy an install from a wheel the bundle is
 #     MISSING, and the check would pass on a broken bundle.
-#   * `--offline` on every uv call, plus the same UV_* knobs seedling itself
+#   * `--offline` on every uv call, plus the same UV_* knobs acorn itself
 #     sets at runtime (see uv_tool._build_env), so this exercises the real code
 #     path rather than an approximation of it.
 
@@ -1117,14 +1117,14 @@ def discover_mirrored_versions(mirror_dir: Path) -> list[str]:
 
 def write_offline_index_config(cfg_path: Path, wheels_dir: Path) -> Path:
     """A uv.toml declaring the wheel folder as a flat default index, with
-    pypi.org disabled. Deliberately the same shape seedling generates at
+    pypi.org disabled. Deliberately the same shape acorn generates at
     runtime in uv_tool._offline_index_config -- if that changes, this should
     too, or preflight stops testing what users actually get."""
     cfg_path.parent.mkdir(parents=True, exist_ok=True)
     cfg_path.write_text(
         "# Generated by build_offline.py for a preflight check.\n"
         "[[index]]\n"
-        'name = "seedling-offline"\n'
+        'name = "acorn-offline"\n'
         f'url = "{wheels_dir.resolve().as_uri()}"\n'
         'format = "flat"\n'
         "default = true\n",
@@ -1137,7 +1137,7 @@ def _preflight_env(cache: Path, mirror_dir: Path, cfg_path: Path,
     env = os.environ.copy()
     # Scrub anything inherited that could reach the network or a real install.
     for var in list(env):
-        if var.startswith(("UV_", "PIP_", "SEEDLING_")):
+        if var.startswith(("UV_", "PIP_", "ACORN_")):
             del env[var]
     env["UV_CACHE_DIR"] = str(cache)              # fresh: see note above
     env["UV_PYTHON_INSTALL_MIRROR"] = mirror_dir.resolve().as_uri()
@@ -1156,7 +1156,7 @@ def _run_offline(uv_exe: Path, args: list[str], env: dict) -> tuple[bool, str]:
     return result.returncode == 0, tail
 
 
-def verify_bundle(output: Path, seedling_copy: Path, uv_exe: Path,
+def verify_bundle(output: Path, acorn_copy: Path, uv_exe: Path,
                   packages: list[str]) -> bool:
     """Install from the bundle, offline, on this machine. Returns True if a
     real air-gapped install would work."""
@@ -1174,7 +1174,7 @@ def verify_bundle(output: Path, seedling_copy: Path, uv_exe: Path,
              "preflight. Re-run step 3, then verify with --verify-only.")
         return False
 
-    floor = seedling_python_floor(seedling_copy / "src" / "pyproject.toml")
+    floor = acorn_python_floor(acorn_copy / "src" / "pyproject.toml")
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         env = _preflight_env(tmp / "cache", mirror_dir,
@@ -1216,14 +1216,14 @@ def verify_bundle(output: Path, seedling_copy: Path, uv_exe: Path,
         if target is None:
             failures.append(
                 "No mirrored interpreter both installs and satisfies "
-                "seedling's requires-python, so acorn-cli could not be built.")
+                "acorn's requires-python, so acorn-cli could not be built.")
         else:
             venv = tmp / "seedcli"
             ok_venv, _ = _run_offline(
                 uv_exe, ["venv", "--python", target, str(venv)], env)
             ok_build, tail = _run_offline(
                 uv_exe, ["pip", "install", "--python", str(venv),
-                         str(seedling_copy / "src")], env)
+                         str(acorn_copy / "src")], env)
             if ok_venv and ok_build:
                 ok(f"acorn-cli builds offline on Python {target} "
                    "(hatchling resolved from the bundle).")
@@ -1243,7 +1243,7 @@ def verify_bundle(output: Path, seedling_copy: Path, uv_exe: Path,
 # staging + config
 # --------------------------------------------------------------------------
 def stage_repo(output: Path) -> Path:
-    """Copy the repo into <output>/seedling (the thing users install from),
+    """Copy the repo into <output>/acorn (the thing users install from),
     excluding history/caches/tests. Returns the copy's path.
 
     Always REFRESHES an existing copy. The heavy steps (uv, interpreters,
@@ -1254,34 +1254,34 @@ def stage_repo(output: Path) -> Path:
     global.conf, and get a bundle that looked freshly built around stale
     code. The vendor/ payloads are preserved across the refresh, so this costs
     nothing but the copy."""
-    seedling_copy = output / "seedling"
+    acorn_copy = output / "acorn"
     ignore = shutil.ignore_patterns(
         ".git", "__pycache__", "*.pyc", "offline-bundle", ".pytest_cache",
         ".claude")
 
-    if not seedling_copy.exists():
-        info(f"Copying the repo into {seedling_copy} ...")
-        shutil.copytree(REPO_ROOT, seedling_copy, ignore=ignore)
-        return seedling_copy
+    if not acorn_copy.exists():
+        info(f"Copying the repo into {acorn_copy} ...")
+        shutil.copytree(REPO_ROOT, acorn_copy, ignore=ignore)
+        return acorn_copy
 
     # Refresh in place: move vendor/ aside (it holds the expensive downloads,
     # and is gitignored so it never came from REPO_ROOT anyway), replace the
     # source, then put it back.
-    info(f"Refreshing the repo copy at {seedling_copy} "
+    info(f"Refreshing the repo copy at {acorn_copy} "
          "(vendor/ payloads are kept) ...")
-    vendor = seedling_copy / "vendor"
+    vendor = acorn_copy / "vendor"
     stash = output / ".vendor-stash"
     shutil.rmtree(stash, ignore_errors=True)
     if vendor.exists():
         shutil.move(str(vendor), str(stash))
     try:
-        shutil.rmtree(seedling_copy)
-        shutil.copytree(REPO_ROOT, seedling_copy, ignore=ignore)
+        shutil.rmtree(acorn_copy)
+        shutil.copytree(REPO_ROOT, acorn_copy, ignore=ignore)
     finally:
         if stash.exists():
-            shutil.rmtree(seedling_copy / "vendor", ignore_errors=True)
-            shutil.move(str(stash), str(seedling_copy / "vendor"))
-    return seedling_copy
+            shutil.rmtree(acorn_copy / "vendor", ignore_errors=True)
+            shutil.move(str(stash), str(acorn_copy / "vendor"))
+    return acorn_copy
 
 
 def write_conf(conf_path: Path, values: dict[str, str]) -> None:
@@ -1306,7 +1306,7 @@ def write_conf(conf_path: Path, values: dict[str, str]) -> None:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="build-offline",
-        description="Assemble a self-contained, offline seedling bundle.")
+        description="Assemble a self-contained, offline acorn bundle.")
     parser.add_argument(
         "-o", "--output", default=str(REPO_ROOT / "offline-bundle"),
         help="Where to assemble the bundle (default: ./offline-bundle).")
@@ -1396,7 +1396,7 @@ def main(argv=None) -> int:
     # offline-bundle.toml is the superset, and it stands alone: it says what
     # the share will hold without consulting any profile. The flags below
     # remain overrides for a one-off build.
-    from seedling import bundle as bundle_mod, profile as profile_mod
+    from acorn import bundle as bundle_mod, profile as profile_mod
     declared: bundle_mod.Bundle | None = None
     bundle_path = None
     if args.bundle is None:
@@ -1522,19 +1522,19 @@ def main(argv=None) -> int:
     # --verify-only: check a bundle that already exists (typically one already
     # copied to its share) and exit. Nothing is downloaded or written.
     if args.verify_only:
-        print(colors.bold("seedling offline bundle -- preflight check"))
+        print(colors.bold("acorn offline bundle -- preflight check"))
         print(f"  Bundle: {output}")
-        seedling_copy = output / "seedling"
-        if not seedling_copy.is_dir():
-            warn(f"No bundle found at {output} (expected a seedling/ folder).")
+        acorn_copy = output / "acorn"
+        if not acorn_copy.is_dir():
+            warn(f"No bundle found at {output} (expected a acorn/ folder).")
             return 2
         exe_name = "uv.exe" if system == "Windows" else "uv"
         step(1, "Verify the bundle installs offline")
-        return 0 if verify_bundle(output, seedling_copy,
-                                  seedling_copy / "vendor" / "uv" / exe_name,
+        return 0 if verify_bundle(output, acorn_copy,
+                                  acorn_copy / "vendor" / "uv" / exe_name,
                                   packages) else 1
 
-    print(colors.bold("seedling offline bundle builder"))
+    print(colors.bold("acorn offline bundle builder"))
     print("Builds a folder you carry to an air-gapped machine and install from")
     print("with no internet. Run this on a connected machine. Full guide: "
           "docs/OFFLINE.md")
@@ -1572,8 +1572,8 @@ def main(argv=None) -> int:
     deploy_root = (args.deploy_root or (declared.deploy_root if declared else None)
                    or str(output)).rstrip("/\\")
     print(f"  Deploy path : {deploy_root}  (edit global.conf if this changes)")
-    floor = seedling_python_floor()
-    floor_note = (f"  (seedling itself needs >={'.'.join(str(p) for p in floor)})"
+    floor = acorn_python_floor()
+    floor_note = (f"  (acorn itself needs >={'.'.join(str(p) for p in floor)})"
                   if floor else "")
     print(f"  Python      : {', '.join(v or 'newest' for v in versions)}{floor_note}")
     print(f"  Wheels      : {', '.join(packages)}")
@@ -1594,7 +1594,7 @@ def main(argv=None) -> int:
         print(f"  MinGit      : {'yes (--mingit)' if args.mingit else 'no (pass --mingit to include it)'}")
 
     # Fail BEFORE downloading anything: an interpreter set that can't run
-    # seedling produces a bundle that builds cleanly here and only breaks on the
+    # acorn produces a bundle that builds cleanly here and only breaks on the
     # air-gapped side, after it's been carried to the share.
     version_error = check_python_versions(versions, floor)
     if version_error:
@@ -1605,7 +1605,7 @@ def main(argv=None) -> int:
     # What this bundle will contain, licence-wise. Computed from the same
     # settings the editor steps below actually use, so the notice can't drift
     # from what gets staged.
-    from seedling.commands import vscode_cmd
+    from acorn.commands import vscode_cmd
     try:
         # The spec decides when there is one -- the same value that will be
         # staged, so the licence notice can't describe a different build than
@@ -1650,18 +1650,18 @@ def main(argv=None) -> int:
     # uv's download cache lives in the system temp dir, NOT inside the bundle --
     # otherwise it would be copied to the share. Reused across runs to speed
     # re-builds.
-    cache = Path(tempfile.gettempdir()) / "seedling-offline-cache"
+    cache = Path(tempfile.gettempdir()) / "acorn-offline-cache"
 
     # 1. Stage the repo copy (everything else lands relative to it).
-    step(1, "Stage the seedling source")
+    step(1, "Stage the acorn source")
     info("A copy of this repo is what your users actually install from; the "
          "downloads below fill in its vendor/ folder and its siblings.")
-    seedling_copy = stage_repo(output)
-    vendor = seedling_copy / "vendor"
+    acorn_copy = stage_repo(output)
+    vendor = acorn_copy / "vendor"
 
     # 2. uv (required -- nothing else can be resolved without it).
     step(2, "uv binary (required)")
-    info("seedling never assumes uv is installed; it ships this exact binary "
+    info("acorn never assumes uv is installed; it ships this exact binary "
          "in vendor/uv/ and runs it directly.")
     uv_exe = None
     if ask("Download uv now?", default=True, auto=auto):
@@ -1672,7 +1672,7 @@ def main(argv=None) -> int:
             warn("Fix the uv step and re-run to finish the bundle.")
 
     # 3. Python interpreter mirror (required for a working default env).
-    step(3, "Python interpreters (SEEDLING_PYTHON_MIRROR)")
+    step(3, "Python interpreters (ACORN_PYTHON_MIRROR)")
     info("`acorn python` downloads CPython from the internet; offline it reads "
          "these mirrored archives instead.")
     mirrored_versions: list[str] = []
@@ -1685,7 +1685,7 @@ def main(argv=None) -> int:
     mirror_ok = bool(mirrored_versions)
 
     # 4. Wheel index (required -- hatchling builds acorn-cli).
-    step(4, "Python packages (SEEDLING_PACKAGE_INDEX)")
+    step(4, "Python packages (ACORN_PACKAGE_INDEX)")
     info("Every package install (incl. building acorn-cli with hatchling, and "
          "each new venv) resolves from this wheel folder offline.")
     wheels_ok = False
@@ -1700,7 +1700,7 @@ def main(argv=None) -> int:
         warn("Skipped -- needs uv (step 2).")
 
     # 5. conda-forge tools (optional -- vendors micromamba + a conda channel).
-    step(5, "conda-forge tools (SEEDLING_CONDA_CHANNEL, optional)")
+    step(5, "conda-forge tools (ACORN_CONDA_CHANNEL, optional)")
     conda_ok = False
     conda_pkg_count = 0
     conda_channel_dir = output / "conda-channel"
@@ -1762,21 +1762,21 @@ def main(argv=None) -> int:
     # 9. global.conf.
     step(9, "Write global.conf")
     conf_values = {
-        "SEEDLING_REPO_URL": f"{deploy_root}\\seedling" if system == "Windows"
-        else f"{deploy_root}/seedling",
-        "SEEDLING_PYTHON_MIRROR": f"{deploy_root}\\python-builds"
+        "ACORN_REPO_URL": f"{deploy_root}\\acorn" if system == "Windows"
+        else f"{deploy_root}/acorn",
+        "ACORN_PYTHON_MIRROR": f"{deploy_root}\\python-builds"
         if system == "Windows" else f"{deploy_root}/python-builds",
-        "SEEDLING_PACKAGE_INDEX": f"{deploy_root}\\wheels" if system == "Windows"
+        "ACORN_PACKAGE_INDEX": f"{deploy_root}\\wheels" if system == "Windows"
         else f"{deploy_root}/wheels",
     }
     if conda_ok:
         # Point forge-install at the bundled channel; the local-channel path in
         # conda_tool then installs from it offline.
-        conf_values["SEEDLING_CONDA_CHANNEL"] = (
+        conf_values["ACORN_CONDA_CHANNEL"] = (
             f"{deploy_root}\\conda-channel" if system == "Windows"
             else f"{deploy_root}/conda-channel")
-    write_conf(seedling_copy / "GET_STARTED" / "global.conf", conf_values)
-    ok(f"Wrote {seedling_copy / 'GET_STARTED' / 'global.conf'} pointing at "
+    write_conf(acorn_copy / "GET_STARTED" / "global.conf", conf_values)
+    ok(f"Wrote {acorn_copy / 'GET_STARTED' / 'global.conf'} pointing at "
        f"{deploy_root}.")
     for k, v in conf_values.items():
         info(f"  {k}={v}")
@@ -1792,7 +1792,7 @@ def main(argv=None) -> int:
     elif uv_exe is None:
         warn("Skipped -- needs uv (step 2).")
     elif ask("Run the preflight check now?", default=True, auto=auto):
-        verified = verify_bundle(output, seedling_copy, uv_exe, packages)
+        verified = verify_bundle(output, acorn_copy, uv_exe, packages)
 
     # Every profile against what ACTUALLY landed, not what was declared. This
     # is the check that catches a `pip download` that failed for one package,
@@ -1873,20 +1873,20 @@ def main(argv=None) -> int:
 
     print("Layout:")
     layout("MANIFEST.json", "what was staged, and under what licence")
-    layout(f"seedling{os.sep}", "users run install.cmd from here")
-    layout(f"python-builds{os.sep}", "SEEDLING_PYTHON_MIRROR",
+    layout(f"acorn{os.sep}", "users run install.cmd from here")
+    layout(f"python-builds{os.sep}", "ACORN_PYTHON_MIRROR",
            "(populated)" if mirror_ok else colors.warn("(empty -- redo step 3)"))
-    layout(f"wheels{os.sep}", "SEEDLING_PACKAGE_INDEX",
+    layout(f"wheels{os.sep}", "ACORN_PACKAGE_INDEX",
            # "incomplete", not "empty": with several interpreters mirrored, one
            # failed pass leaves real wheels behind but an unusable bundle.
            "(populated)" if wheels_ok
            else colors.warn("(incomplete -- redo step 4)"))
     if conda_tools:
-        layout(f"conda-channel{os.sep}", "SEEDLING_CONDA_CHANNEL",
+        layout(f"conda-channel{os.sep}", "ACORN_CONDA_CHANNEL",
                f"({conda_pkg_count} pkgs)" if conda_ok
                else colors.warn("(missing -- redo step 5)"))
     if vscode_wanted:
-        layout(f"seedling{os.sep}vendor{os.sep}vscode{os.sep}", "pre-seeded VS Code",
+        layout(f"acorn{os.sep}vendor{os.sep}vscode{os.sep}", "pre-seeded VS Code",
                "(populated)" if vscode_ok
                else colors.warn("(missing -- redo step 6)"))
     print()
@@ -1915,7 +1915,7 @@ def main(argv=None) -> int:
         print(f"  2. Extract it there (it unpacks to one {output.name}{os.sep} "
               "folder, same layout as the build).")
         print("  3. On an offline machine, run install.cmd from the extracted "
-              "seedling/ folder.")
+              "acorn/ folder.")
         print("  4. It reads global.conf and installs entirely from the bundle.")
         print("     (After extracting on the share, you can re-run "
               "--verify-only against THAT copy to prove the transfer -- "
@@ -1924,7 +1924,7 @@ def main(argv=None) -> int:
         print(f"  1. Copy the whole {output.name}{os.sep} folder to {deploy_root} on "
               "your target/share.")
         print("  2. On an offline machine, run install.cmd from the copied "
-              "seedling/ folder.")
+              "acorn/ folder.")
         print("  3. It reads global.conf and installs entirely from the bundle.")
         print("     (After copying, you can re-run --verify-only against the copy "
               "to prove the transfer was complete.)")
@@ -1942,7 +1942,7 @@ def main(argv=None) -> int:
 
     if deploy_root == str(output):
         warn("Deploy path = the build path. If you move the folder, update the "
-             "three paths in seedling/global.conf (or re-run with "
+             "three paths in acorn/global.conf (or re-run with "
              "--deploy-root).")
     # A bundle that can't satisfy its own profiles is a failed build, even
     # though every download succeeded: carrying it in would hand the failure

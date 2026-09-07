@@ -17,7 +17,7 @@ want the collection rig to keep working.
 | Corporate CA certificate | ❌ | default trust store |
 | Bundled git (MinGit) | ❌ | Windows bootstraps it if `acorn repo-clone` is used |
 | A reachable git host | ❌ | no `[[repo]]` entries |
-| Multi-user share root | ❌ | each person installs to their own `~/seedling` |
+| Multi-user share root | ❌ | each person installs to their own `~/acorn` |
 | Offline bundle to build | ❌ | installs straight from the internet |
 | **x86_64 only** | ✅ | Spyder's Qt wheels are x86_64-only |
 

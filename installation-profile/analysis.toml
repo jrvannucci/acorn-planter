@@ -3,7 +3,7 @@
 #
 # It reaches only the people listed below, and layers on top of the default
 # profile every machine already gets. Matching is case-insensitive against the
-# same login name SEEDLING_HOME_DIR's {user} token expands to.
+# same login name ACORN_HOME_DIR's {user} token expands to.
 # =============================================================================
 
 schema = 1

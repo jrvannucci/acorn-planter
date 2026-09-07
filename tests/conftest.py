@@ -1,17 +1,17 @@
 """
-Shared fixtures for the seedling test suite.
+Shared fixtures for the acorn test suite.
 
 Design constraints these fixtures enforce:
 
-- Every test runs against a THROWAWAY seedling home (tmp_path), never the
-  real ~/seedling. seedling's path constants are computed at import time,
+- Every test runs against a THROWAWAY acorn home (tmp_path), never the
+  real ~/acorn. acorn's path constants are computed at import time,
   so the `home` fixture rebinds them on the modules and restores the
   originals afterward.
 - The machine-wide process killer (kill_cmd.kill_python_and_vscode) is
   neutered for every test -- it would otherwise force-close every Python
   process on the machine, including the test runner and anything the
   developer has open.
-- Environment variables seedling reads (SEEDLING_*) or writes (SSL_*,
+- Environment variables acorn reads (ACORN_*) or writes (SSL_*,
   UV_*, GIT_SSL_CAINFO) are cleared per test and restored by monkeypatch.
 
 Run the suite with:  uvx pytest          (from the repo root)
@@ -33,14 +33,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC = REPO_ROOT / "src"
 sys.path.insert(0, str(SRC))
 
-from seedling import git_tool as git_tool_mod  # noqa: E402
-from seedling import paths as paths_mod  # noqa: E402
+from acorn import git_tool as git_tool_mod  # noqa: E402
+from acorn import paths as paths_mod  # noqa: E402
 
-# Everything seedling might read from -- or write into -- the environment.
+# Everything acorn might read from -- or write into -- the environment.
 _ISOLATED_ENV_VARS = [
-    "SEEDLING_HOME", "SEEDLING_YES", "SEEDLING_NONINTERACTIVE",
-    "SEEDLING_NO_LOG", "SEEDLING_REPO", "SEEDLING_AUTO_SETUP",
-    "SEEDLING_AUTO_VSCODE", "SEEDLING_SKIP_PATH_REGISTER", "VIRTUAL_ENV",
+    "ACORN_HOME", "ACORN_YES", "ACORN_NONINTERACTIVE",
+    "ACORN_NO_LOG", "ACORN_REPO", "ACORN_AUTO_SETUP",
+    "ACORN_AUTO_VSCODE", "ACORN_SKIP_PATH_REGISTER", "VIRTUAL_ENV",
     "SSL_CERT_FILE", "GIT_SSL_CAINFO", "UV_NATIVE_TLS",
     "UV_CACHE_DIR", "UV_CONFIG_FILE", "UV_DEFAULT_INDEX",
     "UV_PYTHON_INSTALL_MIRROR", "UV_FIND_LINKS", "UV_NO_INDEX",
@@ -51,7 +51,7 @@ _ISOLATED_ENV_VARS = [
 # This used to be a hand-written mirror of paths.py. Three separate lists had
 # to agree (this one, _rebind_paths, and _restore_paths' ALL_DIRS), and
 # missing an entry failed SILENTLY -- paths.<NEW_CONST> kept pointing at the
-# developer's REAL ~/seedling, so tests would happily read and write there.
+# developer's REAL ~/acorn, so tests would happily read and write there.
 # Deriving it removes two of the three; test_config_and_paths guards the
 # third.
 _ORIGINALS = {
@@ -115,24 +115,24 @@ def _restore_paths() -> None:
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    """A sandbox seedling home: paths rebound, env isolated, process killer
+    """A sandbox acorn home: paths rebound, env isolated, process killer
     disabled. Yields the home Path (not yet created on disk)."""
-    h = tmp_path / "seedling"
+    h = tmp_path / "acorn"
     for var in _ISOLATED_ENV_VARS:
         monkeypatch.delenv(var, raising=False)
-    monkeypatch.setenv("SEEDLING_HOME", str(h))
-    monkeypatch.setenv("SEEDLING_NO_LOG", "1")  # keep test output un-teed
+    monkeypatch.setenv("ACORN_HOME", str(h))
+    monkeypatch.setenv("ACORN_NO_LOG", "1")  # keep test output un-teed
     # BIN_DIR here is always a throwaway tmp path -- never let
     # shell_integration.ensure_bin_on_windows_path() (called by
     # `update-commands`) write it into the REAL registry PATH. There's no
-    # fake HKCU to redirect this into the way SEEDLING_HOME redirects the
+    # fake HKCU to redirect this into the way ACORN_HOME redirects the
     # rest, so tests opt out entirely (same escape hatch install.ps1 honors,
     # see run_powershell_install above).
-    monkeypatch.setenv("SEEDLING_SKIP_PATH_REGISTER", "1")
+    monkeypatch.setenv("ACORN_SKIP_PATH_REGISTER", "1")
     _rebind_paths(h)
 
     # Never let a test force-close real processes on this machine.
-    from seedling.commands import kill_cmd
+    from acorn.commands import kill_cmd
     monkeypatch.setattr(kill_cmd, "kill_python_and_vscode", lambda: [])
 
     yield h
@@ -142,7 +142,7 @@ def home(tmp_path, monkeypatch):
 @pytest.fixture
 def run_cli(home, capsys):
     """Invoke the CLI in-process; returns (exit_code, combined_output)."""
-    from seedling import cli
+    from acorn import cli
 
     def _run(*argv: str):
         try:
@@ -166,7 +166,7 @@ def answer(monkeypatch):
 
 def make_venv_dirs(home: Path, *names: str) -> None:
     """Fake venv folders with a platform-appropriate interpreter, placed
-    exactly where seedling looks for it (Scripts\\python.exe on Windows,
+    exactly where acorn looks for it (Scripts\\python.exe on Windows,
     bin/python on POSIX) so `status`/health checks treat them as real venvs."""
     for name in names:
         venv = home / "python" / "venvs" / name
@@ -181,7 +181,7 @@ def fake_uv(monkeypatch, returncode: int = 0) -> list[list[str]]:
     """Replace uv_tool.run with a recorder that returns a real
     CompletedProcess, so callers that check the exit code behave as they
     would against uv itself. Returns the list of argument lists seen."""
-    from seedling import uv_tool
+    from acorn import uv_tool
     calls: list[list[str]] = []
 
     def _run(args, **kwargs):
@@ -334,7 +334,7 @@ def _compiled_stub_uv() -> Path | None:
         return _stub_exe_cache
     if POWERSHELL is None:
         return None
-    out = Path(tempfile.mkdtemp(prefix="seedling-stub-")) / "uv.exe"
+    out = Path(tempfile.mkdtemp(prefix="acorn-stub-")) / "uv.exe"
     src = out.parent / "stub.cs"
     src.write_text(_STUB_EXE_SRC, encoding="utf-8")
     ps = (f"Add-Type -TypeDefinition (Get-Content -Raw '{src}') "
@@ -369,15 +369,15 @@ def plant_stub_uv_windows(home: Path) -> Path:
     return bin_dir
 
 
-def run_powershell_install(copy: Path, seedling_home: Path, fake_profile: Path,
+def run_powershell_install(copy: Path, acorn_home: Path, fake_profile: Path,
                            env_extra: dict | None = None, timeout: int = 300,
                            exe: str | None = None):
     """Execute install.ps1 against an isolated home and a FAKE $PROFILE, so
     the hook line never touches the real user profile. $PROFILE is only read
     by the installer, so overriding it in the calling scope redirects the
-    write. SEEDLING_*/UV_* are scrubbed from the environment first.
+    write. ACORN_*/UV_* are scrubbed from the environment first.
 
-    SEEDLING_SKIP_PATH_REGISTER is always set: unlike $PROFILE, the
+    ACORN_SKIP_PATH_REGISTER is always set: unlike $PROFILE, the
     persistent-PATH step install.ps1 writes to (see 3b there) has no fake
     registry to redirect into, so every test run opts out of it rather than
     risk adding a test's throwaway tmp path to this machine's real PATH.
@@ -387,10 +387,10 @@ def run_powershell_install(copy: Path, seedling_home: Path, fake_profile: Path,
     instead, e.g. to exercise the sibling-profile-hook branch that only
     fires under Core."""
     env = {k: v for k, v in os.environ.items()
-           if not k.startswith(("SEEDLING_", "UV_"))
+           if not k.startswith(("ACORN_", "UV_"))
            and k not in ("SSL_CERT_FILE", "GIT_SSL_CAINFO")}
-    env["SEEDLING_HOME"] = str(seedling_home)
-    env["SEEDLING_SKIP_PATH_REGISTER"] = "1"
+    env["ACORN_HOME"] = str(acorn_home)
+    env["ACORN_SKIP_PATH_REGISTER"] = "1"
     if env_extra:
         env.update(env_extra)
     script = copy / "installers" / "install.ps1"

@@ -4,15 +4,15 @@
 
 ## `acorn repo-clone <git-url>`
 
-Clones a git repository into `~/seedling/repo/<name>` via `git clone`. The
+Clones a git repository into `~/acorn/repo/<name>` via `git clone`. The
 repo name is derived from the URL (handles `https://host/group/name.git`,
 SSH-style `git@host:group/name.git`, and plain paths).
 
-**git itself:** on Windows, if no system `git` is found, seedling
+**git itself:** on Windows, if no system `git` is found, acorn
 automatically downloads a portable copy ("MinGit", Git for Windows'
 official dependency-free build — no installer, no admin rights) into
-`~/seedling/extensions/git` and uses that. This is the only piece of
-seedling bootstrapped this way, because it's the only platform with a
+`~/acorn/extensions/git` and uses that. This is the only piece of
+acorn bootstrapped this way, because it's the only platform with a
 genuinely portable official build; on macOS and Linux, git is dynamically
 linked against system libraries, so there's no equivalent to safely bundle.
 There, if git isn't found, you'll get a clear one-line instruction
@@ -35,7 +35,7 @@ Lists every repo cloned via `acorn repo-clone`, along with each one's
 acorn repo-list
 ```
 ```
-Repos in ~/seedling/repo:
+Repos in ~/acorn/repo:
   some-project  -> https://github.com/you/some-project.git
 ```
 
@@ -44,7 +44,7 @@ Repos in ~/seedling/repo:
 Changes your **current shell's** directory to a cloned repo — the natural
 follow-up to `acorn repo-clone`, and the quickest way to run git commands
 (`git status`, `git pull`, `git push`) against it. With no name, takes you
-to `~/seedling/repo` itself. Errors (without moving) if the repo doesn't
+to `~/acorn/repo` itself. Errors (without moving) if the repo doesn't
 exist.
 
 Like `acorn activate`, this only works through the `acorn` shell function —
@@ -61,7 +61,7 @@ acorn repo-cd
 
 Opens a cloned repo in the **operating system's file manager** (Explorer
 on Windows, Finder on macOS, your desktop's default elsewhere). With no
-name, opens `~/seedling/repo` itself. For opening in VS Code, use
+name, opens `~/acorn/repo` itself. For opening in VS Code, use
 `acorn vscode-repo`.
 
 ```
@@ -103,7 +103,7 @@ A profile can declare the same thing for a fleet — see
 
 ## `acorn remove-repo <name> [-y] [--preview] [--non-interactive]`
 
-Deletes a cloned repo from `~/seedling/repo`. Same process-closing
+Deletes a cloned repo from `~/acorn/repo`. Same process-closing
 behavior as `acorn remove-venv` before deletion, and the same confirmation
 prompt (skippable with `-y`), `--preview`, and `--non-interactive` — see
 [Non-interactive mode & previews](../DESIGN.md#non-interactive-mode--previews).

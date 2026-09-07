@@ -1,19 +1,19 @@
-# Standalone seedling uninstaller (PowerShell) -- removes the managed folder
+# Standalone acorn uninstaller (PowerShell) -- removes the managed folder
 # AND the $PROFILE hook line.
 #
 # The normal way to uninstall is `acorn purge` (more thorough, and it knows
 # its own install location). This script is the FALLBACK for when acorn-cli
 # itself is broken and can't run. It resolves the install location the same
-# way the installer did -- SEEDLING_HOME env override, else global.conf's
-# SEEDLING_HOME_DIR with "~" and "{user}" expansion -- so relocated and
+# way the installer did -- ACORN_HOME env override, else global.conf's
+# ACORN_HOME_DIR with "~" and "{user}" expansion -- so relocated and
 # shared multi-user installs are targeted correctly, not a hardcoded
-# ~\seedling.
+# ~\acorn.
 $ErrorActionPreference = "Stop"
 
 # This script lives in installers\; the conf is in GET_STARTED\ alongside it.
 # $MyInvocation.MyCommand.Path is $null when this is run via `irm ... | iex`
 # (no backing file), so guard against that before Split-Path -- and fall
-# back to SEEDLING_HOME / the default location when there's no local conf.
+# back to ACORN_HOME / the default location when there's no local conf.
 $ScriptPath = $MyInvocation.MyCommand.Path
 $ScriptDir = if ($ScriptPath) { Split-Path -Parent $ScriptPath } else { $null }
 $RepoRoot = if ($ScriptDir) { Split-Path -Parent $ScriptDir } else { $null }
@@ -28,38 +28,38 @@ if ($RepoRoot) {
 }
 
 # Home resolution -- identical to the installer.
-$SeedlingHome = if ($env:SEEDLING_HOME) {
-    $env:SEEDLING_HOME
-} elseif ($Conf["SEEDLING_HOME_DIR"]) {
-    $dir = $Conf["SEEDLING_HOME_DIR"]
+$ACORNHome = if ($env:ACORN_HOME) {
+    $env:ACORN_HOME
+} elseif ($Conf["ACORN_HOME_DIR"]) {
+    $dir = $Conf["ACORN_HOME_DIR"]
     if ($dir -eq "~") { $HOME }
     elseif ($dir.StartsWith("~/") -or $dir.StartsWith("~\")) { Join-Path $HOME $dir.Substring(2) }
     else { $dir }
 } else {
-    Join-Path $HOME "seedling"
+    Join-Path $HOME "acorn"
 }
 # {user} -> current login name: removes THIS user's install, like `acorn purge`.
-if ($SeedlingHome -like "*{user}*") {
-    $SeedlingHome = $SeedlingHome -replace [regex]::Escape("{user}"), $env:USERNAME
+if ($ACORNHome -like "*{user}*") {
+    $ACORNHome = $ACORNHome -replace [regex]::Escape("{user}"), $env:USERNAME
 }
 
-Write-Host "Uninstalling seedling at: $SeedlingHome"
+Write-Host "Uninstalling acorn at: $ACORNHome"
 
 if (Test-Path $PROFILE) {
-    # Match any line sourcing a acorn shell script from under the seedling
+    # Match any line sourcing a acorn shell script from under the acorn
     # home -- not just the exact current hook text -- so hooks written by
-    # older seedling layouts (e.g. ~\seedling\shell\ before it moved under
+    # older acorn layouts (e.g. ~\acorn\shell\ before it moved under
     # system\) are cleaned up too instead of erroring in every new shell.
     $lines = Get-Content $PROFILE | Where-Object {
-        -not ($_.Contains($SeedlingHome) -and ($_ -match "acorn\.(ps1|sh)")) -and $_.Trim() -ne "# seedling"
+        -not ($_.Contains($ACORNHome) -and ($_ -match "acorn\.(ps1|sh)")) -and $_.Trim() -ne "# acorn"
     }
     Set-Content -Path $PROFILE -Value $lines
-    Write-Host "Removed seedling hook from $PROFILE"
+    Write-Host "Removed acorn hook from $PROFILE"
 }
 
-if (Test-Path $SeedlingHome) {
-    Remove-Item -Recurse -Force $SeedlingHome
-    Write-Host "Removed $SeedlingHome"
+if (Test-Path $ACORNHome) {
+    Remove-Item -Recurse -Force $ACORNHome
+    Write-Host "Removed $ACORNHome"
 }
 
-Write-Host "seedling fully uninstalled. Open a new terminal for it to take effect."
+Write-Host "acorn fully uninstalled. Open a new terminal for it to take effect."

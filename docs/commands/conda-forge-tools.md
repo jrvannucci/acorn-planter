@@ -5,7 +5,7 @@
 ## `acorn forge <command> [args...]`
 
 Runs an installed conda-forge tool **without needing it on PATH or a fresh
-terminal** — `acorn forge gh pr create`, `acorn forge rg TODO`. seedling runs the
+terminal** — `acorn forge gh pr create`, `acorn forge rg TODO`. acorn runs the
 tool by its exact path (via `micromamba run`), inheriting your terminal, so
 interactive prompts, colour, and pagers all behave normally, and the tool's
 own exit code is passed back.
@@ -13,7 +13,7 @@ own exit code is passed back.
 This is the convenient, always-works counterpart to the PATH launchers: the
 launchers let *other* programs and scripts find `gh`/`rg` by bare name and are
 nice for heavy interactive use, but they need a new terminal (and a shell that
-has seedling's hook). `acorn forge <command>` works the moment the tool is
+has acorn's hook). `acorn forge <command>` works the moment the tool is
 installed.
 
 Everything after the command name is passed straight through untouched. Run
@@ -30,11 +30,11 @@ Installs a **command-line tool from conda-forge** — the things that aren't
 Python packages and so aren't `acorn install`-able: `ripgrep`, `pandoc`,
 `ffmpeg`, `gh`, compilers, and so on.
 
-This is seedling's *second* engine. `acorn install` is uv (the PyPI world);
+This is acorn's *second* engine. `acorn install` is uv (the PyPI world);
 `acorn forge-install` is [micromamba](https://mamba.readthedocs.io), fetched
 once into `system/bin` the first time you use it (or dropped there as a
 vendored binary for an offline install). Each tool gets its own isolated
-environment, and seedling writes a small launcher for every command the tool
+environment, and acorn writes a small launcher for every command the tool
 provides into a directory the shell hook puts on your PATH — so the tool runs
 as a bare command in a new terminal.
 
@@ -45,7 +45,7 @@ local directory for a proxied or air-gapped network.
 
 - Pin a version with `=`: `acorn forge-install ripgrep=14.1.0`.
 - The command name is often not the package name (installing `ripgrep` gives
-  you `rg`); seedling prints what it exposed.
+  you `rg`); acorn prints what it exposed.
 - Open a new terminal afterward so the tool is on PATH.
 
 ```

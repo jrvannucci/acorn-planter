@@ -17,11 +17,11 @@ Three commands install software, split by where it comes from:
 | `acorn forge-install` | conda-forge (not Python) | `system/conda/envs/<name>/` |
 
 Backed by `uv tool install`, so the environment and the command launchers
-are uv's own work; seedling just points it at the right directories and
+are uv's own work; acorn just points it at the right directories and
 keeps `package_index` / `ca_cert` applied, so this works on an internal
 index or fully offline exactly like `acorn install`.
 
-- Launchers land in `~/seedling/system/shims`, which the shell hook puts on
+- Launchers land in `~/acorn/system/shims`, which the shell hook puts on
   PATH — open a new terminal to run them by name.
 - Pin with `==`: `acorn tool-install spyder==6.1.5`.
 - `--reinstall` forces a fresh install of something already present.
@@ -44,7 +44,7 @@ Lists installed applications and their versions.
 acorn tool-list
 ```
 ```
-Applications in ~/seedling/extensions/apps:
+Applications in ~/acorn/extensions/apps:
   spyder  [6.1.5]
 ```
 

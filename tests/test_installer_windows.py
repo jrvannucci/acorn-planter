@@ -5,10 +5,10 @@ network or real build is needed.
 The POSIX installer is covered by test_installer_offline.py; this is the
 Windows counterpart, focused on the branches whose logic lives only in
 install.ps1: settings seeding, the deployment-profile handling (conf vs the
-SEEDLING_PROFILE env var, and its fatal-vs-fallback split), and the $PROFILE
+ACORN_PROFILE env var, and its fatal-vs-fallback split), and the $PROFILE
 hook write.
 
-Every run targets a throwaway SEEDLING_HOME and a FAKE $PROFILE, so nothing
+Every run targets a throwaway ACORN_HOME and a FAKE $PROFILE, so nothing
 touches the real user profile. Skipped off Windows or where the stub uv.exe
 can't be compiled.
 """
@@ -37,7 +37,7 @@ def ps_install_env(tmp_path):
     """A repo copy + throwaway home with the stub uv.exe planted, plus a fake
     $PROFILE under tmp. Returns a runner and the paths to assert on."""
     copy = make_repo_copy(tmp_path / "copy")
-    home = tmp_path / "home" / "seedling"
+    home = tmp_path / "home" / "acorn"
     plant_stub_uv_windows(home)
     profile_dir = tmp_path / "profile"
     profile_dir.mkdir()
@@ -78,7 +78,7 @@ def test_installer_runs_and_writes_the_hook_to_the_fake_profile(ps_install_env):
     the $PROFILE override redirects the hook write away from the real user
     profile."""
     copy, home, fake_profile, run = ps_install_env
-    result = run({"SEEDLING_AUTO_SETUP": "false"})
+    result = run({"ACORN_AUTO_SETUP": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
     assert (home / "system" / "shell" / "acorn.ps1").is_file()
     assert fake_profile.is_file(), "the fake profile should have been written"
@@ -87,8 +87,8 @@ def test_installer_runs_and_writes_the_hook_to_the_fake_profile(ps_install_env):
 
 def test_reinstall_does_not_stack_hook_lines(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
-    run({"SEEDLING_AUTO_SETUP": "false"})
-    run({"SEEDLING_AUTO_SETUP": "false"})
+    run({"ACORN_AUTO_SETUP": "false"})
+    run({"ACORN_AUTO_SETUP": "false"})
     text = fake_profile.read_text(encoding="utf-8")
     assert text.count("acorn.ps1") == 1
 
@@ -104,14 +104,14 @@ def test_no_sibling_hook_without_pwsh_installed(tmp_path):
     the safety case: it proves the sibling-hook logic never reaches outside
     the fake $PROFILE's own directory when it has nothing to swap."""
     copy = make_repo_copy(tmp_path / "copy")
-    home = tmp_path / "home" / "seedling"
+    home = tmp_path / "home" / "acorn"
     plant_stub_uv_windows(home)
     profile_dir = tmp_path / "profile" / "WindowsPowerShell"
     profile_dir.mkdir(parents=True)
     fake_profile = profile_dir / "Microsoft.PowerShell_profile.ps1"
 
     result = run_powershell_install(
-        copy, home, fake_profile, {"SEEDLING_AUTO_SETUP": "false"})
+        copy, home, fake_profile, {"ACORN_AUTO_SETUP": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
     assert fake_profile.is_file()
 
@@ -126,14 +126,14 @@ def test_sibling_hook_under_core_edition(tmp_path):
     5.1 always ships on Windows, so no `Get-Command` gate is needed for
     this direction (unlike Core -> 5.1's the other way around)."""
     copy = make_repo_copy(tmp_path / "copy")
-    home = tmp_path / "home" / "seedling"
+    home = tmp_path / "home" / "acorn"
     plant_stub_uv_windows(home)
     profile_dir = tmp_path / "profile" / "PowerShell"
     profile_dir.mkdir(parents=True)
     fake_profile = profile_dir / "Microsoft.PowerShell_profile.ps1"
 
     result = run_powershell_install(
-        copy, home, fake_profile, {"SEEDLING_AUTO_SETUP": "false"}, exe=PWSH)
+        copy, home, fake_profile, {"ACORN_AUTO_SETUP": "false"}, exe=PWSH)
     assert result.returncode == 0, result.stdout + result.stderr
     assert fake_profile.is_file()
 
@@ -146,7 +146,7 @@ def test_sibling_hook_under_core_edition(tmp_path):
 
 def test_auto_setup_runs_the_expected_cli_sequence(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
-    result = run({"SEEDLING_AUTO_VSCODE": "false"})
+    result = run({"ACORN_AUTO_VSCODE": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
     calls = _calls(home)
     assert "acorn-cli python" in calls
@@ -160,7 +160,7 @@ def test_auto_setup_runs_the_expected_cli_sequence(ps_install_env):
 # in the registry, never in-process) leaves that warning firing anyway, right
 # after install.ps1 just added the entry. Exercised against the REAL
 # registry, like the update-commands counterpart in
-# test_update_and_downloads.py: SEEDLING_SKIP_PATH_REGISTER is deliberately
+# test_update_and_downloads.py: ACORN_SKIP_PATH_REGISTER is deliberately
 # overridden back off (run_powershell_install sets it for every other test),
 # with a snapshot/restore around it so this machine's real PATH always ends
 # up exactly as it started.
@@ -173,8 +173,8 @@ def test_bin_dir_is_on_path_before_uv_tool_install_runs(ps_install_env):
                           winreg.KEY_READ | winreg.KEY_WRITE)
     original, value_type = winreg.QueryValueEx(key, "PATH")
     try:
-        result = run({"SEEDLING_SKIP_PATH_REGISTER": "",
-                       "SEEDLING_AUTO_SETUP": "false"})
+        result = run({"ACORN_SKIP_PATH_REGISTER": "",
+                       "ACORN_AUTO_SETUP": "false"})
         assert result.returncode == 0, result.stdout + result.stderr
 
         bin_dir = home / "system" / "bin"
@@ -192,9 +192,9 @@ def test_bin_dir_is_on_path_before_uv_tool_install_runs(ps_install_env):
 def test_offline_conf_is_seeded_into_settings(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
     _write_conf(copy,
-                SEEDLING_PACKAGE_INDEX=r"S:\share\wheels",
-                SEEDLING_VSCODE_FLAVOR="vscodium",
-                SEEDLING_AUTO_SETUP="false")
+                ACORN_PACKAGE_INDEX=r"S:\share\wheels",
+                ACORN_VSCODE_FLAVOR="vscodium",
+                ACORN_AUTO_SETUP="false")
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     settings = _settings(home)
@@ -205,8 +205,8 @@ def test_offline_conf_is_seeded_into_settings(ps_install_env):
 def test_startup_commands_recorded_as_a_list(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
     _write_conf(copy,
-                SEEDLING_STARTUP_COMMANDS="check-mirror, motd",
-                SEEDLING_AUTO_SETUP="false")
+                ACORN_STARTUP_COMMANDS="check-mirror, motd",
+                ACORN_AUTO_SETUP="false")
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     assert _settings(home)["startup_commands"] == ["check-mirror", "motd"]
@@ -214,7 +214,7 @@ def test_startup_commands_recorded_as_a_list(ps_install_env):
 
 def test_startup_commands_absent_when_unset(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
-    result = run({"SEEDLING_AUTO_SETUP": "false"})
+    result = run({"ACORN_AUTO_SETUP": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
     assert "startup_commands" not in (_settings(home) or {})
 
@@ -224,8 +224,8 @@ def test_custom_commands_file_is_recorded(ps_install_env):
     (copy / "custom-commands.toml").write_text(
         '[[command]]\nname = "lint"\nrun = ["x"]\n', encoding="utf-8")
     _write_conf(copy,
-                SEEDLING_CUSTOM_COMMANDS="custom-commands.toml",
-                SEEDLING_AUTO_SETUP="false")
+                ACORN_CUSTOM_COMMANDS="custom-commands.toml",
+                ACORN_AUTO_SETUP="false")
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     settings = _settings(home)
@@ -245,8 +245,8 @@ def test_conf_sourced_script_sibling_survives_the_copy(ps_install_env):
     (copy / "scripts").mkdir()
     (copy / "scripts" / "greet.py").write_text("print('hi')\n")
     _write_conf(copy,
-                SEEDLING_CUSTOM_COMMANDS="custom-commands.toml",
-                SEEDLING_AUTO_SETUP="false")
+                ACORN_CUSTOM_COMMANDS="custom-commands.toml",
+                ACORN_AUTO_SETUP="false")
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     recorded = _settings(home)["custom_commands"]
@@ -266,14 +266,14 @@ def test_env_var_sourced_script_sibling_survives_the_copy(ps_install_env, tmp_pa
         encoding="utf-8")
     (mine_dir / "scripts").mkdir()
     (mine_dir / "scripts" / "greet.py").write_text("print('hi')\n")
-    result = run({"SEEDLING_CUSTOM_COMMANDS": str(mine_dir / "custom-commands.toml")})
+    result = run({"ACORN_CUSTOM_COMMANDS": str(mine_dir / "custom-commands.toml")})
     assert result.returncode == 0, result.stdout + result.stderr
     recorded = _settings(home)["custom_commands"]
     script = Path(recorded).parent / "scripts" / "greet.py"
     assert script.is_file(), f"expected the sibling script at {script}"
 
 
-# --- SEEDLING_VSCODE_CONFIG_DIR ---------------------------------------------
+# --- ACORN_VSCODE_CONFIG_DIR ---------------------------------------------
 
 def test_vscode_config_conf_sourced_dir_is_recorded(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
@@ -281,8 +281,8 @@ def test_vscode_config_conf_sourced_dir_is_recorded(ps_install_env):
     config_dir.mkdir()
     (config_dir / "settings.json").write_text('{"editor.fontSize": 14}\n')
     _write_conf(copy,
-                SEEDLING_VSCODE_CONFIG_DIR="vscode-config",
-                SEEDLING_AUTO_SETUP="false")
+                ACORN_VSCODE_CONFIG_DIR="vscode-config",
+                ACORN_AUTO_SETUP="false")
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     recorded = _settings(home)["vscode_config_dir"]
@@ -293,13 +293,13 @@ def test_vscode_config_conf_sourced_dir_is_recorded(ps_install_env):
 def test_vscode_config_env_var_sourced_dir_is_copied_whole(ps_install_env, tmp_path):
     """The env var names the directory itself, so both settings.json AND
     keybindings.json survive -- no "sibling file" ambiguity the way there
-    is for SEEDLING_CUSTOM_COMMANDS (which names a file)."""
+    is for ACORN_CUSTOM_COMMANDS (which names a file)."""
     copy, home, fake_profile, run = ps_install_env
     mine_dir = tmp_path / "my-vscode-config"
     mine_dir.mkdir()
     (mine_dir / "settings.json").write_text('{"editor.fontSize": 14}\n')
     (mine_dir / "keybindings.json").write_text("[]\n")
-    result = run({"SEEDLING_VSCODE_CONFIG_DIR": str(mine_dir)})
+    result = run({"ACORN_VSCODE_CONFIG_DIR": str(mine_dir)})
     assert result.returncode == 0, result.stdout + result.stderr
     recorded = Path(_settings(home)["vscode_config_dir"])
     assert (recorded / "settings.json").is_file()
@@ -308,7 +308,7 @@ def test_vscode_config_env_var_sourced_dir_is_copied_whole(ps_install_env, tmp_p
 
 def test_vscode_config_dir_absent_when_unset(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
-    result = run({"SEEDLING_AUTO_SETUP": "false"})
+    result = run({"ACORN_AUTO_SETUP": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
     assert "vscode_config_dir" not in (_settings(home) or {})
 
@@ -322,8 +322,8 @@ def _profile(copy, body):
 def test_conf_profile_is_applied_and_replaces_dev_venv(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
     _profile(copy, '[[venv]]\nname = "team"\ndefault = true\n')
-    _write_conf(copy, SEEDLING_PROFILE="profile.toml",
-                SEEDLING_AUTO_VSCODE="false")
+    _write_conf(copy, ACORN_PROFILE="profile.toml",
+                ACORN_AUTO_VSCODE="false")
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     calls = _calls(home)
@@ -334,11 +334,11 @@ def test_conf_profile_is_applied_and_replaces_dev_venv(ps_install_env):
 
 def test_env_var_lets_a_user_supply_their_own_profile(ps_install_env, tmp_path):
     """The one-liner path: no conf edit, profile named by env var, copied into
-    the seedling home so `acorn apply` keeps working afterward."""
+    the acorn home so `acorn apply` keeps working afterward."""
     copy, home, fake_profile, run = ps_install_env
     mine = tmp_path / "mine.toml"
     mine.write_text('[[venv]]\nname = "mine"\n', encoding="utf-8")
-    result = run({"SEEDLING_PROFILE": str(mine), "SEEDLING_AUTO_VSCODE": "false"})
+    result = run({"ACORN_PROFILE": str(mine), "ACORN_AUTO_VSCODE": "false"})
     assert result.returncode == 0, result.stdout + result.stderr
     assert "acorn-cli apply" in _calls(home)
     copied = home / "system" / "config" / "profile.toml"
@@ -350,10 +350,10 @@ def test_env_var_beats_the_conf(ps_install_env, tmp_path):
     copy, home, fake_profile, run = ps_install_env
     (copy / "profile.toml").write_text(
         '[[venv]]\nname = "fromconf"\n', encoding="utf-8")
-    _write_conf(copy, SEEDLING_PROFILE="profile.toml")
+    _write_conf(copy, ACORN_PROFILE="profile.toml")
     mine = tmp_path / "mine.toml"
     mine.write_text('[[venv]]\nname = "fromenv"\n', encoding="utf-8")
-    run({"SEEDLING_PROFILE": str(mine), "SEEDLING_AUTO_VSCODE": "false"})
+    run({"ACORN_PROFILE": str(mine), "ACORN_AUTO_VSCODE": "false"})
     copied = (home / "system" / "config" / "profile.toml").read_text(encoding="utf-8")
     assert "fromenv" in copied and "fromconf" not in copied
 
@@ -363,7 +363,7 @@ def test_a_missing_env_profile_is_fatal(ps_install_env, tmp_path):
     silently got the default environment wouldn't notice until something was
     missing, so the install stops instead."""
     copy, home, fake_profile, run = ps_install_env
-    result = run({"SEEDLING_PROFILE": str(tmp_path / "ghost.toml")})
+    result = run({"ACORN_PROFILE": str(tmp_path / "ghost.toml")})
     assert result.returncode != 0
     assert "no file exists at" in (result.stdout + result.stderr)
 
@@ -372,7 +372,7 @@ def test_a_missing_conf_profile_falls_back(ps_install_env):
     """A conf naming a profile that wasn't distributed must not brick the
     install -- it warns and does the normal setup."""
     copy, home, fake_profile, run = ps_install_env
-    _write_conf(copy, SEEDLING_PROFILE="nope.toml", SEEDLING_AUTO_VSCODE="false")
+    _write_conf(copy, ACORN_PROFILE="nope.toml", ACORN_AUTO_VSCODE="false")
     result = run()
     assert result.returncode == 0, result.stdout + result.stderr
     assert "falling back to the default setup" in result.stdout

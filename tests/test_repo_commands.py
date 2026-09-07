@@ -9,7 +9,7 @@ import subprocess
 import pytest
 
 from conftest import GIT, fake_uv, make_venv_dirs, needs_git
-from seedling.commands import repo_cmd
+from acorn.commands import repo_cmd
 
 
 @pytest.mark.parametrize("url,expected", [

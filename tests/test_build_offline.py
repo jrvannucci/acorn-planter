@@ -88,30 +88,30 @@ def test_minor_version(filename, expected):
 
 def test_write_conf_replaces_in_place(tmp_path):
     conf = tmp_path / "global.conf"
-    conf.write_text('SEEDLING_REPO_URL="https://old"\nOTHER="keep"\n',
+    conf.write_text('ACORN_REPO_URL="https://old"\nOTHER="keep"\n',
                     encoding="utf-8")
-    build_offline.write_conf(conf, {"SEEDLING_REPO_URL": "https://new"})
+    build_offline.write_conf(conf, {"ACORN_REPO_URL": "https://new"})
     text = conf.read_text(encoding="utf-8")
-    assert 'SEEDLING_REPO_URL="https://new"' in text
-    assert text.count("SEEDLING_REPO_URL=") == 1   # replaced, not duplicated
+    assert 'ACORN_REPO_URL="https://new"' in text
+    assert text.count("ACORN_REPO_URL=") == 1   # replaced, not duplicated
     assert 'OTHER="keep"' in text                  # untouched line preserved
 
 
 def test_write_conf_appends_missing_key(tmp_path):
     conf = tmp_path / "global.conf"
     conf.write_text('OTHER="keep"\n', encoding="utf-8")
-    build_offline.write_conf(conf, {"SEEDLING_PACKAGE_INDEX": "S:/wheels"})
-    assert 'SEEDLING_PACKAGE_INDEX="S:/wheels"' in conf.read_text(encoding="utf-8")
+    build_offline.write_conf(conf, {"ACORN_PACKAGE_INDEX": "S:/wheels"})
+    assert 'ACORN_PACKAGE_INDEX="S:/wheels"' in conf.read_text(encoding="utf-8")
 
 
 def test_write_conf_handles_windows_backslash_value(tmp_path):
     """A Windows path value must not be interpreted as a regex-replacement
     escape (the \\U-in-C:\\Users bug)."""
     conf = tmp_path / "global.conf"
-    conf.write_text('SEEDLING_PYTHON_MIRROR="x"\n', encoding="utf-8")
+    conf.write_text('ACORN_PYTHON_MIRROR="x"\n', encoding="utf-8")
     win = r"C:\Users\dev\bundle\python-builds"
-    build_offline.write_conf(conf, {"SEEDLING_PYTHON_MIRROR": win})
-    assert f'SEEDLING_PYTHON_MIRROR="{win}"' in conf.read_text(encoding="utf-8")
+    build_offline.write_conf(conf, {"ACORN_PYTHON_MIRROR": win})
+    assert f'ACORN_PYTHON_MIRROR="{win}"' in conf.read_text(encoding="utf-8")
 
 
 def test_dry_run_returns_zero(tmp_path):
@@ -206,9 +206,9 @@ def test_an_empty_bundle_flag_ignores_the_file(tmp_path, capsys):
 
 def _fake_bundle(tmp_path, versions=("3.12",), floor='">=3.12"'):
     out = tmp_path / "bundle"
-    (out / "seedling" / "src").mkdir(parents=True)
-    (out / "seedling" / "src" / "pyproject.toml").write_text(
-        f'[project]\nname = "seedling"\nrequires-python = {floor}\n',
+    (out / "acorn" / "src").mkdir(parents=True)
+    (out / "acorn" / "src" / "pyproject.toml").write_text(
+        f'[project]\nname = "acorn"\nrequires-python = {floor}\n',
         encoding="utf-8")
     (out / "wheels").mkdir()
     for v in versions:
@@ -266,7 +266,7 @@ def test_discover_mirrored_versions_empty_when_no_mirror(tmp_path):
 
 
 def test_offline_index_config_declares_a_flat_default_index(tmp_path):
-    """Must match the shape seedling generates at runtime, or preflight stops
+    """Must match the shape acorn generates at runtime, or preflight stops
     testing what users actually get (see uv_tool._offline_index_config)."""
     wheels = tmp_path / "wheels"
     wheels.mkdir()
@@ -281,13 +281,13 @@ def test_preflight_env_is_isolated(tmp_path, monkeypatch):
     """A warm cache or an inherited UV_* var could make a BROKEN bundle pass."""
     monkeypatch.setenv("UV_INDEX_URL", "https://pypi.org/simple")
     monkeypatch.setenv("PIP_INDEX_URL", "https://pypi.org/simple")
-    monkeypatch.setenv("SEEDLING_HOME", str(tmp_path / "real-home"))
+    monkeypatch.setenv("ACORN_HOME", str(tmp_path / "real-home"))
     env = build_offline._preflight_env(
         tmp_path / "cache", tmp_path / "mirror", tmp_path / "uv.toml",
         tmp_path / "pythons")
     assert "UV_INDEX_URL" not in env
     assert "PIP_INDEX_URL" not in env
-    assert "SEEDLING_HOME" not in env
+    assert "ACORN_HOME" not in env
     assert env["UV_CACHE_DIR"] == str(tmp_path / "cache")       # cold cache
     assert env["UV_PYTHON_INSTALL_DIR"] == str(tmp_path / "pythons")
 
@@ -320,7 +320,7 @@ def test_verify_bundle_passes_a_complete_bundle(tmp_path, monkeypatch, capsys):
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "seedling", uv, ["hatchling", "ipython"]) is True
+        out, out / "acorn", uv, ["hatchling", "ipython"]) is True
     assert "Preflight passed" in capsys.readouterr().out
 
 
@@ -331,7 +331,7 @@ def test_verify_bundle_fails_when_venv_packages_are_missing(tmp_path, monkeypatc
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "seedling", uv, ["hatchling", "ipython"]) is False
+        out, out / "acorn", uv, ["hatchling", "ipython"]) is False
     out_text = capsys.readouterr().out
     assert "Preflight FAILED" in out_text
     assert "acorn venv --python 3.12" in out_text
@@ -344,7 +344,7 @@ def test_verify_bundle_fails_when_the_interpreter_wont_install(tmp_path, monkeyp
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "seedling", uv, ["hatchling"]) is False
+        out, out / "acorn", uv, ["hatchling"]) is False
     assert "won't install from the mirror" in capsys.readouterr().out
 
 
@@ -356,14 +356,14 @@ def test_verify_bundle_needs_an_interpreter_meeting_the_floor(tmp_path, monkeypa
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "seedling", uv, ["hatchling"]) is False
+        out, out / "acorn", uv, ["hatchling"]) is False
     assert "requires-python" in capsys.readouterr().out
 
 
 def test_verify_bundle_reports_a_missing_uv(tmp_path, capsys):
     out = _fake_bundle(tmp_path)
     assert build_offline.verify_bundle(
-        out, out / "seedling", tmp_path / "absent-uv", ["hatchling"]) is False
+        out, out / "acorn", tmp_path / "absent-uv", ["hatchling"]) is False
     assert "nothing to verify with" in capsys.readouterr().out
 
 
@@ -376,7 +376,7 @@ def test_verify_only_rejects_a_missing_bundle(tmp_path, capsys):
 def test_verify_only_runs_the_check_and_returns_its_verdict(tmp_path, monkeypatch,
                                                             capsys):
     out = _fake_bundle(tmp_path)
-    (out / "seedling" / "vendor" / "uv").mkdir(parents=True)
+    (out / "acorn" / "vendor" / "uv").mkdir(parents=True)
     monkeypatch.setattr(build_offline, "verify_bundle",
                         lambda *a, **kw: False)
     assert build_offline.main(["--bundle=", "--verify-only", "-o", str(out)]) == 1
@@ -430,8 +430,8 @@ def test_resolve_archive_format_explicit_passes_through(fmt):
 
 def _fake_output_dir(tmp_path) -> Path:
     out = tmp_path / "offline-bundle"
-    (out / "seedling" / "GET_STARTED").mkdir(parents=True)
-    (out / "seedling" / "GET_STARTED" / "global.conf").write_text("SEEDLING_REPO_URL=x\n")
+    (out / "acorn" / "GET_STARTED").mkdir(parents=True)
+    (out / "acorn" / "GET_STARTED" / "global.conf").write_text("ACORN_REPO_URL=x\n")
     (out / "wheels").mkdir()
     (out / "wheels" / "hatchling-1.0-py3-none-any.whl").write_text("wheel")
     (out / "MANIFEST.json").write_text("{}")
@@ -448,7 +448,7 @@ def test_archive_bundle_zip_contains_the_whole_tree_under_one_folder(tmp_path):
     # the same layout install.cmd/acorn apply expect -- not the contents
     # spilled loose at the archive root.
     assert all(n.startswith("offline-bundle/") for n in names)
-    assert "offline-bundle/seedling/GET_STARTED/global.conf" in names
+    assert "offline-bundle/acorn/GET_STARTED/global.conf" in names
     assert "offline-bundle/wheels/hatchling-1.0-py3-none-any.whl" in names
     assert "offline-bundle/MANIFEST.json" in names
 
@@ -461,13 +461,13 @@ def test_archive_bundle_tar_gz_contains_the_whole_tree_under_one_folder(tmp_path
         names = tf.getnames()
     assert all(n.startswith("offline-bundle/") or n == "offline-bundle"
               for n in names)
-    assert "offline-bundle/seedling/GET_STARTED/global.conf" in names
+    assert "offline-bundle/acorn/GET_STARTED/global.conf" in names
 
 
 def test_archive_bundle_leaves_the_original_folder_in_place(tmp_path):
     out = _fake_output_dir(tmp_path)
     build_offline.archive_bundle(out, "zip")
-    assert (out / "seedling" / "GET_STARTED" / "global.conf").exists()
+    assert (out / "acorn" / "GET_STARTED" / "global.conf").exists()
 
 
 def test_archive_bundle_returns_none_and_warns_on_failure(tmp_path, monkeypatch,
@@ -662,20 +662,20 @@ def test_parse_version(text, expected):
     assert build_offline.parse_version(text) == expected
 
 
-def test_builder_min_python_matches_seedling_floor():
+def test_builder_min_python_matches_acorn_floor():
     """The builder runs on the DEPLOYER's system Python, so its floor is a
-    separate decision from seedling's -- they're just deliberately equal today.
+    separate decision from acorn's -- they're just deliberately equal today.
     If you relax one, this failing is the prompt to think about the other."""
-    assert build_offline.MIN_PYTHON == build_offline.seedling_python_floor()
+    assert build_offline.MIN_PYTHON == build_offline.acorn_python_floor()
 
 
-def test_seedling_python_floor_reads_the_real_pyproject():
+def test_acorn_python_floor_reads_the_real_pyproject():
     """Reads the actual src/pyproject.toml, so raising requires-python without
     touching the builder still moves the check."""
-    assert build_offline.seedling_python_floor() == (3, 12)
+    assert build_offline.acorn_python_floor() == (3, 12)
 
 
-def test_seedling_python_floor_parses_variants(tmp_path):
+def test_acorn_python_floor_parses_variants(tmp_path):
     for line, expected in [
         ('requires-python = ">=3.12"', (3, 12)),
         ('requires-python = ">= 3.13"', (3, 13)),
@@ -683,15 +683,15 @@ def test_seedling_python_floor_parses_variants(tmp_path):
     ]:
         p = tmp_path / "pyproject.toml"
         p.write_text(f'[project]\nname = "x"\n{line}\n', encoding="utf-8")
-        assert build_offline.seedling_python_floor(p) == expected
+        assert build_offline.acorn_python_floor(p) == expected
 
 
-def test_seedling_python_floor_is_none_when_unreadable(tmp_path):
+def test_acorn_python_floor_is_none_when_unreadable(tmp_path):
     """An unreadable pyproject must not stop a bundle build."""
-    assert build_offline.seedling_python_floor(tmp_path / "nope.toml") is None
+    assert build_offline.acorn_python_floor(tmp_path / "nope.toml") is None
     bad = tmp_path / "pyproject.toml"
     bad.write_text('[project]\nname = "x"\n', encoding="utf-8")
-    assert build_offline.seedling_python_floor(bad) is None
+    assert build_offline.acorn_python_floor(bad) is None
 
 
 def test_check_python_versions_accepts_newest_and_supported():
@@ -737,7 +737,7 @@ def test_build_aborts_before_downloading_when_no_version_is_supported(tmp_path,
 
 def test_dry_run_plan_shows_the_floor(tmp_path, capsys):
     build_offline.main(["--bundle=", "--dry-run", "-o", str(tmp_path / "a")])
-    assert "seedling itself needs >=3.12" in capsys.readouterr().out
+    assert "acorn itself needs >=3.12" in capsys.readouterr().out
 
 
 # --- VS Code staging -------------------------------------------------------
@@ -762,7 +762,7 @@ def no_sleep(monkeypatch):
 @pytest.fixture
 def stub_cli(monkeypatch):
     """Pretend a VS Code CLI was found in the staged tree."""
-    from seedling.commands import vscode_cmd
+    from acorn.commands import vscode_cmd
     monkeypatch.setattr(vscode_cmd, "_find_cli", lambda app_dir: ["code"])
     return vscode_cmd
 
@@ -835,7 +835,7 @@ def test_install_extensions_gives_up_after_the_retry_window(tmp_path, monkeypatc
 
 
 def test_install_extensions_without_a_cli_is_not_fatal(tmp_path, monkeypatch, no_sleep):
-    from seedling.commands import vscode_cmd
+    from acorn.commands import vscode_cmd
     monkeypatch.setattr(vscode_cmd, "_find_cli", lambda app_dir: None)
     assert build_offline._install_extensions(tmp_path) is False
 
@@ -951,12 +951,12 @@ def test_summary_omits_the_vscode_row_when_not_requested(tmp_path, monkeypatch, 
 
 
 # --------------------------------------------------------------------------
-# Licensing posture: seedling ships nothing, gates what restricts
+# Licensing posture: acorn ships nothing, gates what restricts
 # redistribution, and records what it staged. See docs/LICENSING.md.
 # --------------------------------------------------------------------------
 
 def test_repo_ships_no_third_party_binaries():
-    """The whole licensing posture rests on this: seedling redistributes
+    """The whole licensing posture rests on this: acorn redistributes
     nothing. If a binary is ever committed, that stops being true silently --
     so assert it rather than trusting .gitignore."""
     import subprocess as sp
@@ -1058,7 +1058,7 @@ def test_manifest_records_components_and_staging(tmp_path):
     # A partial build must be recorded honestly, not as intended.
     assert by_name["vscode"]["staged"] is False
     assert by_name["vscode"]["redistribution"] == "restricted"
-    assert "seedling ships no third-party software" in doc["notice"]
+    assert "acorn ships no third-party software" in doc["notice"]
 
 
 def test_every_component_declares_a_redistribution_category():
@@ -1206,8 +1206,8 @@ def test_the_archive_ships_an_unpacker_beside_it(tmp_path):
     then run the installer inside" is an instruction to get wrong on a
     locked-down machine by someone who has never used tar."""
     out = tmp_path / "offline-bundle"
-    (out / "seedling").mkdir(parents=True)
-    (out / "seedling" / "x").write_text("x")
+    (out / "acorn").mkdir(parents=True)
+    (out / "acorn" / "x").write_text("x")
     archive = build_offline.archive_bundle(out, "tar.gz")
     script = build_offline.write_unpacker(archive, out.name)
 
@@ -1226,8 +1226,8 @@ def test_the_unpacker_actually_round_trips(tmp_path):
     import shutil
     import subprocess
     out = tmp_path / "offline-bundle"
-    (out / "seedling" / "GET_STARTED").mkdir(parents=True)
-    (out / "seedling" / "GET_STARTED" / "install.cmd").write_text("rem hi")
+    (out / "acorn" / "GET_STARTED").mkdir(parents=True)
+    (out / "acorn" / "GET_STARTED" / "install.cmd").write_text("rem hi")
     archive = build_offline.archive_bundle(out, "tar.gz")
     build_offline.write_unpacker(archive, out.name)
 
@@ -1237,7 +1237,7 @@ def test_the_unpacker_actually_round_trips(tmp_path):
     result = subprocess.run(["tar", "-xzf", archive.name], cwd=received,
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    assert (received / out.name / "seedling" / "GET_STARTED" /
+    assert (received / out.name / "acorn" / "GET_STARTED" /
             "install.cmd").is_file()
 
 

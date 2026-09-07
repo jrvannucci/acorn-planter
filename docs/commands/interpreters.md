@@ -8,7 +8,7 @@ you never touch these after the first install.
 ## `acorn python [version]`
 
 Installs a base CPython interpreter via `uv python install`, redirected
-(via `UV_PYTHON_INSTALL_DIR`) into `~/seedling/python/base`. With no
+(via `UV_PYTHON_INSTALL_DIR`) into `~/acorn/python/base`. With no
 version at all, installs the **newest stable Python** uv knows about and
 derives the tag from what actually landed (e.g. `314`) — this is what the
 installer's default-environment setup uses.
@@ -16,11 +16,11 @@ installer's default-environment setup uses.
 - Accepts `312`, `3.12`, or `3.12.4` — digits are extracted and normalized
   into a dotted version spec for uv, and a short tag (e.g. `312`) for the
   folder alias.
-- After installing, seedling locates the real directory uv created and
+- After installing, acorn locates the real directory uv created and
   writes the `<tag>.alias.json` pointer file described above.
 - The **first** base Python you install becomes the default used by
   `acorn venv` when you don't pass `--python`. This is tracked in
-  `~/seedling/system/config/settings.json`.
+  `~/acorn/system/config/settings.json`.
 
 ```
 acorn python 312
@@ -39,7 +39,7 @@ data as machine-readable JSON instead — see
 acorn python-list
 ```
 ```
-Base Python interpreters in ~/seedling/python/base:
+Base Python interpreters in ~/acorn/python/base:
   311      -> cpython-3.11.9-linux-x86_64-gnu
   312      -> cpython-3.12.4-linux-x86_64-gnu  (default for `acorn venv`)
 ```

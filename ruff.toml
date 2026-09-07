@@ -1,6 +1,6 @@
-# Lint config for seedling's own source.
+# Lint config for acorn's own source.
 #
-# seedling ships ruff as a default venv package, a default VS Code extension,
+# acorn ships ruff as a default venv package, a default VS Code extension,
 # and the configured default formatter -- so the codebase it ships from is held
 # to it too. Enforced in CI (.github/workflows/ci.yml).
 #
@@ -9,7 +9,7 @@
 
 target-version = "py312"  # matches requires-python in src/pyproject.toml
 
-# Distribution artifacts and vendored payloads, never seedling's own source.
+# Distribution artifacts and vendored payloads, never acorn's own source.
 exclude = ["offline-bundle", "vendor", "docs/_build"]
 
 [lint]

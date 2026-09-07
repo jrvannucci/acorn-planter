@@ -11,8 +11,8 @@ import sys
 import pytest
 from conftest import make_venv_dirs
 
-from seedling import config, paths, venv_target
-from seedling.commands import run_cmd
+from acorn import config, paths, venv_target
+from acorn.commands import run_cmd
 
 
 # --- resolution precedence --------------------------------------------------
@@ -64,8 +64,8 @@ def test_nothing_to_resolve(home):
     assert "no venv to use" in error.message
 
 
-def test_active_venv_outside_seedling_is_honored(home, monkeypatch, tmp_path):
-    """`acorn install` installs into whatever is active, seedling-managed or
+def test_active_venv_outside_acorn_is_honored(home, monkeypatch, tmp_path):
+    """`acorn install` installs into whatever is active, acorn-managed or
     not; `run` and `which` must not disagree about what "current" means."""
     outside = tmp_path / "elsewhere"
     bindir = outside / ("Scripts" if os.name == "nt" else "bin")
@@ -120,7 +120,7 @@ def test_which_prints_only_the_path(home, capsys):
     """The whole point of the command: `$(acorn which dev)` must be usable,
     so not one byte of prose may land on stdout."""
     make_venv_dirs(home, "dev")
-    from seedling import cli
+    from acorn import cli
     assert cli.main(["which", "dev"]) == 0
     captured = capsys.readouterr()
     assert captured.out.strip() == str(paths.venv_python("dev"))
@@ -128,7 +128,7 @@ def test_which_prints_only_the_path(home, capsys):
 
 
 def test_which_sends_errors_to_stderr(home, capsys):
-    from seedling import cli
+    from acorn import cli
     assert cli.main(["which", "ghost"]) == 1
     captured = capsys.readouterr()
     assert captured.out == ""          # nothing where a path would go
@@ -137,7 +137,7 @@ def test_which_sends_errors_to_stderr(home, capsys):
 
 def test_which_json(home, capsys):
     make_venv_dirs(home, "dev")
-    from seedling import cli
+    from acorn import cli
     assert cli.main(["which", "dev", "--json"]) == 0
     doc = json.loads(capsys.readouterr().out)
     assert doc["found"] is True
@@ -150,7 +150,7 @@ def test_which_json(home, capsys):
 def test_which_json_reports_failure_as_json(home, capsys):
     """A consumer that always parses stdout shouldn't have to special-case
     the failure path."""
-    from seedling import cli
+    from acorn import cli
     assert cli.main(["which", "ghost", "--json"]) == 1
     doc = json.loads(capsys.readouterr().out)
     assert doc["found"] is False
@@ -168,7 +168,7 @@ def test_run_without_a_command_is_usage(run_cli, home):
 def test_run_passes_the_exit_code_through(home, monkeypatch):
     """`acorn run -- pytest` is worthless in CI if this doesn't hold."""
     make_venv_dirs(home, "dev")
-    from seedling import cli
+    from acorn import cli
     code = cli.main(["run", "-n", "dev", "--",
                      sys.executable, "-c", "import sys; sys.exit(7)"])
     assert code == 7
@@ -176,7 +176,7 @@ def test_run_passes_the_exit_code_through(home, monkeypatch):
 
 def test_run_sets_up_the_venv_environment(home, capfd):
     make_venv_dirs(home, "dev")
-    from seedling import cli
+    from acorn import cli
     code = cli.main([
         "run", "-n", "dev", "--", sys.executable, "-c",
         "import json, os; print(json.dumps({"
@@ -221,7 +221,7 @@ def test_run_resolves_the_command_inside_the_venv(home, capfd, monkeypatch, tmp_
     _fake_executable(outside, "seedprobe", "FROM_OUTSIDE")
     monkeypatch.setenv("PATH", str(outside) + os.pathsep + os.environ["PATH"])
 
-    from seedling import cli
+    from acorn import cli
     assert cli.main(["run", "-n", "dev", "--", "seedprobe"]) == 0
     assert "FROM_THE_VENV" in capfd.readouterr().out
 
@@ -243,13 +243,13 @@ def test_resolve_command_leaves_a_path_alone(home):
 
 def test_run_reports_a_missing_command_as_127(home, capsys):
     make_venv_dirs(home, "dev")
-    from seedling import cli
+    from acorn import cli
     assert cli.main(["run", "-n", "dev", "--", "no-such-binary-xyz"]) == 127
     assert "command not found in venv 'dev'" in capsys.readouterr().err
 
 
 def test_run_refuses_an_unknown_venv(home, capsys):
-    from seedling import cli
+    from acorn import cli
     assert cli.main(["run", "-n", "ghost", "--", sys.executable, "-V"]) == 1
     assert "no venv named 'ghost'" in capsys.readouterr().err
 

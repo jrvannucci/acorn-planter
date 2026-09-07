@@ -1,4 +1,4 @@
-"""custom-commands.toml: parsing/validation (seedling/custom_commands.py).
+"""custom-commands.toml: parsing/validation (acorn/custom_commands.py).
 
 Mirrors test_profile.py's style -- validation is where most of the value is,
 since a typo here is discovered by users one command at a time. Every
@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from seedling import custom_commands as cc
+from acorn import custom_commands as cc
 
 
 # --- parsing -----------------------------------------------------------
@@ -131,7 +131,7 @@ def test_resolve_path_none_when_unset(home):
 
 
 def test_load_reads_configured_file(home, tmp_path):
-    from seedling import config
+    from acorn import config
     toml = tmp_path / "commands.toml"
     toml.write_text('[[command]]\nname = "lint"\nrun = ["ruff"]\n')
     config.set_value("custom_commands", str(toml))
@@ -140,7 +140,7 @@ def test_load_reads_configured_file(home, tmp_path):
 
 
 def test_load_resolves_script_relative_to_the_configured_file(home, tmp_path):
-    from seedling import config
+    from acorn import config
     toml = tmp_path / "commands.toml"
     toml.write_text('[[command]]\nname = "quote"\nscript = "quote.py"\n')
     config.set_value("custom_commands", str(toml))
@@ -149,7 +149,7 @@ def test_load_resolves_script_relative_to_the_configured_file(home, tmp_path):
 
 
 def test_load_returns_none_on_bad_file(home, tmp_path):
-    from seedling import config
+    from acorn import config
     toml = tmp_path / "commands.toml"
     toml.write_text("not toml {{{")
     config.set_value("custom_commands", str(toml))
@@ -159,6 +159,6 @@ def test_load_returns_none_on_bad_file(home, tmp_path):
 
 
 def test_load_returns_none_on_missing_file(home, tmp_path):
-    from seedling import config
+    from acorn import config
     config.set_value("custom_commands", str(tmp_path / "nope.toml"))
     assert cc.load() is None

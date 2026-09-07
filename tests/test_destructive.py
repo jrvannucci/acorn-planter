@@ -8,7 +8,7 @@ from __future__ import annotations
 import pytest
 
 from conftest import make_base_python, make_venv_dirs, windows_only
-from seedling import PUBLIC_REPO, config, confirm, paths
+from acorn import PUBLIC_REPO, config, confirm, paths
 
 
 # --- confirm module ---------------------------------------------------------
@@ -21,12 +21,12 @@ class _Args:
 def test_auto_confirmed_via_flag_and_env(home, monkeypatch):
     assert confirm.auto_confirmed(_Args(yes=True))
     assert not confirm.auto_confirmed(_Args(yes=False))
-    monkeypatch.setenv("SEEDLING_YES", "1")
+    monkeypatch.setenv("ACORN_YES", "1")
     assert confirm.auto_confirmed(_Args(yes=False))
 
 
 def test_non_interactive_refuses_prompt(home, monkeypatch, capsys):
-    monkeypatch.setenv("SEEDLING_NONINTERACTIVE", "1")
+    monkeypatch.setenv("ACORN_NONINTERACTIVE", "1")
     assert confirm.confirm(_Args(yes=False)) is False
     assert "refusing to prompt" in capsys.readouterr().out
     # -y still proceeds without prompting
@@ -127,15 +127,15 @@ def test_purge_confirmation_screen_lists_guidance(run_cli, home, answer):
     assert "smaller hammers" in out
     assert "acorn remove-venv <name>" in out
     assert "--keep-repos" in out
-    assert "To reinstall seedling later" in out
+    assert "To reinstall acorn later" in out
     assert home.exists()
 
 
 @pytest.mark.parametrize("source,expect", [
     (PUBLIC_REPO, "raw.githubusercontent.com"),
     (None, "raw.githubusercontent.com"),
-    (r"S:\tools\seedling", r"S:\tools\seedling\install.cmd"),
-    ("https://github.mycompany.com/t/seedling.git", 'git clone "https://github.mycompany.com/t/seedling.git"'),
+    (r"S:\tools\acorn", r"S:\tools\acorn\install.cmd"),
+    ("https://github.mycompany.com/t/acorn.git", 'git clone "https://github.mycompany.com/t/acorn.git"'),
 ])
 def test_purge_reinstall_matches_install_origin(run_cli, home, answer, source, expect):
     paths.ensure_layout()
@@ -148,15 +148,15 @@ def test_purge_reinstall_matches_install_origin(run_cli, home, answer, source, e
 
 def test_purge_without_keep_repos_removes_old_backups(run_cli, home, monkeypatch, tmp_path):
     fake_userhome = tmp_path / "userhome"
-    (fake_userhome / "seedling-repo-backup" / "old").mkdir(parents=True)
-    (fake_userhome / "seedling-repo-backup-1").mkdir(parents=True)
+    (fake_userhome / "acorn-repo-backup" / "old").mkdir(parents=True)
+    (fake_userhome / "acorn-repo-backup-1").mkdir(parents=True)
     import pathlib
     monkeypatch.setattr(pathlib.Path, "home", staticmethod(lambda: fake_userhome))
     paths.ensure_layout()
     code, out = run_cli("purge", "-y")
     assert code == 0
-    assert not (fake_userhome / "seedling-repo-backup").exists()
-    assert not (fake_userhome / "seedling-repo-backup-1").exists()
+    assert not (fake_userhome / "acorn-repo-backup").exists()
+    assert not (fake_userhome / "acorn-repo-backup-1").exists()
     assert not home.exists()
 
 
@@ -171,7 +171,7 @@ def test_purge_keep_repos_moves_them_to_safety(run_cli, home, monkeypatch, tmp_p
     code, out = run_cli("purge", "-y", "--keep-repos")
     assert code == 0
     assert not home.exists()
-    backup = fake_userhome / "seedling-repo-backup"
+    backup = fake_userhome / "acorn-repo-backup"
     assert (backup / "proj" / "file.txt").read_text() == "keep me"
 
 
@@ -183,7 +183,7 @@ def test_purge_strips_hook_lines_old_and_new_layouts(run_cli, home, monkeypatch,
     profile.write_text(
         "unrelated line\n"
         f'. "{home}\\shell\\acorn.ps1"\n'          # old layout
-        "# seedling\n"
+        "# acorn\n"
         f'. "{home}\\system\\shell\\acorn.ps1"\n'  # current layout
     )
     import pathlib
@@ -218,7 +218,7 @@ def test_purge_removes_the_persistent_path_entry(monkeypatch, tmp_path):
     -n auto, not in isolation."""
     import winreg
 
-    from seedling.commands import purge_cmd
+    from acorn.commands import purge_cmd
 
     fake_bin = str(tmp_path / "system" / "bin")
     monkeypatch.setattr(paths, "BIN_DIR", tmp_path / "system" / "bin")
@@ -247,8 +247,8 @@ def test_purge_removes_the_persistent_path_entry(monkeypatch, tmp_path):
 def test_purge_and_reinstall_preview_reports_reinstall(run_cli, home):
     paths.ensure_layout()
     (home / "repo" / "proj").mkdir(parents=True)
-    config.set_value("update_source", "https://github.mycompany.com/t/seedling.git")
-    from seedling.commands import purge_cmd
+    config.set_value("update_source", "https://github.mycompany.com/t/acorn.git")
+    from acorn.commands import purge_cmd
     marker = purge_cmd._reinstall_marker()
     marker.unlink(missing_ok=True)
 
@@ -273,7 +273,7 @@ def test_purge_and_reinstall_writes_script_and_keeps_repos(
     paths.ensure_layout()
     (home / "repo" / "proj").mkdir(parents=True)
     (home / "repo" / "proj" / "file.txt").write_text("keep me")
-    source = r"S:\tools\seedling"
+    source = r"S:\tools\acorn"
     config.set_value("update_source", source)
 
     code, out = run_cli("purge-and-reinstall", "-y")
@@ -282,10 +282,10 @@ def test_purge_and_reinstall_writes_script_and_keeps_repos(
     assert "reinstalling now" in out.lower()
 
     # Repos moved aside, ready for the reinstall script to restore.
-    backup = fake_userhome / "seedling-repo-backup"
+    backup = fake_userhome / "acorn-repo-backup"
     assert (backup / "proj" / "file.txt").read_text() == "keep me"
 
-    from seedling.commands import purge_cmd
+    from acorn.commands import purge_cmd
     marker = purge_cmd._reinstall_marker()
     content = marker.read_text()
     assert source in content                       # source baked in
@@ -297,7 +297,7 @@ def test_purge_and_reinstall_writes_script_and_keeps_repos(
 
 def test_purge_and_reinstall_no_source_aborts_without_wiping(run_cli, home, answer):
     paths.ensure_layout()
-    from seedling.commands import purge_cmd
+    from acorn.commands import purge_cmd
     purge_cmd._reinstall_marker().unlink(missing_ok=True)
     answer("no")                                   # decline the public-repo offer
     code, out = run_cli("purge-and-reinstall")
@@ -321,7 +321,7 @@ def test_purge_and_reinstall_no_source_yes_uses_public(
     assert code == 0
     assert not home.exists()
 
-    from seedling.commands import purge_cmd
+    from acorn.commands import purge_cmd
     marker = purge_cmd._reinstall_marker()
     assert PUBLIC_REPO.removeprefix("https://").removesuffix(".git") in marker.read_text()
     marker.unlink(missing_ok=True)
@@ -334,12 +334,12 @@ def test_kill_processes_preview_lists_matches(run_cli, home):
     assert code == 0 and "Preview" in out and "nothing was changed" in out
 
 
-def test_kill_processes_defaults_to_seedling_only(run_cli, home):
+def test_kill_processes_defaults_to_acorn_only(run_cli, home):
     """No arguments = the narrow mode. 'Something of mine is stuck' must not
     close a colleague's editor or an unrelated long-running job."""
     code, out = run_cli("kill-processes", "--preview")
     assert code == 0
-    assert "seedling's own processes" in out
+    assert "acorn's own processes" in out
     assert "ALL Python and VS Code" not in out
 
 

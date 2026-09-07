@@ -79,8 +79,8 @@ disagree:
 
 ```sh
 # GET_STARTED/global.conf, in the copy you distribute
-SEEDLING_VSCODE_FLAVOR="vscodium"
-SEEDLING_VSCODE_EXTENSIONS="ms-python.python,ms-toolsai.jupyter,charliermarsh.ruff"
+ACORN_VSCODE_FLAVOR="vscodium"
+ACORN_VSCODE_EXTENSIONS="ms-python.python,ms-toolsai.jupyter,charliermarsh.ruff"
 ```
 
 **Why it's shaped this way**
@@ -105,7 +105,7 @@ SEEDLING_VSCODE_EXTENSIONS="ms-python.python,ms-toolsai.jupyter,charliermarsh.ru
   [`acorn profile-check`](../commands/status.md#acorn-profile-check-profile---bundle-path)
   answers the same question for a profile written later, from inside.
 - Nothing here mentions the share's paths: those live in `global.conf`
-  (`SEEDLING_PACKAGE_INDEX` and friends), which is install-time configuration
+  (`ACORN_PACKAGE_INDEX` and friends), which is install-time configuration
   a profile deliberately can't override.
 
 **What the manifest says about the wheels.** Alongside the components,
@@ -131,14 +131,14 @@ metadata:
 MPL is weak copyleft: it only asks something of you if you *modify* the
 library, which installing never does. Nothing here needs a decision — which is
 the answer a review wants, stated rather than assumed. Re-check any time with
-`acorn whl-licenses S:\seedling\wheels`.
+`acorn whl-licenses S:\acorn\wheels`.
 
 **What the bundle looks like**
 
 ```
 offline-bundle/
 ├── MANIFEST.json            what was staged, and under what licence
-├── seedling/                users run GET_STARTED/install.cmd from here
+├── acorn/                users run GET_STARTED/install.cmd from here
 │   ├── GET_STARTED/                 install.cmd, and global.conf written
 │   │                                with your --deploy-root paths
 │   ├── GET_STARTED_OFFLINE_BUNDLE/  offline-bundle.toml -- what the share
@@ -150,9 +150,9 @@ offline-bundle/
 │       ├── micromamba/          micromamba.exe
 │       ├── certs/               <- YOU fill this one
 │       └── git/                 only with --mingit
-├── python-builds/           SEEDLING_PYTHON_MIRROR
-├── wheels/                  SEEDLING_PACKAGE_INDEX
-└── conda-channel/           SEEDLING_CONDA_CHANNEL
+├── python-builds/           ACORN_PYTHON_MIRROR
+├── wheels/                  ACORN_PACKAGE_INDEX
+└── conda-channel/           ACORN_CONDA_CHANNEL
 ```
 
 Where each lands on the target:
@@ -167,7 +167,7 @@ Where each lands on the target:
 
 **What a cert file looks like.** Any PEM-encoded certificate, one or more per
 file. The installer concatenates *every* `.pem` and `.crt` in the folder into
-`~/seedling/system/certs/ca-bundle.pem`, so a root and an intermediate can be
+`~/acorn/system/certs/ca-bundle.pem`, so a root and an intermediate can be
 separate files:
 
 ```

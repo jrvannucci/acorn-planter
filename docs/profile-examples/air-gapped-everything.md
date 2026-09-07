@@ -19,13 +19,13 @@ Three files do the work. **The profile** describes the environment:
 | Corporate CA certificate | ✅ | **required** -- a proxy re-signs HTTPS on this network |
 | Bundled git (MinGit) | ✅ | `--mingit`, for Windows targets with no git |
 | A reachable git host | ✅ | internal host, reachable from the target network |
-| Multi-user share root | ✅ | `S:\users\{user}\seedling`, enabling the `admin-*` commands |
+| Multi-user share root | ✅ | `S:\users\{user}\acorn`, enabling the `admin-*` commands |
 | Offline bundle to build | ✅ | the full build, every flag |
 | **x86_64 only** | ✅ | the Spyder half pins the whole profile to x86_64 |
 
 ![The maximal case: seven sources, each staged into its own bundle folder.](../diagrams/profile-build-air-gapped-everything.svg)
 
-![Two origins on the target: S:\seedling -- the bundle -- grouped into one box for everything except repos, and git.corp.example, reached live only after install.](../diagrams/profile-pull-air-gapped-everything.svg)
+![Two origins on the target: S:\acorn -- the bundle -- grouped into one box for everything except repos, and git.corp.example, reached live only after install.](../diagrams/profile-pull-air-gapped-everything.svg)
 
 ```toml
 # profile.toml -- the standard environment, applied at install and
@@ -111,32 +111,32 @@ exists — the share paths, TLS, and the multi-user layout:
 
 # Install from the share itself: a directory, not a git URL, so neither git
 # nor a network is needed to install, or to `acorn update-commands` later.
-SEEDLING_REPO_URL="S:\seedling\seedling"
+ACORN_REPO_URL="S:\acorn\acorn"
 
 # One root, a private folder per person. The {user} token is also what
 # enables the elevated admin-* commands for cross-user teardown.
-SEEDLING_HOME_DIR="S:\users\{user}\seedling"
+ACORN_HOME_DIR="S:\users\{user}\acorn"
 
 # The three offline sources the bundle provides.
-SEEDLING_PYTHON_MIRROR="S:\seedling\python-builds"
-SEEDLING_PACKAGE_INDEX="S:\seedling\wheels"
-SEEDLING_CONDA_CHANNEL="S:\seedling\conda-channel"
+ACORN_PYTHON_MIRROR="S:\acorn\python-builds"
+ACORN_PACKAGE_INDEX="S:\acorn\wheels"
+ACORN_CONDA_CHANNEL="S:\acorn\conda-channel"
 
 # The editor build and extension set every INSTALLED machine gets -- decided
 # here, not in the profile. These must match [editor] in offline-bundle.toml,
 # which is what actually gets staged; the builder compares them and stops if
 # they disagree.
-SEEDLING_VSCODE_FLAVOR="microsoft"
-SEEDLING_EXTENSION_GALLERY="https://openvsx.corp.example/vscode"
-SEEDLING_VSCODE_EXTENSIONS="ms-python.python,ms-python.vscode-pylance,ms-python.debugpy,ms-toolsai.jupyter,charliermarsh.ruff"
+ACORN_VSCODE_FLAVOR="microsoft"
+ACORN_EXTENSION_GALLERY="https://openvsx.corp.example/vscode"
+ACORN_VSCODE_EXTENSIONS="ms-python.python,ms-python.vscode-pylance,ms-python.debugpy,ms-toolsai.jupyter,charliermarsh.ruff"
 
 # A TLS-inspecting proxy re-signs HTTPS here, so the corporate root goes in
-# vendor/certs/ and the installer trusts it for uv, git and seedling's own
+# vendor/certs/ and the installer trusts it for uv, git and acorn's own
 # downloads. Set this to "true" instead if IT installed the CA machine-wide.
-SEEDLING_NATIVE_TLS="false"
+ACORN_NATIVE_TLS="false"
 
 # Apply the profile automatically at install.
-SEEDLING_PROFILE="installation-profile"   # the FOLDER: each profile says who gets it
+ACORN_PROFILE="installation-profile"   # the FOLDER: each profile says who gets it
 ```
 
 **What the share holds**, declared once and independently of any profile.
@@ -215,7 +215,7 @@ someone asks. For internal use that is normally fine; it matters if the share
 crosses a legal-entity boundary. Check it yourself at any point with:
 
 ```
-acorn whl-licenses S:\seedling\wheels
+acorn whl-licenses S:\acorn\wheels
 ```
 
 **What each piece buys**
@@ -248,7 +248,7 @@ acorn whl-licenses S:\seedling\wheels
   against the copy on the share to prove the transfer was complete too:
 
   ```
-  GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd --verify-only -o S:\seedling
+  GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd --verify-only -o S:\acorn
   ```
 
 - **`MANIFEST.json`** records every component, its source, its licence, and
@@ -256,7 +256,7 @@ acorn whl-licenses S:\seedling\wheels
   The file to hand a security review rather than reconstructing the answer.
 
 **What still needs the internet:** nothing, once the bundle is on the share.
-Users install from `S:\seedling\seedling`, `acorn apply` provisions entirely
+Users install from `S:\acorn\acorn`, `acorn apply` provisions entirely
 from the bundled sources, and `acorn update-commands` re-reads that same
 directory — so updating the fleet is copying a new bundle over the old one.
 
@@ -265,15 +265,15 @@ directory — so updating the fleet is copying a new bundle over the old one.
 Everything the builder can produce, plus the one folder it can't:
 
 ```
-offline-bundle/                       -> copied to S:\seedling
+offline-bundle/                       -> copied to S:\acorn
 ├── MANIFEST.json                     components + every wheel's licence
-├── seedling/                         users run GET_STARTED/install.cmd from here
+├── acorn/                         users run GET_STARTED/install.cmd from here
 │   ├── GET_STARTED/
 │   │   ├── install.cmd               what users actually run
 │   │   └── global.conf               the conf above, --deploy-root applied
 │   ├── installation-profile/         the profiles above, one per group
 │   ├── installers/                   install.ps1, install.sh
-│   ├── src/                          seedling's own source
+│   ├── src/                          acorn's own source
 │   └── vendor/
 │       ├── uv/
 │       │   ├── uv.exe
@@ -328,7 +328,7 @@ wheels. A flat folder holds every tag happily, and this is what makes
 
 **What a cert file looks like.** Any PEM-encoded certificate, one or more per
 file. The installer concatenates *every* `.pem` and `.crt` in the folder into
-`~/seedling/system/certs/ca-bundle.pem`, so a root and an intermediate can be
+`~/acorn/system/certs/ca-bundle.pem`, so a root and an intermediate can be
 separate files:
 
 ```

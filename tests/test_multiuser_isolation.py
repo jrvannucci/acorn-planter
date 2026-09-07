@@ -1,4 +1,4 @@
-"""Safety property: in a shared-root install (SEEDLING_HOME_DIR with a
+"""Safety property: in a shared-root install (ACORN_HOME_DIR with a
 {user} token), one user's `acorn purge` / `acorn remove-user` must delete
 ONLY their own subfolder -- never a sibling user's folder, the shared
 parent, or another user's profile hook."""
@@ -13,7 +13,7 @@ import conftest
 
 
 def _make_user(shared_root, os_homes, name):
-    """A full mini seedling home for `name` under the shared root, plus a
+    """A full mini acorn home for `name` under the shared root, plus a
     separate per-user OS home with a profile hook pointing at it."""
     home = shared_root / name
     for sub in ("system/bin", "system/config", "system/shell",
@@ -29,7 +29,7 @@ def _make_user(shared_root, os_homes, name):
     profile.mkdir(parents=True, exist_ok=True)
     (profile / "Microsoft.PowerShell_profile.ps1").write_text(
         "unrelated config line\n"
-        "# seedling\n"
+        "# acorn\n"
         f'. "{home}\\system\\shell\\acorn.ps1"\n')
     return home, oshome
 
@@ -37,24 +37,24 @@ def _make_user(shared_root, os_homes, name):
 @pytest.fixture
 def three_users(tmp_path, monkeypatch):
     """alice/bob/carol sharing one root. Returns the homes plus a helper to
-    'become' a given user (rebind seedling paths + Path.home())."""
-    shared = tmp_path / "shared"          # the C:\seedling equivalent
+    'become' a given user (rebind acorn paths + Path.home())."""
+    shared = tmp_path / "shared"          # the C:\acorn equivalent
     os_homes = tmp_path / "oshomes"       # the C:\Users\<user> equivalents
     users = {name: _make_user(shared, os_homes, name)
              for name in ("alice", "bob", "carol")}
 
     for var in conftest._ISOLATED_ENV_VARS:
         monkeypatch.delenv(var, raising=False)
-    monkeypatch.setenv("SEEDLING_NO_LOG", "1")
-    monkeypatch.setenv("SEEDLING_YES", "1")  # skip the confirmation prompt
+    monkeypatch.setenv("ACORN_NO_LOG", "1")
+    monkeypatch.setenv("ACORN_YES", "1")  # skip the confirmation prompt
 
-    from seedling.commands import kill_cmd
+    from acorn.commands import kill_cmd
     monkeypatch.setattr(kill_cmd, "kill_python_and_vscode", lambda: [])
 
     def become(name):
         home, oshome = users[name]
         conftest._rebind_paths(home)
-        monkeypatch.setenv("SEEDLING_HOME", str(home))
+        monkeypatch.setenv("ACORN_HOME", str(home))
         monkeypatch.setattr(pathlib.Path, "home", staticmethod(lambda: oshome))
 
     yield shared, os_homes, users, become
@@ -68,7 +68,7 @@ def _assert_intact(home):
 
 
 def test_purge_deletes_only_current_user(three_users):
-    from seedling import cli
+    from acorn import cli
     shared, os_homes, users, become = three_users
     alice_home = users["alice"][0]
     bob_home = users["bob"][0]
@@ -85,7 +85,7 @@ def test_purge_deletes_only_current_user(three_users):
 
 
 def test_purge_only_strips_current_users_hook(three_users):
-    from seedling import cli
+    from acorn import cli
     shared, os_homes, users, become = three_users
 
     become("alice")
@@ -96,11 +96,11 @@ def test_purge_only_strips_current_users_hook(three_users):
         oshome = users[name][1]
         prof = (oshome / "Documents" / "WindowsPowerShell"
                 / "Microsoft.PowerShell_profile.ps1").read_text()
-        assert "seedling" in prof and users[name][0].name in prof
+        assert "acorn" in prof and users[name][0].name in prof
 
 
 def test_remove_user_deletes_only_current_user(three_users):
-    from seedling import cli
+    from acorn import cli
     shared, os_homes, users, become = three_users
     alice_home = users["alice"][0]
 
@@ -114,7 +114,7 @@ def test_remove_user_deletes_only_current_user(three_users):
 
 
 def test_preview_lists_only_current_user(three_users, capsys):
-    from seedling import cli
+    from acorn import cli
     shared, os_homes, users, become = three_users
     become("alice")
     cli.main(["purge", "--preview"])
@@ -126,13 +126,13 @@ def test_preview_lists_only_current_user(three_users, capsys):
 
 
 def test_repo_backup_stays_in_current_users_os_home(three_users):
-    from seedling import cli
+    from acorn import cli
     shared, os_homes, users, become = three_users
     become("alice")
     cli.main(["purge", "--keep-repos"])
     # backup landed under alice's OS home, not the shared root or a sibling
     alice_os = users["alice"][1]
-    backup = alice_os / "seedling-repo-backup"
+    backup = alice_os / "acorn-repo-backup"
     assert (backup / "proj" / "code.py").read_text().endswith("repo")
-    assert not (os_homes / "bob" / "seedling-repo-backup").exists()
-    assert not (shared / "seedling-repo-backup").exists()
+    assert not (os_homes / "bob" / "acorn-repo-backup").exists()
+    assert not (shared / "acorn-repo-backup").exists()

@@ -12,7 +12,7 @@ import zipfile
 
 import pytest
 
-from seedling import licenses
+from acorn import licenses
 
 
 def _wheel(directory, name, version, headers, licence_file=True):

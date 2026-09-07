@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import datetime
 
-from seedling import paths
-from seedling.commands import logs_viewer_cmd as lv
+from acorn import paths
+from acorn.commands import logs_viewer_cmd as lv
 
 
 def _write_log(day: str, body: str) -> None:
@@ -59,13 +59,13 @@ def test_install_log_block_format_becomes_an_install_entry(home):
     paths.LOGS_DIR.mkdir(parents=True, exist_ok=True)
     (paths.LOGS_DIR / "install-20260708-100000.log").write_text(
         "=== [2026-07-08 10:00:00] installer (bootstrap)\n"
-        "==> Installing uv ...\n==> seedling is installed.\n"
+        "==> Installing uv ...\n==> acorn is installed.\n"
         "=== [10:02:11] exit code 0\n", encoding="utf-8")
     entries = lv.collect_entries()
     assert len(entries) == 1
     assert entries[0]["kind"] == "install"
     assert entries[0]["exit"] == 0
-    assert "seedling is installed" in entries[0]["output"]
+    assert "acorn is installed" in entries[0]["output"]
 
 
 def test_install_log_raw_transcript_becomes_one_entry(home):
@@ -74,21 +74,21 @@ def test_install_log_raw_transcript_becomes_one_entry(home):
     paths.LOGS_DIR.mkdir(parents=True, exist_ok=True)
     (paths.LOGS_DIR / "install-20260709-142530.log").write_text(
         "**********************\nWindows PowerShell transcript start\n"
-        "==> Cloning ...\n==> seedling is installed.\n"
-        "seedling install completed (exit code 0)\n", encoding="utf-8")
+        "==> Cloning ...\n==> acorn is installed.\n"
+        "acorn install completed (exit code 0)\n", encoding="utf-8")
     entries = lv.collect_entries()
     assert len(entries) == 1
     e = entries[0]
     assert e["kind"] == "install" and e["exit"] == 0
     assert e["ts"] == "2026-07-09 14:25:30"  # from the filename
-    assert "seedling is installed" in e["output"]
+    assert "acorn is installed" in e["output"]
 
 
 def test_install_transcript_failure_marker_yields_exit_1(home):
     paths.LOGS_DIR.mkdir(parents=True, exist_ok=True)
     (paths.LOGS_DIR / "install-20260709-150000.log").write_text(
         "transcript start\nerror: git is required to clone x.\n"
-        "seedling install FAILED (exit code 1)\n", encoding="utf-8")
+        "acorn install FAILED (exit code 1)\n", encoding="utf-8")
     assert lv.collect_entries()[0]["exit"] == 1
 
 
@@ -97,7 +97,7 @@ def test_install_transcript_without_marker_falls_back(home):
     # means completed; nothing at all means unknown (crashed / interrupted).
     paths.LOGS_DIR.mkdir(parents=True, exist_ok=True)
     (paths.LOGS_DIR / "install-20260708-090000.log").write_text(
-        "transcript start\n==> seedling is installed.\ntranscript end\n",
+        "transcript start\n==> acorn is installed.\ntranscript end\n",
         encoding="utf-8")
     (paths.LOGS_DIR / "install-20260708-080000.log").write_text(
         "transcript start\n==> Installing uv ...\n", encoding="utf-8")
@@ -111,11 +111,11 @@ def test_install_log_utf16_bom_is_decoded(home):
     # Windows PowerShell 5.1; the viewer must decode it, not show mojibake.
     paths.LOGS_DIR.mkdir(parents=True, exist_ok=True)
     (paths.LOGS_DIR / "install-20260709-160000.log").write_text(
-        "==> Cloning ...\n==> seedling is installed.\n", encoding="utf-16")
+        "==> Cloning ...\n==> acorn is installed.\n", encoding="utf-16")
     entries = lv.collect_entries()
     assert len(entries) == 1
     assert entries[0]["kind"] == "install"
-    assert "seedling is installed" in entries[0]["output"]
+    assert "acorn is installed" in entries[0]["output"]
     assert "\x00" not in entries[0]["output"]  # not read as raw UTF-16 bytes
 
 
@@ -155,7 +155,7 @@ def test_runlog_tee_strips_ansi_from_log_copy(home):
     # Terminal gets colors untouched; the log copy is PLAIN text -- logs may
     # be shipped to a server, so no escape-code handling downstream.
     import io
-    from seedling import runlog
+    from acorn import runlog
     real, log = io.StringIO(), io.StringIO()
     tee = runlog._Tee(real, log)
     tee.write("\x1b[1;32mOK\x1b[0m plain\n")
@@ -164,7 +164,7 @@ def test_runlog_tee_strips_ansi_from_log_copy(home):
 
 
 def test_viewer_strips_stray_ansi_at_parse_time(home):
-    # Defense-in-depth: even if a log somehow contains codes (older seedling,
+    # Defense-in-depth: even if a log somehow contains codes (older acorn,
     # a tool coloring despite the pipe), the viewer displays clean text.
     _write_log("2026-07-08",
                "\n=== [2026-07-08 09:00:01] acorn status\n"

@@ -8,10 +8,10 @@ import argparse
 import configparser
 import os
 
-from seedling import config, paths
+from acorn import config, paths
 # vscode_cmd imported for its registration side effect: editors are
 # registered at import, and this file asserts on the full family.
-from seedling.commands import editors, spyder_cmd, tool_cmd, vscode_cmd  # noqa: F401
+from acorn.commands import editors, spyder_cmd, tool_cmd, vscode_cmd  # noqa: F401
 
 
 def _fake_app(home, name, version="1.0", kernels=None):
@@ -49,11 +49,11 @@ def test_app_version_read_from_dist_info(home):
     assert tool_cmd.app_version("absent") is None
 
 
-def test_app_tool_root_is_separate_from_seed_cli():
+def test_app_tool_root_is_separate_from_acorn_cli():
     """acorn-cli lives in system/tool. If apps shared that root, `uv tool
     list` would report the running CLI as an app and `uv tool upgrade --all`
     would sweep it."""
-    from seedling import uv_tool
+    from acorn import uv_tool
 
     app_env = uv_tool.tool_install_env()
     cli_env = uv_tool.selfinstall_env()
@@ -88,7 +88,7 @@ def test_kernels_requirement_absent_when_not_installed(home):
 
 
 def test_write_config_points_spyder_at_the_interpreter(home):
-    spyder_cmd._write_config(r"C:\seedling\python\venvs\dev\Scripts\python.exe")
+    spyder_cmd._write_config(r"C:\acorn\python\venvs\dev\Scripts\python.exe")
     ini = paths.SPYDER_CONFIG_DIR / "spyder.ini"
     assert ini.exists()
 
@@ -179,9 +179,9 @@ class TestSpyderVenvSelection:
         assert fatal is None
         assert target.name == "configured"
 
-    def test_active_non_seedling_venv_is_still_honored(self, home, monkeypatch,
+    def test_active_non_acorn_venv_is_still_honored(self, home, monkeypatch,
                                                         tmp_path):
-        """`acorn install` installs into whatever is active, seedling-managed
+        """`acorn install` installs into whatever is active, acorn-managed
         or not; Spyder must not disagree about what "current" means."""
         outside = tmp_path / "elsewhere"
         bindir = outside / ("Scripts" if os.name == "nt" else "bin")
@@ -239,7 +239,7 @@ class TestSpyderVenvSelection:
 
 class TestIpykernelDowngradeNotice:
     """Preparing a venv for Spyder installs spyder-kernels, which caps
-    ipykernel below 7 -- so on a stock seedling venv it rolls ipykernel
+    ipykernel below 7 -- so on a stock acorn venv it rolls ipykernel
     BACK. That's required for the console to work, but it changes a package
     the user may rely on elsewhere, so it has to be said out loud."""
 

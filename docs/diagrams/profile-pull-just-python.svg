@@ -64,9 +64,9 @@
 <text x="92" y="230" class="body fw" font-size="14" font-weight="700">global.conf</text>
 <text x="58" y="246" class="body" fill="#CFE3D6" font-size="10" font-style="italic">read at install, on every machine</text>
 <line x1="58" y1="256" x2="342" y2="256" stroke="#FFFFFF" stroke-width="1" opacity="0.2"/>
-<rect x="58" y="264" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="67" y="279" class="body fg" font-size="11.5" font-weight="600">SEEDLING_PROFILE  →  installation-profile/</text>
+<rect x="58" y="264" width="284" height="22" rx="6" fill="#FFFFFF" stroke="#1B4332" stroke-width="0.9"/><text x="67" y="279" class="body fg" font-size="11.5" font-weight="600">ACORN_PROFILE  →  installation-profile/</text>
 <line x1="360" y1="249" x2="796" y2="249" stroke="#1B4332" stroke-width="1.6" marker-end="url(#arrow)"/>
-<text x="580" y="241" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">SEEDLING_PROFILE -&gt; the profile folder</text>
+<text x="580" y="241" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">ACORN_PROFILE -&gt; the profile folder</text>
 <rect x="640" y="324" width="320" height="134" rx="12" fill="#1B4332"/>
 <use href="#ic-doc" x="658" y="337" width="22" height="22" color="#FFFFFF"/>
 <text x="692" y="352" class="body fw" font-size="14.0" font-weight="700">installation-profile/</text>
@@ -87,7 +87,7 @@
 <rect x="654" y="575" width="292" height="42" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1"/>
 <use href="#ic-folder" x="662" y="581" width="15" height="15" color="#1B4332"/>
 <text x="681" y="592" class="body fg" font-size="12.0" font-weight="700">system/src/</text>
-<text x="681" y="603" class="body fmute" font-size="9.5" font-style="italic">seedling's own source</text>
+<text x="681" y="603" class="body fmute" font-size="9.5" font-style="italic">acorn's own source</text>
 <rect x="654" y="629" width="292" height="63" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1"/>
 <use href="#ic-folder" x="662" y="635" width="15" height="15" color="#1B4332"/>
 <text x="681" y="646" class="body fg" font-size="12.0" font-weight="700">python/base/</text>
@@ -101,8 +101,8 @@
 <rect x="40" y="492" width="470" height="92" rx="12" fill="#E9F5EC" stroke="#1B4332" stroke-width="1.3"/>
 <use href="#ic-cloud" x="56" y="504" width="20" height="20" color="#1B4332"/>
 <text x="84" y="519" class="body fg" font-size="15.0" font-weight="700">github.com</text>
-<text x="84" y="533" class="body fmute" font-size="11.0" font-style="italic">the public seedling repo</text>
-<rect x="54" y="538" width="442" height="32" rx="9" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.8"/><text x="66" y="559" class="body fg" font-size="13.0" font-weight="700">seedling itself</text>
+<text x="84" y="533" class="body fmute" font-size="11.0" font-style="italic">the public acorn repo</text>
+<rect x="54" y="538" width="442" height="32" rx="9" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.8"/><text x="66" y="559" class="body fg" font-size="13.0" font-weight="700">acorn itself</text>
 <line x1="510" y1="554" x2="636" y2="554" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
 <text x="575" y="548" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">the install one-liner</text>
 <rect x="40" y="610" width="470" height="92" rx="12" fill="#E9F5EC" stroke="#1B4332" stroke-width="1.3"/>

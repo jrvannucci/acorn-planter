@@ -43,7 +43,7 @@ CONTENTS = [
     ("conda-channel/", "conda-forge command-line tools"),
     ("vendor/vscode/", "the editor, with its extensions"),
     ("vendor/uv/, vendor/git/", "uv, and MinGit when asked for"),
-    ("seedling/", "the source users install from"),
+    ("acorn/", "the source users install from"),
 ]
 
 PROFILES = [
@@ -53,10 +53,10 @@ PROFILES = [
 ]
 
 POINTERS = [
-    ("SEEDLING_PACKAGE_INDEX", "wheels/"),
-    ("SEEDLING_PYTHON_MIRROR", "python-builds/"),
-    ("SEEDLING_CONDA_CHANNEL", "conda-channel/"),
-    ("SEEDLING_REPO_URL", "seedling/"),
+    ("ACORN_PACKAGE_INDEX", "wheels/"),
+    ("ACORN_PYTHON_MIRROR", "python-builds/"),
+    ("ACORN_CONDA_CHANNEL", "conda-channel/"),
+    ("ACORN_REPO_URL", "acorn/"),
 ]
 
 

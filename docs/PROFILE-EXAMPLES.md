@@ -29,11 +29,11 @@ example
 | Column | The question | Set by |
 |---|---|---|
 | **Offline** | Do the machines run with no internet access? | — |
-| **Index** | Is a package source configured instead of pypi.org? | `SEEDLING_PACKAGE_INDEX` |
-| **VS Code** | Does this need official VS Code and the Marketplace? | `editor`, `SEEDLING_VSCODE_FLAVOR` |
+| **Index** | Is a package source configured instead of pypi.org? | `ACORN_PACKAGE_INDEX` |
+| **VS Code** | Does this need official VS Code and the Marketplace? | `editor`, `ACORN_VSCODE_FLAVOR` |
 | **Spyder** | Does this install Spyder, from PyPI? | `editor` |
 | **conda-forge** | Does this install conda-forge command-line tools? | `tools` |
-| **CA certs** | Does this need a corporate CA certificate? | `vendor/certs/`, `SEEDLING_NATIVE_TLS` |
+| **CA certs** | Does this need a corporate CA certificate? | `vendor/certs/`, `ACORN_NATIVE_TLS` |
 | **Bundle** | Must you build an offline bundle first? | `offline-bundler` |
 | **x86_64 only** | Does this rule out arm64 machines? | implied by Spyder |
 

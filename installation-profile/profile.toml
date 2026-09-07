@@ -7,7 +7,7 @@
 # the connected machine.
 #
 # Point global.conf at this FOLDER, not at one file:
-#     SEEDLING_PROFILE="installation-profile"
+#     ACORN_PROFILE="installation-profile"
 #
 # Each profile says who gets it, in its own [distribution] table:
 #   default = true      -> everyone

@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 
 from conftest import make_venv_dirs
-from seedling import config, paths
+from acorn import config, paths
 
 
 def test_fresh_sandbox_is_healthy_with_warnings(run_cli, home):
@@ -19,7 +19,7 @@ def test_fresh_sandbox_is_healthy_with_warnings(run_cli, home):
 
 def test_report_has_area_column_in_cyan(run_cli, home):
     # Each line carries an AREA label (uv, git, config, ...) rendered cyan.
-    from seedling import colors
+    from acorn import colors
     colors._enabled = True  # force color on (isatty() is False under capture)
     try:
         code, out = run_cli("health-check")
@@ -32,7 +32,7 @@ def test_report_has_area_column_in_cyan(run_cli, home):
 
 def test_area_labels_present_without_color(run_cli, home):
     # The AREA column is data, not decoration -- labels show even with color off.
-    from seedling import colors
+    from acorn import colors
     colors._enabled = False  # force color off
     try:
         code, out = run_cli("health-check")
@@ -80,7 +80,7 @@ class TestUpdateSourceVerification:
     def _fake_git_run(self, monkeypatch, ls_remote_rc, ls_remote_stderr=""):
         """Patch subprocess.run inside status_cmd: ls-remote gets the scripted
         result; anything else (uv --version) succeeds generically."""
-        from seedling.commands import status_cmd
+        from acorn.commands import status_cmd
 
         class R:
             def __init__(self, rc, out="", err=""):
@@ -96,7 +96,7 @@ class TestUpdateSourceVerification:
         return fake_run
 
     def test_reachable_url_is_verified_not_assumed(self, run_cli, home, monkeypatch):
-        config.set_value("update_source", "https://github.com/x/seedling.git")
+        config.set_value("update_source", "https://github.com/x/acorn.git")
         fake = self._fake_git_run(monkeypatch, ls_remote_rc=0)
         code, out = run_cli("health-check")
         assert fake.probed, "status never probed the URL"
@@ -119,8 +119,8 @@ class TestUpdateSourceVerification:
         assert "git URL" not in out and "assumed" not in out
 
     def test_url_without_git_warns(self, run_cli, home, monkeypatch):
-        from seedling import git_tool
-        config.set_value("update_source", "https://github.com/x/seedling.git")
+        from acorn import git_tool
+        config.set_value("update_source", "https://github.com/x/acorn.git")
         monkeypatch.setattr(git_tool, "find_git", lambda: None)
         code, out = run_cli("health-check")
         assert code == 0
@@ -166,7 +166,7 @@ def test_stale_hook_detection(run_cli, home, monkeypatch, tmp_path):
     import pathlib
     monkeypatch.setattr(pathlib.Path, "home", staticmethod(lambda: fake_userhome))
     code, out = run_cli("health-check")
-    assert "stale seedling hook" in out
+    assert "stale acorn hook" in out
     # now make the hook target real -> OK
     seed_script.parent.mkdir(parents=True, exist_ok=True)
     seed_script.write_text("")

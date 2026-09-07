@@ -1,6 +1,6 @@
 # Scripting & automation
 
-Most of seedling is written for a person at a terminal. This is the subset
+Most of acorn is written for a person at a terminal. This is the subset
 written for everything else — Makefiles, CI steps, provisioning scripts, and
 AI coding agents — collected in one place because that audience arrives
 looking for it, not for a particular noun.
@@ -34,7 +34,7 @@ acorn run -n myproject -- pytest -q      # or let acorn set up the env
 
 `acorn run` passes the child's exit code through verbatim and leaves its
 stdout and stderr byte-exact — the child writes to the real file
-descriptors, so its output never passes through seedling's logging tee.
+descriptors, so its output never passes through acorn's logging tee.
 
 **Install into a specific venv without activating it.** `acorn install` (and
 `uninstall`/`package-list`/`show`) reads `VIRTUAL_ENV` from its own
@@ -65,12 +65,12 @@ a schema version is safe.
 
 **Never block on a prompt.** `--non-interactive` makes a command that would
 ask a question abort instead of waiting, and `-y`/`--yes` pre-answers it.
-`SEEDLING_NONINTERACTIVE=1` and `SEEDLING_YES=1` set the same two things for
+`ACORN_NONINTERACTIVE=1` and `ACORN_YES=1` set the same two things for
 a whole session, which is usually what you want in CI:
 
 ```sh
-export SEEDLING_NONINTERACTIVE=1
-export SEEDLING_YES=1
+export ACORN_NONINTERACTIVE=1
+export ACORN_YES=1
 ```
 
 Without `-y`, a `--non-interactive` command that needs confirmation exits

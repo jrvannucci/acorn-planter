@@ -12,8 +12,8 @@ import time
 
 import pytest
 
-from seedling import fsutil, winlocks
-from seedling.commands import kill_cmd
+from acorn import fsutil, winlocks
+from acorn.commands import kill_cmd
 
 windows_only = pytest.mark.skipif(os.name != "nt", reason="Windows-only behaviour")
 posix_only = pytest.mark.skipif(os.name == "nt", reason="POSIX-only behaviour")
@@ -134,7 +134,7 @@ def test_sledgehammer_can_be_declined(tmp_path, monkeypatch):
     root = _tree(tmp_path)
     monkeypatch.setattr(fsutil, "robust_rmtree", lambda p, **kw: ["stuck"])
     monkeypatch.setattr(winlocks, "holders", lambda paths: [])
-    monkeypatch.setattr(kill_cmd, "find_seedling_processes", lambda root=None: [])
+    monkeypatch.setattr(kill_cmd, "find_acorn_processes", lambda root=None: [])
     monkeypatch.setattr(kill_cmd, "kill_python_and_vscode",
                         lambda: pytest.fail("must not run when declined"))
     assert fsutil.remove_tree(root, allow_sledgehammer=False) == ["stuck"]
@@ -152,7 +152,7 @@ def test_cwd_blocker_falls_back_to_the_scoped_search(tmp_path, monkeypatch):
         calls["scoped"] += 1
         return [(4321, "python")]
 
-    monkeypatch.setattr(kill_cmd, "find_seedling_processes", fake_scoped)
+    monkeypatch.setattr(kill_cmd, "find_acorn_processes", fake_scoped)
     monkeypatch.setattr(kill_cmd, "terminate", lambda pids: list(pids))
     monkeypatch.setattr(kill_cmd, "kill_python_and_vscode", lambda: [])
     messages = []
@@ -166,12 +166,12 @@ def test_cwd_blocker_falls_back_to_the_scoped_search(tmp_path, monkeypatch):
 def test_scoped_search_ignores_unrelated_processes(tmp_path):
     """Scoping by location, not by name: this pytest run is a Python process,
     but it isn't under the (empty) tree, so it must not match."""
-    found = kill_cmd.find_seedling_processes(str(tmp_path / "empty-root"))
+    found = kill_cmd.find_acorn_processes(str(tmp_path / "empty-root"))
     assert found == []
 
 
 def test_scoped_search_never_returns_our_own_pid(tmp_path):
-    for pid, _ in kill_cmd.find_seedling_processes(str(tmp_path)):
+    for pid, _ in kill_cmd.find_acorn_processes(str(tmp_path)):
         assert pid != os.getpid()
 
 

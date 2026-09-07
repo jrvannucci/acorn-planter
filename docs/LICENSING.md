@@ -1,55 +1,55 @@
 # Licensing and redistribution
 
-**Short version: seedling is a fetcher, not a distributor. It ships no
+**Short version: acorn is a fetcher, not a distributor. It ships no
 third-party software. When you stage a bundle for an offline network, you
 are the one redistributing — and you are responsible for holding the rights
 to do so.**
 
-This page states seedling's position so it is on the record, and tells you
+This page states acorn's position so it is on the record, and tells you
 which components carry restrictions worth checking before you distribute
 them internally.
 
-> **seedling's own code is [Apache-2.0](https://github.com/jrvannucci/seedling/blob/main/LICENSE)**
+> **acorn's own code is [Apache-2.0](https://github.com/jrvannucci/acorn/blob/main/LICENSE)**
 > (patent grant included), with no third-party runtime dependencies. This
-> page is about the *other* software seedling downloads for you; for the
+> page is about the *other* software acorn downloads for you; for the
 > component inventory see
-> [THIRD-PARTY-NOTICES](https://github.com/jrvannucci/seedling/blob/main/THIRD-PARTY-NOTICES.md).
+> [THIRD-PARTY-NOTICES](https://github.com/jrvannucci/acorn/blob/main/THIRD-PARTY-NOTICES.md).
 
 ---
 
 ## Contents
 
-- [seedling's position](#seedlings-position)
-- [What seedling downloads, and under what terms](#what-seedling-downloads-and-under-what-terms)
+- [acorn's position](#acorns-position)
+- [What acorn downloads, and under what terms](#what-acorn-downloads-and-under-what-terms)
 - [What changes when you build an offline bundle](#what-changes-when-you-build-an-offline-bundle)
 - [The openly-licensed path](#the-openly-licensed-path)
 - [The bundle manifest](#the-bundle-manifest)
 
 ---
 
-## seedling's position
+## acorn's position
 
-1. **seedling contains no third-party software.** Nothing is vendored into
+1. **acorn contains no third-party software.** Nothing is vendored into
    this repository — no interpreters, no editor, no binaries of any kind.
    `vendor/` and `offline-bundle/` are git-ignored and always empty in a
    fresh clone.
 2. **Downloads come from the publisher, at your direction.** When you run
-   `acorn python` or `acorn vscode`, seedling fetches from the vendor's own
+   `acorn python` or `acorn vscode`, acorn fetches from the vendor's own
    servers. Your relationship is with that vendor, on their terms, exactly
    as if you had downloaded it yourself.
-3. **seedling grants you no rights to anything it downloads,** and makes no
+3. **acorn grants you no rights to anything it downloads,** and makes no
    representation that you have them. Whether you may install, copy, or
    redistribute a given component is between you and its publisher.
-4. **If you redistribute, that is your act, not seedling's.** Copying a
+4. **If you redistribute, that is your act, not acorn's.** Copying a
    bundle to a share, imaging it onto machines, or handing it to another
-   team are all distribution. seedling is the tool you used; the
+   team are all distribution. acorn is the tool you used; the
    distribution is yours.
 
 This is the same posture package managers take: Homebrew casks download from
 vendor servers rather than mirroring them, and the AUR ships build recipes
 rather than binaries. It is a deliberate design choice, not an oversight.
 
-> **What this does and does not do.** It keeps seedling out of the
+> **What this does and does not do.** It keeps acorn out of the
 > redistribution chain and makes sure the choice is yours and visible. It
 > does **not** grant you a licence, and it is not a defence if you stage
 > something you had no right to stage. If you are unsure, that is a question
@@ -58,7 +58,7 @@ rather than binaries. It is a deliberate design choice, not an oversight.
 
 ---
 
-## What seedling downloads, and under what terms
+## What acorn downloads, and under what terms
 
 | Component | Source | Licence | Redistribution |
 |---|---|---|---|
@@ -73,13 +73,13 @@ rather than binaries. It is a deliberate design choice, not an oversight.
 | [VSCodium](https://vscodium.com) *(optional alternative)* | VSCodium releases | MIT | Permissive |
 | [Open VSX](https://open-vsx.org) extensions *(optional alternative)* | Eclipse Foundation | Per extension, openly licensed | Permissive |
 
-Everything seedling needs to do its actual job — manage interpreters, venvs,
+Everything acorn needs to do its actual job — manage interpreters, venvs,
 and packages — is in the permissive rows. Every restricted row is optional.
 
 ### conda-forge is not Anaconda's `defaults`
 
 This distinction matters, because the Anaconda licensing change is often what
-sends people looking for a tool like seedling in the first place. Anaconda's
+sends people looking for a tool like acorn in the first place. Anaconda's
 Terms require a paid licence for larger organizations to use **Anaconda's own
 packaged repository** — the `defaults` channel, and the Anaconda/Miniconda
 distributions built from it.
@@ -130,7 +130,7 @@ If you would rather not have this conversation with your legal team, you can
 avoid the restricted components entirely:
 
 ```
-SEEDLING_VSCODE_FLAVOR="vscodium"
+ACORN_VSCODE_FLAVOR="vscodium"
 ```
 
 VSCodium is the same source as VS Code, built without Microsoft's branding
@@ -150,7 +150,7 @@ for the full tradeoff.
 
 ## Finding out what you're actually shipping
 
-The manifest below covers the components seedling stages. For the **wheels**
+The manifest below covers the components acorn stages. For the **wheels**
 -- usually the largest and least-inspected part of a bundle -- three commands
 resolve every package's licence from its own metadata, with no network and
 nothing installed:
@@ -190,7 +190,7 @@ was intended.
 ```
 offline-bundle/
 ├── MANIFEST.json        <- what was staged, and under what licence
-├── seedling/            <- users run GET_STARTED/install.cmd from here
+├── acorn/            <- users run GET_STARTED/install.cmd from here
 ├── python-builds/
 └── wheels/
 ```

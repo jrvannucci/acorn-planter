@@ -1,39 +1,27 @@
 # Changelog
 
-All notable changes to seedling are recorded here. The format follows
+All notable changes to ACORN are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html) — while seedling is
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html) — while ACORN is
 pre-1.0, a minor bump may carry a breaking command rename.
 
-The version lives in `src/seedling/__init__.py` and nowhere else; `seed
---version` prints it. See [CONTRIBUTING](docs/CONTRIBUTING.md#releasing) for
+The version lives in `src/acorn/__init__.py` and nowhere else; `acorn --version` prints it. See [CONTRIBUTING](docs/CONTRIBUTING.md#releasing) for
 what a release involves.
 
 ## [Unreleased]
 
 ### Changed (breaking)
 
-- **The command is now `acorn`, not `seed`.** Every subcommand is unchanged --
-  `acorn venv dev`, `acorn install pandas`, `acorn purge`. The package, the
-  `~/seedling` home, all 37 `SEEDLING_*` variables and every `global.conf` key
-  keep their names, so **nothing on disk moves and no deployment config
-  breaks**: an admin's conf, an offline bundle and a profile folder all keep
-  working untouched.
+- Rename the entire project and Python package to **ACORN**: imports use
+  `acorn`, configuration variables use `ACORN_*`, and the default home is
+  `~/acorn`. The GitHub repository is now `jrvannucci/acorn`. No legacy
+  names, environment-variable fallbacks, or migration aliases are provided.
+- Adopt the project narrative: **Global Python environments and development
+  suites, ready when you are.**
 
-  What changed with it: the shell function (`system/shell/seed.sh|.ps1` ->
-  `acorn.sh|.ps1`, and the line the installer writes into your profile), and
-  the entry point `seed-cli` -> `acorn-cli`.
 
-  **There is no compatibility shim.** `seed` is gone, and an install made
-  before this release is not migrated -- its profile still sources the old
-  hook and its home is still driven by the old code, which continues to work
-  on its own. To move: run `seed purge` on the old install first, then
-  install fresh.
-
-  The English verb survived the rename: settings are still *seeded* from
-  `global.conf`, and VS Code is still *pre-seeded* into a bundle. Those 103
-  uses were protected explicitly, since `seed` would have eaten them.
-
+- The user command is `acorn` and the executable entry point is `acorn-cli`.
+  Shell integration uses `system/shell/acorn.sh` or `acorn.ps1`.
 
 ### Added
 

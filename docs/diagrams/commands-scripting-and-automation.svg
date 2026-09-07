@@ -68,7 +68,7 @@
 <text x="364" y="226" class="body" font-size="12.5" fill="#52796F">summary, venv-list, python-list, which, health-check, package-list -- all agree on shape, all schema-versioned.</text>
 <rect x="40" y="250" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
 <text x="52" y="270" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">--non-interactive  /  -y</text>
-<text x="364" y="260" class="body" font-size="12.5" fill="#52796F">Never blocks on a prompt -- aborts instead, or pre-answers it. SEEDLING_NONINTERACTIVE=1 / SEEDLING_YES=1 set both for a</text>
+<text x="364" y="260" class="body" font-size="12.5" fill="#52796F">Never blocks on a prompt -- aborts instead, or pre-answers it. ACORN_NONINTERACTIVE=1 / ACORN_YES=1 set both for a</text>
 <text x="364" y="277" class="body" font-size="12.5" fill="#52796F">session.</text>
 <rect x="40" y="294" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
 <text x="52" y="314" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">Per-venv locking</text>

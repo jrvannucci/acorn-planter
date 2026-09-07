@@ -10,25 +10,25 @@ import subprocess
 import pytest
 
 from conftest import GIT, needs_git, windows_only
-from seedling import config, download, paths
-from seedling.commands import update_cmd
+from acorn import config, download, paths
+from acorn.commands import update_cmd
 
 
 @pytest.fixture
 def src_installed(home, monkeypatch):
     """A sandbox with system/src populated and uv's tool-install stubbed."""
     src = home / "system" / "src" / "src"
-    (src / "seedling").mkdir(parents=True)
-    (src / "pyproject.toml").write_text("[project]\nname='seedling'\n")
+    (src / "acorn").mkdir(parents=True)
+    (src / "pyproject.toml").write_text("[project]\nname='acorn'\n")
     calls = []
-    from seedling import uv_tool
+    from acorn import uv_tool
     monkeypatch.setattr(uv_tool, "run", lambda args, **kw: calls.append(args))
     return home / "system" / "src", calls
 
 
 def _make_source_tree(root, marker: str):
-    (root / "src" / "seedling").mkdir(parents=True)
-    (root / "src" / "pyproject.toml").write_text("[project]\nname='seedling'\n")
+    (root / "src" / "acorn").mkdir(parents=True)
+    (root / "src" / "pyproject.toml").write_text("[project]\nname='acorn'\n")
     (root / "MARKER.txt").write_text(marker)
     (root / ".git" / "objects").mkdir(parents=True)
     (root / "vendor" / "uv").mkdir(parents=True)
@@ -39,8 +39,8 @@ def _make_source_tree(root, marker: str):
     # nothing gitignores them away for free here.
     (root / ".venv" / "Lib").mkdir(parents=True)
     (root / ".venv" / "pyvenv.cfg").write_text("home = somewhere\n")
-    (root / "src" / "seedling" / "__pycache__").mkdir(parents=True)
-    (root / "src" / "seedling" / "__pycache__" / "cli.cpython-312.pyc").write_text("x")
+    (root / "src" / "acorn" / "__pycache__").mkdir(parents=True)
+    (root / "src" / "acorn" / "__pycache__" / "cli.cpython-312.pyc").write_text("x")
     (root / ".pytest_cache").mkdir(parents=True)
     (root / ".pytest_cache" / "README.md").write_text("x")
     (root / ".ruff_cache").mkdir(parents=True)
@@ -72,7 +72,7 @@ def test_directory_update_excludes_git_and_vendor(run_cli, home, src_installed, 
 def test_directory_update_excludes_dev_build_artifacts(
         run_cli, home, src_installed, tmp_path):
     """A .venv/__pycache__/.pytest_cache/.ruff_cache sitting in a local-
-    checkout update_source must not get copied into ~/seedling/system/src --
+    checkout update_source must not get copied into ~/acorn/system/src --
     measured at 4000+ files / 85MB for a real .venv, none of it ever read by
     anything acorn-cli does. Regression test for the copytree() that used to
     only exclude .git/vendor."""
@@ -85,7 +85,7 @@ def test_directory_update_excludes_dev_build_artifacts(
     assert code == 0
     assert (src / "MARKER.txt").read_text() == "v3"
     assert not (src / ".venv").exists()
-    assert not (src / "src" / "seedling" / "__pycache__").exists()
+    assert not (src / "src" / "acorn" / "__pycache__").exists()
     assert not (src / ".pytest_cache").exists()
     assert not (src / ".ruff_cache").exists()
 
@@ -94,13 +94,13 @@ def test_unreachable_directory_share_gives_a_clear_message(run_cli, home, src_in
     """A directory-shaped update_source (drive letter, UNC, leading slash)
     that isn't currently reachable must say so plainly, rather than being
     treated as a git URL and printing a misleading "Downloading the latest
-    seedling from ..." for what's actually an unmounted share."""
+    acorn from ..." for what's actually an unmounted share."""
     _src, calls = src_installed
-    config.set_value("update_source", r"/mnt/nonexistent-share/seedling")
+    config.set_value("update_source", r"/mnt/nonexistent-share/acorn")
     code, out = run_cli("update-commands")
     assert code == 0
     assert "isn't reachable right now" in out
-    assert "Downloading the latest seedling from" not in out
+    assert "Downloading the latest acorn from" not in out
     # Still falls back gracefully to reinstalling the local copy.
     assert calls and calls[0][:2] == ["tool", "install"]
 
@@ -116,7 +116,7 @@ def test_reports_drift_when_conf_changed_upstream(run_cli, home, src_installed, 
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
     (upstream / "GET_STARTED" / "global.conf").write_text(
-        'SEEDLING_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas"\n')
+        'ACORN_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("venv_default_packages", ["ipython", "ruff"])  # the OLD value
     code, out = run_cli("update-commands")
@@ -135,7 +135,7 @@ def test_no_drift_report_when_conf_already_matches(run_cli, home, src_installed,
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
     (upstream / "GET_STARTED" / "global.conf").write_text(
-        'SEEDLING_VENV_DEFAULT_PACKAGES="ipython,ruff"\n')
+        'ACORN_VENV_DEFAULT_PACKAGES="ipython,ruff"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("venv_default_packages", ["ipython", "ruff"])
     code, out = run_cli("update-commands")
@@ -151,7 +151,7 @@ def test_drift_is_reported_from_the_conf(home, tmp_path, capsys):
     upstream.mkdir()
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
     (upstream / "GET_STARTED" / "global.conf").write_text(
-        'SEEDLING_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas"\n')
+        'ACORN_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas"\n')
     config.set_value("venv_default_packages", ["ipython", "ruff"])
     update_cmd.report_conf_drift(upstream)
     out = capsys.readouterr().out
@@ -180,7 +180,7 @@ def test_drift_report_ignores_settings_a_fresh_install_wouldnt_seed(
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
     (upstream / "GET_STARTED" / "global.conf").write_text(
-        'SEEDLING_CONDA_CHANNEL="conda-forge"\nSEEDLING_VSCODE_FLAVOR="microsoft"\n')
+        'ACORN_CONDA_CHANNEL="conda-forge"\nACORN_VSCODE_FLAVOR="microsoft"\n')
     config.set_value("update_source", str(upstream))
     code, out = run_cli("update-commands")
     assert code == 0
@@ -196,7 +196,7 @@ def test_reports_drift_for_native_tls(run_cli, home, src_installed, tmp_path):
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text('SEEDLING_NATIVE_TLS="true"\n')
+    (upstream / "GET_STARTED" / "global.conf").write_text('ACORN_NATIVE_TLS="true"\n')
     config.set_value("update_source", str(upstream))
     code, out = run_cli("update-commands")
     assert code == 0
@@ -214,7 +214,7 @@ def test_reports_drift_for_vscode_extensions(run_cli, home, src_installed, tmp_p
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
     (upstream / "GET_STARTED" / "global.conf").write_text(
-        'SEEDLING_VSCODE_EXTENSIONS="ms-python.python,charliermarsh.ruff"\n')
+        'ACORN_VSCODE_EXTENSIONS="ms-python.python,charliermarsh.ruff"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("vscode_extensions", ["ms-python.python"])
     code, out = run_cli("update-commands")
@@ -230,7 +230,7 @@ def test_reports_drift_for_vscode_extensions_none(run_cli, home, src_installed, 
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text('SEEDLING_VSCODE_EXTENSIONS="none"\n')
+    (upstream / "GET_STARTED" / "global.conf").write_text('ACORN_VSCODE_EXTENSIONS="none"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("vscode_extensions", ["ms-python.python"])
     code, out = run_cli("update-commands")
@@ -238,13 +238,13 @@ def test_reports_drift_for_vscode_extensions_none(run_cli, home, src_installed, 
     assert "vscode_extensions: ['ms-python.python'] -> []" in out
 
 
-def test_directory_update_rejects_non_seedling_tree(run_cli, home, src_installed, tmp_path):
+def test_directory_update_rejects_non_acorn_tree(run_cli, home, src_installed, tmp_path):
     bogus = tmp_path / "bogus"
     bogus.mkdir()
     config.set_value("update_source", str(bogus))
     code, out = run_cli("update-commands")
     assert code == 1
-    assert "doesn't look like a seedling source tree" in out
+    assert "doesn't look like a acorn source tree" in out
 
 
 @needs_git
@@ -342,7 +342,7 @@ def test_from_branch_ignored_when_no_source(run_cli, home, src_installed):
 
 
 def _plant_live_cli(home):
-    tool = home / "system" / "tool" / "seedling" / "Scripts"
+    tool = home / "system" / "tool" / "acorn" / "Scripts"
     tool.mkdir(parents=True, exist_ok=True)
     (tool / "python.exe").write_text("live interpreter")
     shim = home / "system" / "bin" / "acorn-cli.exe"
@@ -358,13 +358,13 @@ def test_self_update_renames_live_copies_aside(run_cli, home, src_installed):
     assert code == 0
     # the live copies were moved aside (uv is stubbed, so nothing recreated them)
     assert not tooldir.exists() and not shim.exists()
-    assert list(tooldir.parent.glob("seedling.old-*")), "tool venv not set aside"
+    assert list(tooldir.parent.glob("acorn.old-*")), "tool venv not set aside"
     assert list(shim.parent.glob("acorn-cli.exe.old-*")), "shim not set aside"
 
 
 @windows_only
 def test_self_update_rolls_back_when_reinstall_fails(run_cli, home, src_installed, monkeypatch):
-    from seedling import uv_tool
+    from acorn import uv_tool
     tooldir, shim = _plant_live_cli(home)
 
     def boom(args, **kw):
@@ -377,11 +377,11 @@ def test_self_update_rolls_back_when_reinstall_fails(run_cli, home, src_installe
     # the live copies are back where they were, contents intact
     assert (tooldir / "Scripts" / "python.exe").read_text() == "live interpreter"
     assert shim.read_text() == "live shim"
-    assert not list(tooldir.parent.glob("seedling.old-*"))
+    assert not list(tooldir.parent.glob("acorn.old-*"))
 
 
 def test_self_update_sweeps_leftovers_from_previous_run(run_cli, home, src_installed):
-    leftover = home / "system" / "tool" / "seedling.old-99999"
+    leftover = home / "system" / "tool" / "acorn.old-99999"
     leftover.mkdir(parents=True)
     (leftover / "python.exe").write_text("stale")
     code, out = run_cli("update-commands")
@@ -415,13 +415,13 @@ def test_self_update_sweeps_a_file_leftover_from_previous_run(run_cli, home, src
 # on a full reinstall, never on an update.
 
 def _add_templates(tree_root, marker: str):
-    shell = tree_root / "src" / "seedling" / "shell"
+    shell = tree_root / "src" / "acorn" / "shell"
     shell.mkdir(parents=True, exist_ok=True)
     (shell / "acorn.ps1.template").write_text(
-        '$script:SeedlingHome = "__SEEDLING_HOME_PLACEHOLDER__"\n'
+        '$script:ACORNHome = "__ACORN_HOME_PLACEHOLDER__"\n'
         f"# shell {marker}\n")
     (shell / "acorn.sh.template").write_text(
-        '__SEEDLING_HOME="__SEEDLING_HOME_PLACEHOLDER__"\n'
+        '__ACORN_HOME="__ACORN_HOME_PLACEHOLDER__"\n'
         f"# shell {marker}\n")
 
 
@@ -437,14 +437,14 @@ def test_update_refreshes_rendered_shell_files(run_cli, home, src_installed, tmp
     shell_dir = home / "system" / "shell"
     shell_dir.mkdir(parents=True, exist_ok=True)
     (shell_dir / "acorn.ps1").write_text(
-        f'$script:SeedlingHome = "{home}"\n# shell v1\n')
+        f'$script:ACORNHome = "{home}"\n# shell v1\n')
 
     code, out = run_cli("update-commands")
     assert code == 0
     assert "Refreshing shell integration" in out
     rendered = (shell_dir / "acorn.ps1").read_text()
     assert "# shell v2" in rendered
-    assert "__SEEDLING_HOME_PLACEHOLDER__" not in rendered
+    assert "__ACORN_HOME_PLACEHOLDER__" not in rendered
     assert f'"{home}"' in rendered  # baked-in home survives the refresh
 
 
@@ -462,13 +462,13 @@ def test_refresh_preserves_posix_home_in_sh_render(run_cli, home, src_installed,
     shell_dir = home / "system" / "shell"
     shell_dir.mkdir(parents=True, exist_ok=True)
     (shell_dir / "acorn.sh").write_text(
-        f'__SEEDLING_HOME="{posix_home}"\n# shell v1\n')
+        f'__ACORN_HOME="{posix_home}"\n# shell v1\n')
 
     code, out = run_cli("update-commands")
     assert code == 0
     rendered = (shell_dir / "acorn.sh").read_text()
     assert "# shell v2" in rendered
-    assert f'__SEEDLING_HOME="{posix_home}"' in rendered
+    assert f'__ACORN_HOME="{posix_home}"' in rendered
 
 
 def test_refresh_restores_missing_platform_file(run_cli, home, src_installed, tmp_path):
@@ -487,7 +487,7 @@ def test_refresh_restores_missing_platform_file(run_cli, home, src_installed, tm
     name = "acorn.ps1" if os.name == "nt" else "acorn.sh"
     rendered = (home / "system" / "shell" / name).read_text()
     assert "# shell v2" in rendered
-    assert "__SEEDLING_HOME_PLACEHOLDER__" not in rendered
+    assert "__ACORN_HOME_PLACEHOLDER__" not in rendered
 
 
 def test_update_without_templates_skips_shell_refresh(run_cli, home, src_installed):
@@ -520,11 +520,11 @@ def test_update_registers_bin_on_windows_path_when_missing(
     throwaway BIN_DIR (the `home` fixture's, unique per test) that cannot
     collide with anything real, and restored to its exact original value in
     `finally` regardless of outcome. The `home` fixture sets
-    SEEDLING_SKIP_PATH_REGISTER for every other test; this is the one place
+    ACORN_SKIP_PATH_REGISTER for every other test; this is the one place
     that deliberately turns it back off to exercise the real thing."""
     import winreg
 
-    monkeypatch.delenv("SEEDLING_SKIP_PATH_REGISTER", raising=False)
+    monkeypatch.delenv("ACORN_SKIP_PATH_REGISTER", raising=False)
 
     key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment", 0,
                           winreg.KEY_READ | winreg.KEY_WRITE)
@@ -560,10 +560,10 @@ def test_bin_dir_is_on_process_path_before_reinstalling(
     ordering and the os.environ patch, independent of the registry test
     above (which only checks the registry side)."""
     src, calls = src_installed
-    monkeypatch.delenv("SEEDLING_SKIP_PATH_REGISTER", raising=False)
+    monkeypatch.delenv("ACORN_SKIP_PATH_REGISTER", raising=False)
     monkeypatch.delenv("PATH", raising=False)  # simulate a shell that never had it
 
-    from seedling import uv_tool
+    from acorn import uv_tool
     seen_path = []
     monkeypatch.setattr(uv_tool, "run",
                          lambda args, **kw: seen_path.append(os.environ.get("PATH", "")))
@@ -586,13 +586,13 @@ def test_bin_dir_is_on_process_path_before_reinstalling(
 
 def test_sha256_and_fetch_roundtrip(home, tmp_path, capsys):
     src_file = tmp_path / "payload.bin"
-    src_file.write_bytes(b"hello seedling")
+    src_file.write_bytes(b"hello acorn")
     url = "file:///" + str(src_file).replace("\\", "/")
     digest = download.sha256_of(src_file)
 
     dest = tmp_path / "out.bin"
     download.fetch(url, dest, expected_sha256=digest, label="payload")
-    assert dest.read_bytes() == b"hello seedling"
+    assert dest.read_bytes() == b"hello acorn"
     assert "Verified SHA-256" in capsys.readouterr().out
 
     # github-style "sha256:<hex>" prefix accepted

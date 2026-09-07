@@ -8,7 +8,7 @@
 
   profile-pull-<slug>.svg    every profile -- one box per ORIGIN the user's
                               machine actually talks to (a host, or the
-                              seedling bundle/share itself), each with the
+                              acorn bundle/share itself), each with the
                               handful of things it provides, and a labeled
                               arrow per thing showing the command that pulls
                               it in.
@@ -195,7 +195,7 @@ B_TRIGGER_GAP = 26
 # rule _config_key_lines() follows for the profile box.
 #
 # These are SPEC keys, not global.conf keys. The editor in particular used to
-# be read from the build machine's own seedling settings; it is now declared
+# be read from the build machine's own acorn settings; it is now declared
 # here and cross-checked against global.conf, so the diagram would be
 # describing a mechanism that no longer exists.
 _BUILD_CONF_KEY_FOR = [
@@ -349,7 +349,7 @@ def item(label: str, via: str) -> dict:
 
 
 def stored(path: str, note: str, items: list[str]) -> dict:
-    """One storage location under ~/seedling (per the on-disk layout in
+    """One storage location under ~/acorn (per the on-disk layout in
     GUIDE.md) inside the YOUR MACHINE box -- a folder, and the specific
     things kept in it. Mirrors `group()` on the pull side: the folder is
     the outer box, `items` are the sub-chips inside it, same nesting
@@ -393,7 +393,7 @@ CONFIG_GAP = 34      # space for the connector arrow + its label
 CONFIG_NOTE = "one file, read at install and every later `acorn apply`"
 
 # global.conf, drawn as its own card above profile.toml -- the
-# SEEDLING_PROFILE key is what makes the profile below get read AT ALL, so
+# ACORN_PROFILE key is what makes the profile below get read AT ALL, so
 # that's a real "does something" relationship, not just a mention in a
 # caption. Same dark-card-plus-downward-arrow language as global.conf's
 # box in the BUILT ONCE inset (which is a *different* reading of the *same*
@@ -404,7 +404,7 @@ CONFIG_NOTE = "one file, read at install and every later `acorn apply`"
 # same way.
 CONF2_LABEL = "global.conf"
 CONF2_NOTE = "read at install, on every machine"
-CONF2_VIA = "SEEDLING_PROFILE -> the profile folder"
+CONF2_VIA = "ACORN_PROFILE -> the profile folder"
 CONF2_GAP = 30
 
 # install.cmd -- the actual trigger. Nothing reads global.conf on its
@@ -455,7 +455,7 @@ def build_part2(slug: str, title: str, subtitle: str, groups: list[dict],
     config_items_h = len(config_lines) * (CFG_ITEM_H + CFG_ITEM_GAP) - CFG_ITEM_GAP if config_lines else 0
     config_h = 44 + len(note_wrap) * 12 + (6 + config_items_h if config_lines else 0) + 10
 
-    conf2_key_line = f"SEEDLING_PROFILE  →  {config_label}"
+    conf2_key_line = f"ACORN_PROFILE  →  {config_label}"
     conf2_note_wrap = _wrap(CONF2_NOTE, 40)
     conf2_h = 44 + len(conf2_note_wrap) * 12 + 6 + CFG_ITEM_H + 10
 
@@ -506,7 +506,7 @@ def build_part2(slug: str, title: str, subtitle: str, groups: list[dict],
 
     # global.conf -- moved beside that arrow with its own arrow merging
     # into it, showing the one thing it actually DOES here: sets
-    # SEEDLING_PROFILE, which is what makes the box below get read at all
+    # ACORN_PROFILE, which is what makes the box below get read at all
     # rather than a bare `dev` venv getting created instead.
     svg.append(f'<rect x="{conf2_x:.0f}" y="{conf2_top:.0f}" width="{P_MACHINE_W:.0f}" height="{conf2_h:.0f}" rx="12" fill="{NAVY}"/>')
     svg.append(f'<use href="#ic-doc" x="{conf2_x+18:.0f}" y="{conf2_top+13:.0f}" width="22" height="22" color="{WHITE}"/>')
@@ -640,17 +640,17 @@ PROFILES = [
         subtitle="Spyder, two venvs -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public seedling repo", kind="internet", items=[
-                    item("seedling itself", "the install one-liner"),
+                group("github.com", "the public acorn repo", kind="internet", items=[
+                    item("acorn itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "the public package index", kind="internet", items=[
                     item("Packages", "acorn venv / apply"),
                     item("Spyder", "acorn spyder"),
                 ]),
             ],
-            machine_note="each researcher's own ~/seedling",
+            machine_note="each researcher's own ~/acorn",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12"]),
                 stored("python/venvs/", "one folder per venv", ["collect", "analyse"]),
                 stored("extensions/spyder-config/", "the editor's local settings", ["Spyder"]),
@@ -663,8 +663,8 @@ PROFILES = [
         subtitle="VS Code, repos cloned -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "seedling itself, plus platform.git, shared-lib.git", kind="internet", items=[
-                    item("seedling itself", "the install one-liner"),
+                group("github.com", "acorn itself, plus platform.git, shared-lib.git", kind="internet", items=[
+                    item("acorn itself", "the install one-liner"),
                     item("Repos", "acorn repo-clone"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
@@ -677,9 +677,9 @@ PROFILES = [
                     item("Editor", "acorn apply"),
                 ]),
             ],
-            machine_note="each engineer's own ~/seedling",
+            machine_note="each engineer's own ~/acorn",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12", "3.11"]),
                 stored("python/venvs/", "one folder per venv", ["dev", "legacy"]),
                 stored("extensions/vscode/", "portable VS Code + extensions", ["VS Code"]),
@@ -694,8 +694,8 @@ PROFILES = [
         subtitle="One shared venv -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public seedling repo", kind="internet", items=[
-                    item("seedling itself", "the install one-liner"),
+                group("github.com", "the public acorn repo", kind="internet", items=[
+                    item("acorn itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
                     item("Packages", "acorn apply"),
@@ -707,7 +707,7 @@ PROFILES = [
             ],
             machine_note="one shared venv, both editors installed",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12"]),
                 stored("python/venvs/", "one folder per venv", ["work"]),
                 stored("extensions/", "both editors, side by side", ["VS Code", "Spyder"]),
@@ -720,8 +720,8 @@ PROFILES = [
         subtitle="Pinned, reproducible -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public seedling repo", kind="internet", items=[
-                    item("seedling itself", "the install one-liner"),
+                group("github.com", "the public acorn repo", kind="internet", items=[
+                    item("acorn itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
                     item("Packages (pinned)", "acorn apply"),
@@ -730,7 +730,7 @@ PROFILES = [
             ],
             machine_note="every lab machine, identical pins",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12"]),
                 stored("python/venvs/", "one folder per venv", ["phys201"]),
                 stored("extensions/spyder-config/", "the editor's local settings", ["Spyder"]),
@@ -751,13 +751,13 @@ PROFILES = [
                     item("Interpreters", "acorn python"),
                 ]),
                 group("gitlab.corp.example", "your internal git host", kind="internal", items=[
-                    item("seedling itself", "acorn update-commands"),
+                    item("acorn itself", "acorn update-commands"),
                     item("Repos", "acorn repo-clone"),
                 ]),
             ],
             machine_note="every workstation, live over HTTPS each time",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12"]),
                 stored("python/venvs/", "one folder per venv", ["work"]),
                 stored("extensions/spyder-config/", "the editor's local settings", ["Spyder"]),
@@ -771,8 +771,8 @@ PROFILES = [
         title="Internal PyPI only",
         subtitle="Partial bundle -- everything except the wheels",
         build=[
-            brow("seedling itself", "this git checkout", "install.cmd, src/, installers/",
-                "seedling/", "copied in, refreshed every re-run"),
+            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+                "acorn/", "copied in, refreshed every re-run"),
             brow("uv", "astral.sh", "the binary itself",
                 "vendor/uv/", "staged into the bundle"),
             brow("Interpreters", "python-build-standalone", "no internal PBS mirror",
@@ -792,8 +792,8 @@ PROFILES = [
                     item("Packages", "acorn install"),
                     item("Spyder", "acorn apply"),
                 ]),
-                group("S:\\seedling (the offline build)", "everything else, copied once", kind="bundle", items=[
-                    item("seedling itself", "system/src/"),
+                group("S:\\acorn (the offline build)", "everything else, copied once", kind="bundle", items=[
+                    item("acorn itself", "system/src/"),
                     item("uv", "system/bin/"),
                     item("Interpreters", "acorn python"),
                     item("conda-forge tools", "acorn forge-install"),
@@ -802,9 +802,9 @@ PROFILES = [
                     item("CA cert", "system/certs/"),
                 ]),
             ],
-            machine_note="each user's own ~/seedling, off the share",
+            machine_note="each user's own ~/acorn, off the share",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12"]),
                 stored("python/venvs/", "one folder per venv", ["work"]),
                 stored("extensions/", "both editors, side by side", ["VS Code", "Spyder"]),
@@ -817,8 +817,8 @@ PROFILES = [
         title="Air-gapped (VSCodium)",
         subtitle="No redistribution rights -- built once, carried in",
         build=[
-            brow("seedling itself", "this git checkout", "install.cmd, src/, installers/",
-                "seedling/", "copied in, refreshed every re-run"),
+            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+                "acorn/", "copied in, refreshed every re-run"),
             brow("Packages", "pypi.org", "every venv package",
                 "wheels/", "staged into the bundle"),
             brow("uv", "astral.sh", "the binary itself",
@@ -835,7 +835,7 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("the share (the offline build)", "offline-bundle/, copied once", kind="bundle", items=[
-                    item("seedling itself", "system/src/"),
+                    item("acorn itself", "system/src/"),
                     item("Packages", "acorn install"),
                     item("uv", "system/bin/"),
                     item("Interpreters", "acorn python"),
@@ -846,7 +846,7 @@ PROFILES = [
             ],
             machine_note="zero internet, every machine on the target network",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12"]),
                 stored("python/venvs/", "one folder per venv", ["work"]),
                 stored("extensions/vscode/", "portable VSCodium + extensions", ["VSCodium"]),
@@ -860,8 +860,8 @@ PROFILES = [
         title="Air-gapped (VS Code)",
         subtitle="Keeps Pylance -- built once, carried in",
         build=[
-            brow("seedling itself", "this git checkout", "install.cmd, src/, installers/",
-                "seedling/", "copied in, refreshed every re-run"),
+            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+                "acorn/", "copied in, refreshed every re-run"),
             brow("Packages", "pypi.org", "every venv package",
                 "wheels/", "staged into the bundle"),
             brow("uv", "astral.sh", "the binary itself",
@@ -878,7 +878,7 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("the share (the offline build)", "offline-bundle/, copied once", kind="bundle", items=[
-                    item("seedling itself", "system/src/"),
+                    item("acorn itself", "system/src/"),
                     item("Packages", "acorn install"),
                     item("uv", "system/bin/"),
                     item("Interpreters", "acorn python"),
@@ -889,7 +889,7 @@ PROFILES = [
             ],
             machine_note="zero internet, every machine on the target network",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12"]),
                 stored("python/venvs/", "one folder per venv", ["work"]),
                 stored("extensions/vscode/", "portable VS Code -- keeps Pylance", ["VS Code"]),
@@ -903,8 +903,8 @@ PROFILES = [
         title="Air-gapped (everything)",
         subtitle="Every capability at once -- the maximal case",
         build=[
-            brow("seedling itself", "this git checkout", "install.cmd, src/, installers/",
-                "seedling/", "copied in, refreshed every re-run"),
+            brow("acorn itself", "this git checkout", "install.cmd, src/, installers/",
+                "acorn/", "copied in, refreshed every re-run"),
             brow("Packages + Spyder", "pypi.org", "every venv package, per interpreter",
                 "wheels/", "staged into the bundle"),
             brow("uv", "astral.sh", "the binary itself",
@@ -922,8 +922,8 @@ PROFILES = [
         ],
         pull=dict(
             groups=[
-                group("S:\\seedling (the offline build)", "one shared offline build, staged once", kind="bundle", items=[
-                    item("seedling itself", "system/src/"),
+                group("S:\\acorn (the offline build)", "one shared offline build, staged once", kind="bundle", items=[
+                    item("acorn itself", "system/src/"),
                     item("Packages + Spyder", "acorn install / apply"),
                     item("uv", "system/bin/"),
                     item("Interpreters x2", "acorn python 3.12 / 3.11"),
@@ -936,16 +936,16 @@ PROFILES = [
                     item("Repos", "acorn repo-clone"),
                 ]),
             ],
-            machine_note="S:\\users\\{user}\\seedling -- a private folder per person",
+            machine_note="S:\\users\\{user}\\acorn -- a private folder per person",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.12", "3.11"]),
                 stored("python/venvs/", "one folder per venv", ["dev", "analysis", "legacy"]),
                 stored("extensions/", "both editors, side by side", ["VS Code", "Spyder"]),
                 stored("system/conda/", "conda-forge tool envs", ["ripgrep", "pandoc", "gh"]),
                 stored("repo/", "one folder per clone", ["toolkit", "analysis-lib"]),
             ],
-            footnote="Everything in the offline-build box above lands under S:\\users\\{user}\\seedling -- one shared offline build, a private folder per person.",
+            footnote="Everything in the offline-build box above lands under S:\\users\\{user}\\acorn -- one shared offline build, a private folder per person.",
         ),
     ),
     dict(
@@ -954,8 +954,8 @@ PROFILES = [
         subtitle="Interpreters and venvs only -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public seedling repo", kind="internet", items=[
-                    item("seedling itself", "the install one-liner"),
+                group("github.com", "the public acorn repo", kind="internet", items=[
+                    item("acorn itself", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
                     item("Packages", "acorn venv"),
@@ -963,7 +963,7 @@ PROFILES = [
             ],
             machine_note="the one venv, straight from the internet",
             storage=[
-                stored("system/src/", "seedling's own source", []),
+                stored("system/src/", "acorn's own source", []),
                 stored("python/base/", "interpreters", ["3.13"]),
                 stored("python/venvs/", "one folder per venv", ["work"]),
             ],

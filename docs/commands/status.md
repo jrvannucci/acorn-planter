@@ -4,8 +4,8 @@
 
 ## `acorn where`
 
-Prints the seedling home directory (`~/seedling`, or the value of the
-`SEEDLING_HOME` environment variable override if set).
+Prints the acorn home directory (`~/acorn`, or the value of the
+`ACORN_HOME` environment variable override if set).
 
 ```
 acorn where
@@ -13,8 +13,8 @@ acorn where
 
 ## `acorn --version`
 
-Prints the version of seedling that is actually running, as
-`seedling <version>`. Worth quoting in any bug report — with
+Prints the version of acorn that is actually running, as
+`acorn <version>`. Worth quoting in any bug report — with
 `acorn update-commands` in the picture, an install can be at a different
 version than the share it was built from.
 
@@ -23,14 +23,14 @@ acorn --version
 acorn -V
 ```
 
-The version lives in exactly one place, `src/seedling/__init__.py`.
+The version lives in exactly one place, `src/acorn/__init__.py`.
 `src/pyproject.toml` reads it from there (`dynamic = ["version"]`), so a
 release is a one-line edit and the built distribution, the CLI, and the
 grouped `acorn help` footer can never disagree.
 
 ## `acorn summary [--sizes] [--json]`
 
-One read-only screen showing everything seedling has installed: uv/git/VS
+One read-only screen showing everything acorn has installed: uv/git/VS
 Code status, every base Python (and which is default), every venv (its
 Python version, which is active, which auto-activates in new shells),
 every cloned repo with its origin remote, and all current settings.
@@ -50,7 +50,7 @@ it's safe to pipe.
 
 The object carries a `schema` number (currently `1`); it's bumped when a
 field changes meaning or goes away, never for a field that's merely added.
-When seedling isn't installed yet, the object is just `schema`, `home`, and
+When acorn isn't installed yet, the object is just `schema`, `home`, and
 `installed: false` — check `installed` before reading anything else.
 
 Each venv reports a `python_executable`: the absolute path to that venv's
@@ -64,7 +64,7 @@ you pass `--sizes`, since computing them is the slow part.
 ```json5
 {
   "schema": 1,
-  "home": "C:\\Users\\alice\\seedling",
+  "home": "C:\\Users\\alice\\acorn",
   "installed": true,
   "install_type": "single-user",     // or "multi-user"
   "shared_root": null,
@@ -104,7 +104,7 @@ defaults (`default_base`, `default_venv`) point at things that exist, the
 `update_source` is recorded **and actually verified** — a git URL gets a
 reachability probe (`git ls-remote`, 10-second timeout, prompt-proofed so it
 can never hang asking for credentials), and a directory source must exist
-and look like a seedling tree (an unmounted share is reported as exactly
+and look like a acorn tree (an unmounted share is reported as exactly
 that, not assumed to be a URL) — any offline `python_mirror`/`package_index` directories
 and `ca_cert` bundle exist, the `acorn` shell hook is installed and not
 stale (a hook line
@@ -127,9 +127,9 @@ way.
 ## `acorn logs-viewer [--days N] [--no-open]`
 
 Renders every logged `acorn` command (the daily plain-text files under
-`~/seedling/system/logs/`) into a single **self-contained HTML page** and
+`~/acorn/system/logs/`) into a single **self-contained HTML page** and
 opens it in your browser. The page is offline — no CDN, no network — so it
-works on a closed network like everything else in seedling. It's a
+works on a closed network like everything else in acorn. It's a
 **master-detail** view: a dense table on the left (**Date · Time · Status ·
 Command · Duration**), and clicking a row shows that command's full output in
 the pane on the right. Status is colour-coded from each command's recorded
@@ -152,7 +152,7 @@ to inspect after the fact.
   output of the tools it invokes (uv, git, acorn-cli) — into the log, in the
   same block format as the daily logs (with a real exit code).
 - **Windows (`install.ps1`)** records the console via `Start-Transcript`,
-  which captures seedling's own `==>` narrative and the uv bootstrap, but
+  which captures acorn's own `==>` narrative and the uv bootstrap, but
   **not** the raw output of native tools like `uv.exe`/`git` — on Windows
   PowerShell 5.1, redirecting a native command's stderr under
   `$ErrorActionPreference='Stop'` turns uv's normal progress into a fatal
@@ -161,12 +161,12 @@ to inspect after the fact.
   (they log themselves); the VS Code step runs as a background job during
   install (overlapping the Python setup for speed), so its output shows up
   inside the install log rather than as a separate entry. The installer ends
-  its log with an explicit `seedling install completed (exit code 0)` /
+  its log with an explicit `acorn install completed (exit code 0)` /
   `FAILED (exit code 1)` marker, which is where the viewer's green/red
   status badge for the install comes from. (The transcript is UTF-16; the
   viewer detects that automatically.)
 
-The page is written to `~/seedling/system/logs/logs-viewer.html` and
+The page is written to `~/acorn/system/logs/logs-viewer.html` and
 regenerated on every run.
 
 - `--days N` — only include the last N days of logs (default: all, up to the
@@ -261,8 +261,8 @@ against [`offline-bundle.toml`](../OFFLINE.md#offline-bundletoml--what-the-share
 
 ## `acorn config [get <key> | set <key> <value> | unset <key>]`
 
-Views and changes seedling's own settings, stored in
-`~/seedling/system/config/settings.json`. Bare `acorn config` lists every
+Views and changes acorn's own settings, stored in
+`~/acorn/system/config/settings.json`. Bare `acorn config` lists every
 setting with its current value and an explanation. The keys:
 
 - `default_base` — the base Python tag `acorn venv` builds from when
@@ -274,7 +274,7 @@ setting with its current value and an explanation. The keys:
   (true/false, default true). Toggle with
   [`acorn auto-activate True|False`](venvs-and-packages.md#acorn-auto-activate-truefalse); when
   false, the default venv stays set but isn't activated automatically.
-- `update_source` — where `acorn update-commands` gets seedling's own
+- `update_source` — where `acorn update-commands` gets acorn's own
   source: a git URL (works with self-hosted GitHub/GitLab on isolated
   networks) *or* a plain directory path (e.g. a network drive holding a
   copy of the repo, for machines with no git hosting at all). Recorded
@@ -288,22 +288,22 @@ setting with its current value and an explanation. The keys:
 - `conda_channel` — where `acorn forge-install` fetches conda-forge
   command-line tools from (default: `conda-forge`). A URL or local
   directory for an internal mirror or an offline network.
-- `shared_root` — the directory holding per-user seedling homes, recorded
-  automatically when `SEEDLING_HOME_DIR` used a `{user}` token. Only set on
+- `shared_root` — the directory holding per-user acorn homes, recorded
+  automatically when `ACORN_HOME_DIR` used a `{user}` token. Only set on
   shared multi-user installs; enables the `admin-*` commands.
 - `native_tls` / `ca_cert` — HTTPS trust for corporate-CA internal hosts:
   the OS trust store, or a PEM bundle (normally installed automatically
-  from `vendor/certs/`). Applied to uv, git, and seedling's own downloads
+  from `vendor/certs/`). Applied to uv, git, and acorn's own downloads
   on every command.
 - `profile` — the [deployment profile](../PROFILES.md) `acorn apply` uses when
-  given no path. Recorded at install time from `SEEDLING_PROFILE`.
+  given no path. Recorded at install time from `ACORN_PROFILE`.
 - `custom_commands` — path to the TOML file declaring your organization's
   own [custom commands](../CUSTOM-COMMANDS.md). Recorded at install time from
-  `SEEDLING_CUSTOM_COMMANDS`.
+  `ACORN_CUSTOM_COMMANDS`.
 - `startup_commands` — custom command names run automatically, in order, by
   every new shell (list; takes comma-separated input, `&&` chains names
   within one entry so a failure stops just that chain). Recorded at install
-  time from `SEEDLING_STARTUP_COMMANDS`. See [CUSTOM-COMMANDS.md#running-
+  time from `ACORN_STARTUP_COMMANDS`. See [CUSTOM-COMMANDS.md#running-
   commands-at-startup](../CUSTOM-COMMANDS.md#running-commands-at-startup).
 - `vscode_flavor` — which editor build `acorn vscode` installs:
   `microsoft` (default) or `vscodium`. Affects the **next** install; use
@@ -329,8 +329,8 @@ so it's script-friendly. `unset` resets a key to its built-in default.
 ```
 acorn config
 acorn config set default_venv myproject
-acorn config set update_source https://github.mycompany.com/tools/seedling.git
-acorn config set update_source "S:\shared\seedling"
+acorn config set update_source https://github.mycompany.com/tools/acorn.git
+acorn config set update_source "S:\shared\acorn"
 acorn config set venv_default_packages "ipython,ruff,requests"
 acorn config set vscode_flavor vscodium
 acorn config set vscode_extensions "ms-python.python,charliermarsh.ruff"

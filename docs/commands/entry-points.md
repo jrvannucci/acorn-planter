@@ -1,13 +1,13 @@
 # Entry points — the files you run directly
 
-Everything else in this reference is a `acorn` subcommand, which needs seedling
+Everything else in this reference is a `acorn` subcommand, which needs acorn
 to already be installed. These four files are the other kind: you run them
 *directly*, and three of the four exist precisely for the moments when `acorn`
 isn't available — before the first install, or after something broke it.
 
 | File | What it's for |
 |---|---|
-| [`GET_STARTED/install.cmd`](#get_startedinstallcmd) | Install seedling from a copy of the repo |
+| [`GET_STARTED/install.cmd`](#get_startedinstallcmd) | Install acorn from a copy of the repo |
 | [`GET_STARTED/uninstall.cmd`](#get_starteduninstallcmd) | Remove it when `acorn purge` can't run |
 | [`GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd`](#get_started_offline_bundleoffline-bundlercmd) | Build an air-gapped bundle on a connected machine |
 | [the one-line installers](#the-one-line-installers) | Install with no copy of the repo at all |
@@ -33,7 +33,7 @@ CRLF line ending, which a POSIX shell would otherwise try to execute.
 
 ## `GET_STARTED/install.cmd`
 
-Installs seedling from the copy of the repo it sits in.
+Installs acorn from the copy of the repo it sits in.
 
 ```
 .\GET_STARTED\install.cmd          # Windows -- double-clicking also works
@@ -48,7 +48,7 @@ hands off to `installers/install.sh` instead.
 
 Either way the real installer then reads
 [`GET_STARTED/global.conf`](../DEPLOYMENT.md#deployment-configuration-globalconf),
-lays out `~/seedling`, installs uv, builds `acorn-cli` from a private copy of
+lays out `~/acorn`, installs uv, builds `acorn-cli` from a private copy of
 the source, writes the shell hook, and — unless told otherwise — installs
 Python and creates the auto-activating `dev` venv.
 
@@ -65,13 +65,13 @@ fails is readable instead of vanishing.
 
 | Variable | Effect |
 |---|---|
-| `SEEDLING_REPO` | Install from this git URL or directory instead |
-| `SEEDLING_HOME` | Install to somewhere other than `~/seedling` |
-| `SEEDLING_PROFILE` | Apply this [profile](../PROFILES.md) (a file, or a folder of them) |
-| `SEEDLING_AUTO_SETUP` | `false` skips the ready-made Python and `dev` venv |
-| `SEEDLING_AUTO_VSCODE` | `false` skips the VS Code download |
-| `SEEDLING_CUSTOM_COMMANDS` | Path to a [custom commands](../CUSTOM-COMMANDS.md) file |
-| `SEEDLING_VSCODE_CONFIG_DIR` | Folder of `settings.json`/`keybindings.json` to acorn |
+| `ACORN_REPO` | Install from this git URL or directory instead |
+| `ACORN_HOME` | Install to somewhere other than `~/acorn` |
+| `ACORN_PROFILE` | Apply this [profile](../PROFILES.md) (a file, or a folder of them) |
+| `ACORN_AUTO_SETUP` | `false` skips the ready-made Python and `dev` venv |
+| `ACORN_AUTO_VSCODE` | `false` skips the VS Code download |
+| `ACORN_CUSTOM_COMMANDS` | Path to a [custom commands](../CUSTOM-COMMANDS.md) file |
+| `ACORN_VSCODE_CONFIG_DIR` | Folder of `settings.json`/`keybindings.json` to acorn |
 
 Any arguments you pass are forwarded to the underlying installer.
 
@@ -79,7 +79,7 @@ Any arguments you pass are forwarded to the underlying installer.
 
 ## `GET_STARTED/uninstall.cmd`
 
-Removes `~/seedling` and the shell-hook line from your shell profile.
+Removes `~/acorn` and the shell-hook line from your shell profile.
 
 ```
 .\GET_STARTED\uninstall.cmd
@@ -93,9 +93,9 @@ can't run at all — a half-finished install, a corrupted `acorn-cli`, a shell
 hook that never loaded.
 
 It resolves the install location exactly the way the installer did:
-`SEEDLING_HOME` if set, else `SEEDLING_HOME_DIR` from `global.conf` (with `~`
+`ACORN_HOME` if set, else `ACORN_HOME_DIR` from `global.conf` (with `~`
 and `{user}` expanded), else the default. That matters on relocated and
-shared multi-user installs, where a hardcoded `~/seedling` would delete the
+shared multi-user installs, where a hardcoded `~/acorn` would delete the
 wrong thing — or nothing.
 
 It pauses on failure, same as the installer.
@@ -118,9 +118,9 @@ a flag. See
 [what the share contains](../OFFLINE.md#offline-bundletoml--what-the-share-contains).
 
 **It is not a `acorn` command**, deliberately: it prepares the distribution
-*before* seedling is installed anywhere, so it can't depend on seedling being
+*before* acorn is installed anywhere, so it can't depend on acorn being
 installed. It needs Python 3.12+ on the build machine — the same floor
-seedling itself requires, since it imports seedling's own modules to read the
+acorn itself requires, since it imports acorn's own modules to read the
 spec and validate profiles.
 
 By default it also packs the finished bundle into a single `.tar.gz` (on
@@ -145,12 +145,12 @@ from a URL. This is what the README's one-liners do:
 
 **macOS / Linux**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/seedling/main/installers/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh | sh
 ```
 
 **Windows (PowerShell)**
 ```powershell
-irm https://raw.githubusercontent.com/jrvannucci/seedling/main/installers/install.ps1 | iex
+irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
 ```
 
 They are the same scripts `install.cmd` runs locally — the `.cmd` file only
@@ -159,7 +159,7 @@ picks which one and handles the execution policy. Piped, there is no local
 has to come from the environment:
 
 ```sh
-curl -fsSL .../install.sh | SEEDLING_PROFILE=./team.toml sh
+curl -fsSL .../install.sh | ACORN_PROFILE=./team.toml sh
 ```
 
 ---

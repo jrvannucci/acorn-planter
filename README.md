@@ -1,19 +1,22 @@
-# seedling 🌱
+# ACORN
 
-[![CI](https://github.com/jrvannucci/seedling/actions/workflows/ci.yml/badge.svg)](https://github.com/jrvannucci/seedling/actions/workflows/ci.yml)
+[![CI](https://github.com/jrvannucci/acorn/actions/workflows/ci.yml/badge.svg)](https://github.com/jrvannucci/acorn/actions/workflows/ci.yml)
 
-![seedling: a tidy, single-folder global Python distributor and local environment manager -- zero-touch config, offline-first, safe by default, built for scale, and scriptable, all on top of one removable folder.](docs/diagrams/mission.svg)
+**Global Python environments and development suites, ready when you are.**
 
-**Go from nothing to writing Python in one command.** No prior setup, no
-tools to install first, nothing to learn about how Python is packaged. Run one
-line, open a terminal, type `python`. Everything lives in a single folder you
-can delete — `acorn purge` leaves your machine exactly as it was.
+ACORN gives you one place to configure and manage your Python interpreters,
+virtual environments, packages, repositories, and development tools. Shared
+settings apply across your environments, while profiles assemble the suite
+that fits your work. Install online or bring a complete bundle to an offline
+network.
+
+![ACORN manages Python environments and development suites in one folder.](docs/diagrams/mission.svg)
 
 ---
 
 ## Why this is easier
 
-![The usual way means hours of setup before your first line of code; with seedling, one command and you're writing Python.](docs/diagrams/why-vs-usual.svg)
+![The usual way means hours of setup before your first line of code; with acorn, one command and you're writing Python.](docs/diagrams/why-vs-usual.svg)
 
 Setting Python up yourself means choosing an installer, learning virtual
 environments, wiring up PATH, and finding an editor — before you write a line
@@ -40,22 +43,22 @@ Nothing needs to be pre-installed — not Python, not uv, nothing.
 
 **macOS / Linux:**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/seedling/main/installers/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/jrvannucci/seedling/main/installers/install.ps1 | iex
+irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
 ```
 
-![Run the one-liner, seedling sets up everything Python needs, open a new terminal, and python just works.](docs/diagrams/install-flow.svg)
+![Run the one-liner, acorn sets up everything Python needs, open a new terminal, and python just works.](docs/diagrams/install-flow.svg)
 
 > On Windows you can also download the repo and double-click `GET_STARTED/install.cmd`.
-> Skip the ready-made environment with `SEEDLING_AUTO_SETUP=false`.
+> Skip the ready-made environment with `ACORN_AUTO_SETUP=false`.
 >
 > **Given a profile by your admin?** Point the same one-liner at it and you get
 > their exact environment in one step:
-> `curl -fsSL ... | SEEDLING_PROFILE=./team.toml sh`. See
+> `curl -fsSL ... | ACORN_PROFILE=./team.toml sh`. See
 > [deployment profiles](docs/PROFILES.md).
 
 ---
@@ -75,7 +78,7 @@ acorn run -- pytest         # run something in a venv without switching
 
 That's the whole day-to-day. The rest is there when you need it: `acorn vscode`
 opens the bundled editor, `acorn repo-clone <url>` pulls a project into
-`~/seedling/repo`, `acorn summary` shows everything installed, and
+`~/acorn/repo`, `acorn summary` shows everything installed, and
 `acorn health-check` verifies it.
 
 Names are predictable: a bare noun does the thing (`python` installs, `venv`
@@ -88,7 +91,7 @@ list; click any one to open its full documentation.
 
 ![Install with the one-liner, use acorn to manage venvs and packages, update only when you ask, and uninstall cleanly with acorn purge.](docs/diagrams/lifecycle.svg)
 
-seedling runs from its own private copy of the source in `~/seedling`. New
+acorn runs from its own private copy of the source in `~/acorn`. New
 commits upstream change nothing until you run `acorn update-commands`. When
 you're done with it, `acorn purge` removes the folder and the shell hook.
 
@@ -96,7 +99,7 @@ you're done with it, `acorn purge` removes the folder and the shell hook.
 
 ## For organizations 🏢
 
-seedling is also built to be **deployed** — by one person, to everyone else,
+acorn is also built to be **deployed** — by one person, to everyone else,
 including on networks where the usual Python setup path doesn't work at all.
 
 - **No internet, no admin rights.** Point installs at a self-hosted git
@@ -125,7 +128,7 @@ including on networks where the usual Python setup path doesn't work at all.
 
 | | |
 |---|---|
-| [Using seedling](docs/GUIDE.md) | Installing, the folder layout, the update model, troubleshooting |
+| [Using acorn](docs/GUIDE.md) | Installing, the folder layout, the update model, troubleshooting |
 | [Command reference](docs/COMMANDS.md) | Every command and flag |
 | [Design and safety](docs/DESIGN.md) | Why deletion is defensive, what's logged, how downloads are verified |
 | [Deployment guide](docs/DEPLOYMENT.md) | `global.conf`, shared machines, rollout, security review |
@@ -133,12 +136,12 @@ including on networks where the usual Python setup path doesn't work at all.
 | [Profile examples](docs/PROFILE-EXAMPLES.md) | Complete profiles: research group, software team, classroom, air-gapped fleet |
 | [Custom commands](docs/CUSTOM-COMMANDS.md) | Add your organization's own verbs to `acorn` |
 | [Offline networks](docs/OFFLINE.md) | Running with no internet at all |
-| [Licensing](docs/LICENSING.md) | What seedling downloads, and under what terms |
+| [Licensing](docs/LICENSING.md) | What acorn downloads, and under what terms |
 
 🗺️ Not sure where to look? The [documentation map](docs/DOCUMENTATION.md)
 routes you from what you're trying to do to the right page.
 
-**Working on seedling itself?** The
+**Working on acorn itself?** The
 [contributor guide](docs/CONTRIBUTING.md) covers the edit →
 `acorn update-commands` loop, the source layout, and the tests (`uvx pytest`
 from the repo root).
@@ -147,7 +150,7 @@ from the repo root).
 
 ## License
 
-Apache 2.0. seedling has no third-party runtime dependencies and bundles no
+Apache 2.0. acorn has no third-party runtime dependencies and bundles no
 third-party software; the tools it downloads for you come from their
 publishers under their own licenses — see
 [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.md) and, for what you may

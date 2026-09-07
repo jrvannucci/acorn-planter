@@ -1,4 +1,4 @@
-# seedling installer (PowerShell) -- mirrors how `uv` installs itself.
+# acorn installer (PowerShell) -- mirrors how `uv` installs itself.
 # Requires nothing pre-installed; works on a stock Windows PowerShell / pwsh.
 #
 # Usage (from a local checkout of this repo, either works):
@@ -6,8 +6,8 @@
 #   .\installers\install.ps1
 #
 # Usage (remote):
-#   irm https://raw.githubusercontent.com/jrvannucci/seedling/main/installers/install.ps1 | iex
-#   $env:SEEDLING_REPO = "https://github.com/someone/fork.git"; irm .../installers/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
+#   $env:ACORN_REPO = "https://github.com/someone/fork.git"; irm .../installers/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
@@ -15,7 +15,7 @@ $ErrorActionPreference = "Stop"
 # out, so a conf that still matches them changes nothing -- only edited
 # values have any effect. The baked-in copies exist for the piped
 # one-liner install, where no local global.conf exists yet to consult.
-$DefaultSeedlingRepo = "https://github.com/jrvannucci/seedling.git"
+$DefaultACORNRepo = "https://github.com/jrvannucci/acorn.git"
 $DefaultVenvPackages = "ipython,ruff,ipykernel"
 
 function Info($msg)  { Write-Host "==> $msg" -ForegroundColor Green }
@@ -27,17 +27,17 @@ function Die($msg)   {
     # and -- for piped `irm | iex` installs, where no process exit is coming
     # -- stops the transcript from silently recording the user's session
     # forever after. Guarded: transcription may never have started.
-    Write-Host "seedling install FAILED (exit code 1)"
+    Write-Host "acorn install FAILED (exit code 1)"
     try { Stop-Transcript | Out-Null } catch { }
     exit 1
 }
 
 # GET_STARTED\global.conf is the deployment config: organizations distributing
-# seedling from their own git host or a network drive set the source (and
+# acorn from their own git host or a network drive set the source (and
 # any install-time settings) there ONCE, and their users install with no
 # flags or env vars. Standard internet installs ship a conf whose values
 # match the baked-in defaults, so nothing changes for them.
-function Read-SeedlingConf($path) {
+function Read-ACORNConf($path) {
     $conf = @{}
     if ($path -and (Test-Path $path)) {
         foreach ($line in Get-Content $path) {
@@ -57,7 +57,7 @@ function Read-SeedlingConf($path) {
 # pre-installed" on a stock Windows box. Windows-only by nature: Git for
 # Windows ships an official dependency-free portable build (MinGit); macOS
 # and Linux have no equivalent, so install.sh keeps requiring system git.
-function Resolve-SeedlingGit {
+function Resolve-ACORNGit {
     param([string]$GitDir)
 
     $sys = Get-Command git -ErrorAction SilentlyContinue
@@ -74,7 +74,7 @@ function Resolve-SeedlingGit {
     # can be verified before it's extracted -- same policy as download.py.
     $api = "https://api.github.com/repos/git-for-windows/git/releases/latest"
     try {
-        $release = Invoke-RestMethod -Uri $api -Headers @{ "User-Agent" = "seedling" }
+        $release = Invoke-RestMethod -Uri $api -Headers @{ "User-Agent" = "acorn" }
     } catch {
         Die ("Could not reach GitHub's API to download MinGit ($($_.Exception.Message)). " +
              "Install git and re-run, or download the '...-64-bit.zip' asset from " +
@@ -89,7 +89,7 @@ function Resolve-SeedlingGit {
 
     $zip = Join-Path $GitDir "mingit-download.zip"
     Info "Downloading $($asset.name) ..."
-    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zip -Headers @{ "User-Agent" = "seedling" }
+    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zip -Headers @{ "User-Agent" = "acorn" }
 
     if ($asset.digest) {
         $expected = ($asset.digest -replace '^sha256:', '').ToLower()
@@ -115,7 +115,7 @@ function Resolve-SeedlingGit {
 }
 
 # ---------------------------------------------------------------------------
-# 1. Locate the seedling source (local checkout next to this script, or clone)
+# 1. Locate the acorn source (local checkout next to this script, or clone)
 # ---------------------------------------------------------------------------
 # $MyInvocation.MyCommand.Path is $null when this script is run via
 # `irm ... | iex` (there's no backing file for a piped-in script), so guard
@@ -133,42 +133,42 @@ if ($RepoRoot) {
     }
 }
 
-$Conf = if ($RepoRoot) { Read-SeedlingConf (Join-Path $RepoRoot "GET_STARTED\global.conf") } else { @{} }
+$Conf = if ($RepoRoot) { Read-ACORNConf (Join-Path $RepoRoot "GET_STARTED\global.conf") } else { @{} }
 
-# Source resolution: SEEDLING_REPO env var (one-run override) beats
+# Source resolution: ACORN_REPO env var (one-run override) beats
 # global.conf, which beats the baked-in default.
-$SeedlingRepo = if ($env:SEEDLING_REPO) {
-    $env:SEEDLING_REPO
-} elseif ($Conf["SEEDLING_REPO_URL"]) {
-    $Conf["SEEDLING_REPO_URL"]
+$ACORNRepo = if ($env:ACORN_REPO) {
+    $env:ACORN_REPO
+} elseif ($Conf["ACORN_REPO_URL"]) {
+    $Conf["ACORN_REPO_URL"]
 } else {
-    $DefaultSeedlingRepo
+    $DefaultACORNRepo
 }
 
 # Home resolution follows the same order. A leading "~" in the conf value
 # means the installing user's home directory.
-$SeedlingHome = if ($env:SEEDLING_HOME) {
-    $env:SEEDLING_HOME
-} elseif ($Conf["SEEDLING_HOME_DIR"]) {
-    $dir = $Conf["SEEDLING_HOME_DIR"]
+$ACORNHome = if ($env:ACORN_HOME) {
+    $env:ACORN_HOME
+} elseif ($Conf["ACORN_HOME_DIR"]) {
+    $dir = $Conf["ACORN_HOME_DIR"]
     if ($dir -eq "~") { $HOME }
     elseif ($dir.StartsWith("~/") -or $dir.StartsWith("~\")) { Join-Path $HOME $dir.Substring(2) }
     else { $dir }
 } else {
-    Join-Path $HOME "seedling"
+    Join-Path $HOME "acorn"
 }
 
 # {user} -> the installing user's login name, so a shared install root
-# (e.g. C:\seedling\{user}) gives every user a private, conflict-free folder.
+# (e.g. C:\acorn\{user}) gives every user a private, conflict-free folder.
 # When the token is used, record the shared root (the parent of the per-user
 # home) so the elevated admin-* commands know this is a multi-user install.
-$SeedlingSharedRoot = $null
-if ($SeedlingHome -like "*{user}*") {
-    $SeedlingHome = $SeedlingHome -replace [regex]::Escape("{user}"), $env:USERNAME
-    $SeedlingSharedRoot = Split-Path -Parent $SeedlingHome
+$ACORNSharedRoot = $null
+if ($ACORNHome -like "*{user}*") {
+    $ACORNHome = $ACORNHome -replace [regex]::Escape("{user}"), $env:USERNAME
+    $ACORNSharedRoot = Split-Path -Parent $ACORNHome
 }
 
-# Capture this whole install into the seedling logs, so `acorn logs-viewer`
+# Capture this whole install into the acorn logs, so `acorn logs-viewer`
 # shows the bootstrap alongside your `acorn` commands. Start-Transcript records
 # the console live WITHOUT redirecting any streams -- which matters because uv
 # writes its normal progress to stderr, and redirecting a native command's
@@ -176,10 +176,10 @@ if ($SeedlingHome -like "*{user}*") {
 # NativeCommandError (this broke the install once). Best-effort: never let
 # logging break the install; the transcript auto-finalizes when the script exits.
 try {
-    $SeedLogDir = Join-Path $SeedlingHome "system\logs"
-    New-Item -ItemType Directory -Force -Path $SeedLogDir -ErrorAction Stop | Out-Null
-    $SeedInstallLog = Join-Path $SeedLogDir ("install-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
-    Start-Transcript -Path $SeedInstallLog -Force -ErrorAction Stop | Out-Null
+    $AcornLogDir = Join-Path $ACORNHome "system\logs"
+    New-Item -ItemType Directory -Force -Path $AcornLogDir -ErrorAction Stop | Out-Null
+    $AcornInstallLog = Join-Path $AcornLogDir ("install-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
+    Start-Transcript -Path $AcornInstallLog -Force -ErrorAction Stop | Out-Null
 } catch { }
 
 $InstalledFromDir = $null
@@ -187,50 +187,50 @@ $CloneMode = $false
 if ($HasLocalCheckout) {
     $OriginalSrc = $RepoRoot
     $CleanupOriginalSrc = $false
-} elseif ((Test-Path $SeedlingRepo -PathType Container) -and (Test-Path (Join-Path $SeedlingRepo "src\pyproject.toml"))) {
-    # SEEDLING_REPO can be a plain directory instead of a git URL -- e.g. a
+} elseif ((Test-Path $ACORNRepo -PathType Container) -and (Test-Path (Join-Path $ACORNRepo "src\pyproject.toml"))) {
+    # ACORN_REPO can be a plain directory instead of a git URL -- e.g. a
     # network drive holding a copy of this repo, on machines/networks with
     # no GitHub access at all.
-    Info "Installing from directory $SeedlingRepo ..."
-    $OriginalSrc = $SeedlingRepo
+    Info "Installing from directory $ACORNRepo ..."
+    $OriginalSrc = $ACORNRepo
     $CleanupOriginalSrc = $false
-    $InstalledFromDir = $SeedlingRepo
+    $InstalledFromDir = $ACORNRepo
 } else {
     # No system git? Bootstrap portable MinGit into extensions\git before the
     # clone, so a bare Windows box can still install from a URL.
-    $Git = Resolve-SeedlingGit (Join-Path $SeedlingHome "extensions\git")
-    $OriginalSrc = Join-Path ([System.IO.Path]::GetTempPath()) ("seedling-src-" + [System.Guid]::NewGuid())
+    $Git = Resolve-ACORNGit (Join-Path $ACORNHome "extensions\git")
+    $OriginalSrc = Join-Path ([System.IO.Path]::GetTempPath()) ("acorn-src-" + [System.Guid]::NewGuid())
     $CleanupOriginalSrc = $true
     $CloneMode = $true
-    Info "Cloning $SeedlingRepo ..."
-    & $Git clone --depth 1 $SeedlingRepo $OriginalSrc
+    Info "Cloning $ACORNRepo ..."
+    & $Git clone --depth 1 $ACORNRepo $OriginalSrc
 }
 
 # ---------------------------------------------------------------------------
 # 2. Lay out the folder structure
 # ---------------------------------------------------------------------------
-Info "Setting up $SeedlingHome"
+Info "Setting up $ACORNHome"
 $null = New-Item -ItemType Directory -Force -Path `
-    "$SeedlingHome\system\bin", `
-    "$SeedlingHome\system\config", `
-    "$SeedlingHome\system\shell", `
-    "$SeedlingHome\python\base", `
-    "$SeedlingHome\python\venvs", `
-    "$SeedlingHome\extensions", `
-    "$SeedlingHome\repo"
+    "$ACORNHome\system\bin", `
+    "$ACORNHome\system\config", `
+    "$ACORNHome\system\shell", `
+    "$ACORNHome\python\base", `
+    "$ACORNHome\python\venvs", `
+    "$ACORNHome\extensions", `
+    "$ACORNHome\repo"
 
 # ---------------------------------------------------------------------------
-# 2b. Copy the source INTO seedling itself. This is what makes updates
-#     explicit: acorn-cli gets installed from $SeedlingHome\src, a copy that
+# 2b. Copy the source INTO acorn itself. This is what makes updates
+#     explicit: acorn-cli gets installed from $ACORNHome\src, a copy that
 #     nothing outside of `acorn update-commands` ever touches again. Deleting,
 #     moving, or `git pull`-ing wherever you originally downloaded this from
 #     has zero effect on the installed commands after this point.
 # ---------------------------------------------------------------------------
-Info "Copying source into $SeedlingHome\system\src ..."
-$SrcDir = Join-Path $SeedlingHome "system\src"
+Info "Copying source into $ACORNHome\system\src ..."
+$SrcDir = Join-Path $ACORNHome "system\src"
 if (Test-Path $SrcDir) { Remove-Item -Recurse -Force $SrcDir }
 Copy-Item -Recurse -Force $OriginalSrc $SrcDir
-# No git checkout lives inside ~\seedling: updates re-download from the
+# No git checkout lives inside ~\acorn: updates re-download from the
 # recorded update_source (see below) instead of `git pull`-ing, so the
 # .git folder would be dead weight (and its read-only object files used
 # to break deletion on Windows).
@@ -238,12 +238,12 @@ Copy-Item -Recurse -Force $OriginalSrc $SrcDir
 # working after the share it was installed from goes away. An absolute path
 # in the conf is honoured as-is.
 $ProfilePath = ""
-if ($env:SEEDLING_PROFILE) {
-    # User-supplied, for the piped one-liner (`$env:SEEDLING_PROFILE = ...;
+if ($env:ACORN_PROFILE) {
+    # User-supplied, for the piped one-liner (`$env:ACORN_PROFILE = ...;
     # irm ... | iex`), where there is no local conf to edit. Relative paths
     # resolve against the directory they ran the installer from -- they are
     # pointing at THEIR file.
-    $rawProfile = $env:SEEDLING_PROFILE
+    $rawProfile = $env:ACORN_PROFILE
     $profileSrc = if ([System.IO.Path]::IsPathRooted($rawProfile)) {
         $rawProfile
     } else {
@@ -253,18 +253,18 @@ if ($env:SEEDLING_PROFILE) {
     # profile and silently got the default environment instead would not
     # find out until something they expected is missing.
     if (-not (Test-Path $profileSrc)) {
-        Die "SEEDLING_PROFILE=$rawProfile was set, but no file exists at $profileSrc."
+        Die "ACORN_PROFILE=$rawProfile was set, but no file exists at $profileSrc."
     }
     # Copy it in: the original may be a downloads folder, a mounted share or
     # a temp file, and `acorn apply` has to keep working long after that goes
     # away -- the same reason the source itself is copied.
-    $ProfilePath = Join-Path $SeedlingHome "system\config\profile.toml"
+    $ProfilePath = Join-Path $ACORNHome "system\config\profile.toml"
     Copy-Item -Force $profileSrc $ProfilePath
     Info "Using profile $profileSrc (copied to $ProfilePath)"
-} elseif ($Conf["SEEDLING_PROFILE"]) {
+} elseif ($Conf["ACORN_PROFILE"]) {
     # Conf-supplied: ships inside the distributed copy, so it already lives
-    # under the seedling home and `acorn update-commands` refreshes it.
-    $rawProfile = $Conf["SEEDLING_PROFILE"]
+    # under the acorn home and `acorn update-commands` refreshes it.
+    $rawProfile = $Conf["ACORN_PROFILE"]
     if ([System.IO.Path]::IsPathRooted($rawProfile)) {
         $ProfilePath = $rawProfile
     } else {
@@ -273,7 +273,7 @@ if ($env:SEEDLING_PROFILE) {
     if (-not (Test-Path $ProfilePath)) {
         # Non-fatal, unlike the env case: a conf naming a profile that wasn't
         # distributed shouldn't brick installs across a whole fleet.
-        Warn "SEEDLING_PROFILE=$rawProfile was set, but no profile was found at"
+        Warn "ACORN_PROFILE=$rawProfile was set, but no profile was found at"
         Warn "$ProfilePath -- falling back to the default setup."
         $ProfilePath = ""
     }
@@ -289,27 +289,27 @@ if ($env:SEEDLING_PROFILE) {
 # own companion data) survive too -- the same thing the conf-distributed
 # form already gets for free from the source-tree copy. This assumes the
 # directory holding the TOML file is scoped to this deployment; point
-# SEEDLING_CUSTOM_COMMANDS at a dedicated folder, not somewhere with
+# ACORN_CUSTOM_COMMANDS at a dedicated folder, not somewhere with
 # unrelated large content, if using the env-var override.
 $CustomCommandsPath = ""
-if ($env:SEEDLING_CUSTOM_COMMANDS) {
-    $rawCC = $env:SEEDLING_CUSTOM_COMMANDS
+if ($env:ACORN_CUSTOM_COMMANDS) {
+    $rawCC = $env:ACORN_CUSTOM_COMMANDS
     $ccSrc = if ([System.IO.Path]::IsPathRooted($rawCC)) { $rawCC } else { Join-Path (Get-Location).Path $rawCC }
     if (-not (Test-Path $ccSrc)) {
-        Die "SEEDLING_CUSTOM_COMMANDS=$rawCC was set, but no file exists at $ccSrc."
+        Die "ACORN_CUSTOM_COMMANDS=$rawCC was set, but no file exists at $ccSrc."
     }
     $ccSrcDir = Split-Path -Parent $ccSrc
     $ccBasename = Split-Path -Leaf $ccSrc
-    $ccDestDir = Join-Path $SeedlingHome "system\config\custom-commands"
+    $ccDestDir = Join-Path $ACORNHome "system\config\custom-commands"
     if (Test-Path $ccDestDir) { Remove-Item -Recurse -Force $ccDestDir }
     Copy-Item -Recurse -Force $ccSrcDir $ccDestDir
     $CustomCommandsPath = Join-Path $ccDestDir $ccBasename
     Info "Using custom commands $ccSrc (copied to $CustomCommandsPath)"
-} elseif ($Conf["SEEDLING_CUSTOM_COMMANDS"]) {
-    $rawCC = $Conf["SEEDLING_CUSTOM_COMMANDS"]
+} elseif ($Conf["ACORN_CUSTOM_COMMANDS"]) {
+    $rawCC = $Conf["ACORN_CUSTOM_COMMANDS"]
     $CustomCommandsPath = if ([System.IO.Path]::IsPathRooted($rawCC)) { $rawCC } else { Join-Path $SrcDir $rawCC }
     if (-not (Test-Path $CustomCommandsPath)) {
-        Warn "SEEDLING_CUSTOM_COMMANDS=$rawCC was set, but no file was found at"
+        Warn "ACORN_CUSTOM_COMMANDS=$rawCC was set, but no file was found at"
         Warn "$CustomCommandsPath -- no custom commands."
         $CustomCommandsPath = ""
     }
@@ -321,21 +321,21 @@ if ($env:SEEDLING_CUSTOM_COMMANDS) {
 # inferred), so the whole-directory copy here is exactly what was asked
 # for, not a guess at what else might be needed.
 $VscodeConfigDirPath = ""
-if ($env:SEEDLING_VSCODE_CONFIG_DIR) {
-    $rawVCD = $env:SEEDLING_VSCODE_CONFIG_DIR
+if ($env:ACORN_VSCODE_CONFIG_DIR) {
+    $rawVCD = $env:ACORN_VSCODE_CONFIG_DIR
     $vcdSrc = if ([System.IO.Path]::IsPathRooted($rawVCD)) { $rawVCD } else { Join-Path (Get-Location).Path $rawVCD }
     if (-not (Test-Path $vcdSrc -PathType Container)) {
-        Die "SEEDLING_VSCODE_CONFIG_DIR=$rawVCD was set, but no folder exists at $vcdSrc."
+        Die "ACORN_VSCODE_CONFIG_DIR=$rawVCD was set, but no folder exists at $vcdSrc."
     }
-    $VscodeConfigDirPath = Join-Path $SeedlingHome "system\config\vscode-config"
+    $VscodeConfigDirPath = Join-Path $ACORNHome "system\config\vscode-config"
     if (Test-Path $VscodeConfigDirPath) { Remove-Item -Recurse -Force $VscodeConfigDirPath }
     Copy-Item -Recurse -Force $vcdSrc $VscodeConfigDirPath
     Info "Using VS Code config $vcdSrc (copied to $VscodeConfigDirPath)"
-} elseif ($Conf["SEEDLING_VSCODE_CONFIG_DIR"]) {
-    $rawVCD = $Conf["SEEDLING_VSCODE_CONFIG_DIR"]
+} elseif ($Conf["ACORN_VSCODE_CONFIG_DIR"]) {
+    $rawVCD = $Conf["ACORN_VSCODE_CONFIG_DIR"]
     $VscodeConfigDirPath = if ([System.IO.Path]::IsPathRooted($rawVCD)) { $rawVCD } else { Join-Path $SrcDir $rawVCD }
     if (-not (Test-Path $VscodeConfigDirPath -PathType Container)) {
-        Warn "SEEDLING_VSCODE_CONFIG_DIR=$rawVCD was set, but no folder was found at"
+        Warn "ACORN_VSCODE_CONFIG_DIR=$rawVCD was set, but no folder was found at"
         Warn "$VscodeConfigDirPath -- no settings/keybindings to acorn."
         $VscodeConfigDirPath = ""
     }
@@ -353,36 +353,36 @@ if (Test-Path $SrcGit) { Remove-Item -Recurse -Force $SrcGit }
 #     offline share needs no wrapper scripts and no extra configuration:
 #     presence equals intent. Every payload is a folder whose CONTENTS go
 #     to the destination:
-#       vendor\uv\     (uv.exe, uvx too if present)     -> ~\seedling\system\bin\
-#       vendor\git\    (an extracted MinGit)            -> ~\seedling\extensions\git\
-#       vendor\vscode\ (a pre-seeded portable VS Code)  -> ~\seedling\extensions\vscode\
+#       vendor\uv\     (uv.exe, uvx too if present)     -> ~\acorn\system\bin\
+#       vendor\git\    (an extracted MinGit)            -> ~\acorn\extensions\git\
+#       vendor\vscode\ (a pre-seeded portable VS Code)  -> ~\acorn\extensions\vscode\
 #       vendor\certs\  (PEM CA certificates)            -> concatenated into
-#                       ~\seedling\system\certs\ca-bundle.pem and trusted for
-#                       all HTTPS (uv, git, seedling's own downloads)
+#                       ~\acorn\system\certs\ca-bundle.pem and trusted for
+#                       all HTTPS (uv, git, acorn's own downloads)
 # ---------------------------------------------------------------------------
 $CertBundle = $null
 $VendorDir = Join-Path $SrcDir "vendor"
 if (Test-Path $VendorDir) {
     $vendorUv = Join-Path $VendorDir "uv"
-    if ((Test-Path $vendorUv) -and -not (Test-Path "$SeedlingHome\system\bin\uv.exe")) {
-        Copy-Item "$vendorUv\*" -Destination "$SeedlingHome\system\bin" -Recurse -Force
+    if ((Test-Path $vendorUv) -and -not (Test-Path "$ACORNHome\system\bin\uv.exe")) {
+        Copy-Item "$vendorUv\*" -Destination "$ACORNHome\system\bin" -Recurse -Force
         Info "Using vendored uv from the install source."
     }
     $vendorMm = Join-Path $VendorDir "micromamba"
-    if ((Test-Path $vendorMm) -and -not (Test-Path "$SeedlingHome\system\bin\micromamba.exe")) {
-        Copy-Item "$vendorMm\*" -Destination "$SeedlingHome\system\bin" -Recurse -Force
+    if ((Test-Path $vendorMm) -and -not (Test-Path "$ACORNHome\system\bin\micromamba.exe")) {
+        Copy-Item "$vendorMm\*" -Destination "$ACORNHome\system\bin" -Recurse -Force
         Info "Using vendored micromamba (conda-forge tools) from the install source."
     }
     $vendorGit = Join-Path $VendorDir "git"
-    if ((Test-Path $vendorGit) -and -not (Test-Path "$SeedlingHome\extensions\git")) {
-        New-Item -ItemType Directory -Force -Path "$SeedlingHome\extensions\git" | Out-Null
-        Copy-Item "$vendorGit\*" -Destination "$SeedlingHome\extensions\git" -Recurse -Force
+    if ((Test-Path $vendorGit) -and -not (Test-Path "$ACORNHome\extensions\git")) {
+        New-Item -ItemType Directory -Force -Path "$ACORNHome\extensions\git" | Out-Null
+        Copy-Item "$vendorGit\*" -Destination "$ACORNHome\extensions\git" -Recurse -Force
         Info "Using vendored portable git from the install source."
     }
     $vendorVscode = Join-Path $VendorDir "vscode"
-    if ((Test-Path $vendorVscode) -and -not (Test-Path "$SeedlingHome\extensions\vscode\app")) {
-        New-Item -ItemType Directory -Force -Path "$SeedlingHome\extensions\vscode" | Out-Null
-        Copy-Item "$vendorVscode\*" -Destination "$SeedlingHome\extensions\vscode" -Recurse -Force
+    if ((Test-Path $vendorVscode) -and -not (Test-Path "$ACORNHome\extensions\vscode\app")) {
+        New-Item -ItemType Directory -Force -Path "$ACORNHome\extensions\vscode" | Out-Null
+        Copy-Item "$vendorVscode\*" -Destination "$ACORNHome\extensions\vscode" -Recurse -Force
         Info "Using vendored VS Code from the install source."
     }
     $vendorCerts = Join-Path $VendorDir "certs"
@@ -391,8 +391,8 @@ if (Test-Path $VendorDir) {
         # so certificate rotation propagates with a plain reinstall.
         $certFiles = @(Get-ChildItem -Path $vendorCerts -File | Where-Object { $_.Extension -in ".pem", ".crt" })
         if ($certFiles.Count -gt 0) {
-            New-Item -ItemType Directory -Force -Path "$SeedlingHome\system\certs" | Out-Null
-            $CertBundle = "$SeedlingHome\system\certs\ca-bundle.pem"
+            New-Item -ItemType Directory -Force -Path "$ACORNHome\system\certs" | Out-Null
+            $CertBundle = "$ACORNHome\system\certs\ca-bundle.pem"
             ($certFiles | ForEach-Object { (Get-Content $_.FullName -Raw).TrimEnd() }) -join "`n" |
                 Set-Content -Path $CertBundle -Encoding ASCII
             Info "Installed the vendored CA certificate bundle."
@@ -400,7 +400,7 @@ if (Test-Path $VendorDir) {
             Warn "vendor\certs exists but holds no .pem/.crt files; no CA bundle installed."
         }
     }
-    # The payloads live on the distribution source, not inside seedling's
+    # The payloads live on the distribution source, not inside acorn's
     # private source copy -- a pre-seeded VS Code would otherwise bloat
     # system\src by hundreds of MB and get re-copied on every update.
     Remove-Item -Recurse -Force $VendorDir
@@ -411,17 +411,17 @@ if ($CleanupOriginalSrc) {
 }
 
 # ---------------------------------------------------------------------------
-# 2c. Seed seedling's settings from global.conf (first install only --
+# 2c. Seed acorn's settings from global.conf (first install only --
 #     an existing settings.json is never touched, so reinstalls don't
 #     clobber choices made later with `acorn config set`).
 # ---------------------------------------------------------------------------
 # Piped installs have no local conf, but the clone we just copied does.
 if ($Conf.Count -eq 0) {
-    $Conf = Read-SeedlingConf (Join-Path $SrcDir "GET_STARTED\global.conf")
+    $Conf = Read-ACORNConf (Join-Path $SrcDir "GET_STARTED\global.conf")
 }
 
 # Record where this install came from, so `acorn update-commands` knows
-# where to fetch newer versions (there's no git checkout inside ~\seedling
+# where to fetch newer versions (there's no git checkout inside ~\acorn
 # to pull with -- updating re-downloads from this source instead):
 #   - directory install  -> that directory
 #   - cloned from a URL  -> that URL
@@ -434,12 +434,12 @@ $UpdateSourceSeed = $null
 if ($InstalledFromDir) {
     $UpdateSourceSeed = $InstalledFromDir
 } elseif ($CloneMode) {
-    $UpdateSourceSeed = $SeedlingRepo
+    $UpdateSourceSeed = $ACORNRepo
 } else {
-    if ($env:SEEDLING_REPO) {
-        $UpdateSourceSeed = $SeedlingRepo
-    } elseif ($Conf["SEEDLING_REPO_URL"] -and $Conf["SEEDLING_REPO_URL"] -ne $DefaultSeedlingRepo) {
-        $UpdateSourceSeed = $Conf["SEEDLING_REPO_URL"]
+    if ($env:ACORN_REPO) {
+        $UpdateSourceSeed = $ACORNRepo
+    } elseif ($Conf["ACORN_REPO_URL"] -and $Conf["ACORN_REPO_URL"] -ne $DefaultACORNRepo) {
+        $UpdateSourceSeed = $Conf["ACORN_REPO_URL"]
     } else {
         # No explicit override: update straight from the checkout this was
         # installed from -- installing from a repo directory means updating
@@ -450,14 +450,14 @@ if ($InstalledFromDir) {
     }
 }
 
-$SettingsFile = Join-Path $SeedlingHome "system\config\settings.json"
+$SettingsFile = Join-Path $ACORNHome "system\config\settings.json"
 if (-not (Test-Path $SettingsFile)) {
     $acorn = @{}
     if ($UpdateSourceSeed) { $acorn["update_source"] = "$UpdateSourceSeed" }
     # Only seed the package list when it was actually changed -- the conf
     # ships with the built-in default written out for discoverability.
-    if ($Conf["SEEDLING_VENV_DEFAULT_PACKAGES"]) {
-        $pkgs = @($Conf["SEEDLING_VENV_DEFAULT_PACKAGES"].Split(",") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($Conf["ACORN_VENV_DEFAULT_PACKAGES"]) {
+        $pkgs = @($Conf["ACORN_VENV_DEFAULT_PACKAGES"].Split(",") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
         if ($pkgs.Count -gt 0 -and (($pkgs -join ",") -ne $DefaultVenvPackages)) {
             $acorn["venv_default_packages"] = $pkgs
         }
@@ -465,43 +465,43 @@ if (-not (Test-Path $SettingsFile)) {
     # Offline sources (see docs/OFFLINE.md): recorded so every future
     # `acorn` command applies them automatically -- users never set
     # environment variables themselves.
-    if ($Conf["SEEDLING_PYTHON_MIRROR"]) { $acorn["python_mirror"] = $Conf["SEEDLING_PYTHON_MIRROR"] }
-    if ($Conf["SEEDLING_PACKAGE_INDEX"]) { $acorn["package_index"] = $Conf["SEEDLING_PACKAGE_INDEX"] }
-    if ($Conf["SEEDLING_PACKAGE_UPLOAD_URL"]) { $acorn["package_upload_url"] = $Conf["SEEDLING_PACKAGE_UPLOAD_URL"] }
+    if ($Conf["ACORN_PYTHON_MIRROR"]) { $acorn["python_mirror"] = $Conf["ACORN_PYTHON_MIRROR"] }
+    if ($Conf["ACORN_PACKAGE_INDEX"]) { $acorn["package_index"] = $Conf["ACORN_PACKAGE_INDEX"] }
+    if ($Conf["ACORN_PACKAGE_UPLOAD_URL"]) { $acorn["package_upload_url"] = $Conf["ACORN_PACKAGE_UPLOAD_URL"] }
     # A WRITE credential -- normally empty in a distributed conf, set only on
     # the machine that publishes. Seeding it here gives every user of this
     # share publish rights to the index.
-    if ($Conf["SEEDLING_PACKAGE_UPLOAD_TOKEN"]) { $acorn["package_upload_token"] = $Conf["SEEDLING_PACKAGE_UPLOAD_TOKEN"] }
+    if ($Conf["ACORN_PACKAGE_UPLOAD_TOKEN"]) { $acorn["package_upload_token"] = $Conf["ACORN_PACKAGE_UPLOAD_TOKEN"] }
     # conda-forge channel for `acorn forge-install`. Only seeded when overridden
     # (an internal mirror / offline path); the built-in default is conda-forge.
-    if ($Conf["SEEDLING_CONDA_CHANNEL"]) {
-        $channel = $Conf["SEEDLING_CONDA_CHANNEL"].Trim()
+    if ($Conf["ACORN_CONDA_CHANNEL"]) {
+        $channel = $Conf["ACORN_CONDA_CHANNEL"].Trim()
         if ($channel -and $channel -ne "conda-forge") { $acorn["conda_channel"] = $channel }
     }
-    if ($Conf["SEEDLING_NATIVE_TLS"] -and $Conf["SEEDLING_NATIVE_TLS"].ToLower() -eq "true") {
+    if ($Conf["ACORN_NATIVE_TLS"] -and $Conf["ACORN_NATIVE_TLS"].ToLower() -eq "true") {
         $acorn["native_tls"] = $true
     }
     if ($CertBundle) { $acorn["ca_cert"] = "$CertBundle" }
-    if ($SeedlingSharedRoot) { $acorn["shared_root"] = "$SeedlingSharedRoot" }
+    if ($ACORNSharedRoot) { $acorn["shared_root"] = "$ACORNSharedRoot" }
     # Editor flavor/gallery/extensions. Only seeded when actually changed --
     # the conf ships with the built-in defaults written out, same as the
     # package list above.
-    if ($Conf["SEEDLING_VSCODE_FLAVOR"]) {
-        $flavor = $Conf["SEEDLING_VSCODE_FLAVOR"].Trim().ToLower()
+    if ($Conf["ACORN_VSCODE_FLAVOR"]) {
+        $flavor = $Conf["ACORN_VSCODE_FLAVOR"].Trim().ToLower()
         if ($flavor -and $flavor -ne "microsoft") { $acorn["vscode_flavor"] = $flavor }
     }
-    if ($Conf["SEEDLING_EXTENSION_GALLERY"]) {
-        $acorn["extension_gallery"] = $Conf["SEEDLING_EXTENSION_GALLERY"]
+    if ($Conf["ACORN_EXTENSION_GALLERY"]) {
+        $acorn["extension_gallery"] = $Conf["ACORN_EXTENSION_GALLERY"]
     }
     if ($ProfilePath) { $acorn["profile"] = "$ProfilePath" }
     if ($CustomCommandsPath) { $acorn["custom_commands"] = "$CustomCommandsPath" }
     if ($VscodeConfigDirPath) { $acorn["vscode_config_dir"] = "$VscodeConfigDirPath" }
-    if ($Conf["SEEDLING_STARTUP_COMMANDS"]) {
-        $startups = @($Conf["SEEDLING_STARTUP_COMMANDS"].Split(",") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($Conf["ACORN_STARTUP_COMMANDS"]) {
+        $startups = @($Conf["ACORN_STARTUP_COMMANDS"].Split(",") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
         if ($startups.Count -gt 0) { $acorn["startup_commands"] = $startups }
     }
-    if ($Conf["SEEDLING_VSCODE_EXTENSIONS"]) {
-        $extsRaw = $Conf["SEEDLING_VSCODE_EXTENSIONS"].Trim()
+    if ($Conf["ACORN_VSCODE_EXTENSIONS"]) {
+        $extsRaw = $Conf["ACORN_VSCODE_EXTENSIONS"].Trim()
         if ($extsRaw.ToLower() -eq "none") {
             # A deliberate "install nothing", distinct from "unset".
             $acorn["vscode_extensions"] = @()
@@ -512,7 +512,7 @@ if (-not (Test-Path $SettingsFile)) {
     }
     if ($acorn.Count -gt 0) {
         $acorn | ConvertTo-Json | Set-Content -Path $SettingsFile -Encoding UTF8
-        Info "Seeded seedling settings from global.conf"
+        Info "Seeded acorn settings from global.conf"
     }
 }
 
@@ -535,27 +535,27 @@ if ($CertBundle -and -not $env:SSL_CERT_FILE) {
     $env:SSL_CERT_FILE = $CertBundle
     $env:GIT_SSL_CAINFO = $CertBundle
 }
-if ($Conf["SEEDLING_NATIVE_TLS"] -and $Conf["SEEDLING_NATIVE_TLS"].ToLower() -eq "true" -and -not $env:UV_NATIVE_TLS) {
+if ($Conf["ACORN_NATIVE_TLS"] -and $Conf["ACORN_NATIVE_TLS"].ToLower() -eq "true" -and -not $env:UV_NATIVE_TLS) {
     $env:UV_NATIVE_TLS = "1"
 }
 
-if ($Conf["SEEDLING_PYTHON_MIRROR"] -and -not $env:UV_PYTHON_INSTALL_MIRROR) {
-    $env:UV_PYTHON_INSTALL_MIRROR = To-FileUrl $Conf["SEEDLING_PYTHON_MIRROR"]
+if ($Conf["ACORN_PYTHON_MIRROR"] -and -not $env:UV_PYTHON_INSTALL_MIRROR) {
+    $env:UV_PYTHON_INSTALL_MIRROR = To-FileUrl $Conf["ACORN_PYTHON_MIRROR"]
 }
-if ($Conf["SEEDLING_PACKAGE_INDEX"]) {
-    $idx = $Conf["SEEDLING_PACKAGE_INDEX"]
+if ($Conf["ACORN_PACKAGE_INDEX"]) {
+    $idx = $Conf["ACORN_PACKAGE_INDEX"]
     if ($idx -match "://") {
         if (-not $env:UV_DEFAULT_INDEX) { $env:UV_DEFAULT_INDEX = $idx }
     } elseif (-not $env:UV_CONFIG_FILE) {
         # A directory of wheels: uv has no reliable env var for "flat
         # directory index, internet disabled", but honors a config file.
         # acorn-cli generates the same file from settings later.
-        $UvToml = Join-Path $SeedlingHome "system\config\uv.toml"
+        $UvToml = Join-Path $ACORNHome "system\config\uv.toml"
         @(
-            "# Generated by seedling from the ``package_index`` setting. Do not edit;"
+            "# Generated by acorn from the ``package_index`` setting. Do not edit;"
             "# change it with:  acorn config set package_index <url-or-directory>"
             "[[index]]"
-            'name = "seedling-offline"'
+            'name = "acorn-offline"'
             "url = `"$(To-FileUrl $idx)`""
             'format = "flat"'
             "default = true"
@@ -566,12 +566,12 @@ if ($Conf["SEEDLING_PACKAGE_INDEX"]) {
 
 
 # ---------------------------------------------------------------------------
-# 3. Install uv itself into seedling\bin
+# 3. Install uv itself into acorn\bin
 # ---------------------------------------------------------------------------
-$UvExe = Join-Path $SeedlingHome "system\bin\uv.exe"
+$UvExe = Join-Path $ACORNHome "system\bin\uv.exe"
 if (-not (Test-Path $UvExe)) {
-    Info "Installing uv into $SeedlingHome\system\bin ..."
-    $env:UV_INSTALL_DIR = "$SeedlingHome\system\bin"
+    Info "Installing uv into $ACORNHome\system\bin ..."
+    $env:UV_INSTALL_DIR = "$ACORNHome\system\bin"
     $env:UV_NO_MODIFY_PATH = "1"
     Invoke-RestMethod https://astral.sh/uv/install.ps1 | Invoke-Expression
 } else {
@@ -602,15 +602,15 @@ if (-not (Test-Path $UvExe)) { Die "uv install appears to have failed (not found
 #     "is not on your PATH" warning regardless -- confusing right after this
 #     script just added it.
 #
-#     SEEDLING_SKIP_PATH_REGISTER is a test-only escape hatch (set by
+#     ACORN_SKIP_PATH_REGISTER is a test-only escape hatch (set by
 #     run_powershell_install in tests/conftest.py): every installer test
-#     runs against a throwaway SEEDLING_HOME but the REAL registry -- there
+#     runs against a throwaway ACORN_HOME but the REAL registry -- there
 #     is no fake HKCU to redirect this into the way $PROFILE gets faked
 #     above, so tests opt out of this one step entirely rather than risk
 #     writing a test's tmp path into a real machine's PATH.
 # ---------------------------------------------------------------------------
-if (-not $env:SEEDLING_SKIP_PATH_REGISTER) {
-    $BinDir = Join-Path $SeedlingHome "system\bin"
+if (-not $env:ACORN_SKIP_PATH_REGISTER) {
+    $BinDir = Join-Path $ACORNHome "system\bin"
     $UserPath = [Environment]::GetEnvironmentVariable("PATH", "User")
     $UserPathEntries = @(if ($UserPath) { $UserPath -split ';' } else { @() })
     if ($UserPathEntries -notcontains $BinDir) {
@@ -624,54 +624,54 @@ if (-not $env:SEEDLING_SKIP_PATH_REGISTER) {
 }
 
 # ---------------------------------------------------------------------------
-# 4. Install the seedling CLI itself as an isolated uv tool
+# 4. Install the acorn CLI itself as an isolated uv tool
 # ---------------------------------------------------------------------------
-Info "Installing the seedling CLI ..."
-$env:UV_TOOL_DIR = "$SeedlingHome\system\tool"
-$env:UV_TOOL_BIN_DIR = "$SeedlingHome\system\bin"
-$env:UV_CACHE_DIR = "$SeedlingHome\system\cache\uv"
+Info "Installing the acorn CLI ..."
+$env:UV_TOOL_DIR = "$ACORNHome\system\tool"
+$env:UV_TOOL_BIN_DIR = "$ACORNHome\system\bin"
+$env:UV_CACHE_DIR = "$ACORNHome\system\cache\uv"
 & $UvExe tool install --force --reinstall (Join-Path $SrcDir "src")
 
-$SeedCli = Join-Path $SeedlingHome "system\bin\acorn-cli.exe"
-if (-not (Test-Path $SeedCli)) { Die "acorn-cli was not installed correctly." }
+$AcornCli = Join-Path $ACORNHome "system\bin\acorn-cli.exe"
+if (-not (Test-Path $AcornCli)) { Die "acorn-cli was not installed correctly." }
 
 # ---------------------------------------------------------------------------
 # 4b. Default environment: the newest stable Python plus a 'dev' venv (with
 #     the default packages) that every new shell auto-activates -- so a
 #     fresh install is immediately usable with plain `python`/`ipython`.
-#     Skip with SEEDLING_AUTO_SETUP="false" (env var or global.conf). Never
-#     fatal: a network hiccup here still leaves a working seedling.
+#     Skip with ACORN_AUTO_SETUP="false" (env var or global.conf). Never
+#     fatal: a network hiccup here still leaves a working acorn.
 # ---------------------------------------------------------------------------
-$AutoSetup = if ($env:SEEDLING_AUTO_SETUP) {
-    $env:SEEDLING_AUTO_SETUP
-} elseif ($Conf["SEEDLING_AUTO_SETUP"]) {
-    $Conf["SEEDLING_AUTO_SETUP"]
+$AutoSetup = if ($env:ACORN_AUTO_SETUP) {
+    $env:ACORN_AUTO_SETUP
+} elseif ($Conf["ACORN_AUTO_SETUP"]) {
+    $Conf["ACORN_AUTO_SETUP"]
 } else {
     "true"
 }
 
 $DevReady = $false
 if ($AutoSetup.ToLower() -eq "false") {
-    Info "Skipping default environment setup (SEEDLING_AUTO_SETUP=$AutoSetup)."
+    Info "Skipping default environment setup (ACORN_AUTO_SETUP=$AutoSetup)."
 } else {
     # VS Code setup starts FIRST, as a background job: it's independent of
     # the python/venv steps and dominated by a ~300MB download, so it
     # overlaps them instead of adding its whole duration to the install.
-    # SEEDLING_NO_LOG=1 keeps the background run from interleaving with the
+    # ACORN_NO_LOG=1 keeps the background run from interleaving with the
     # foreground acorn commands inside the daily log; its output is replayed
     # below (which also lands it in the install transcript). Idempotent
     # (skips if already present) and never fatal. Note: the job runs in its
     # own runspace where $ErrorActionPreference is the default 'Continue',
     # so uv/acorn-cli writing progress to stderr can't become a fatal
     # NativeCommandError there.
-    $AutoVscode = if ($env:SEEDLING_AUTO_VSCODE) {
-        $env:SEEDLING_AUTO_VSCODE
-    } elseif ($Conf["SEEDLING_AUTO_VSCODE"]) {
-        $Conf["SEEDLING_AUTO_VSCODE"]
+    $AutoVscode = if ($env:ACORN_AUTO_VSCODE) {
+        $env:ACORN_AUTO_VSCODE
+    } elseif ($Conf["ACORN_AUTO_VSCODE"]) {
+        $Conf["ACORN_AUTO_VSCODE"]
     } else {
         "true"
     }
-    # A profile that names an editor OUTRANKS SEEDLING_AUTO_VSCODE: a
+    # A profile that names an editor OUTRANKS ACORN_AUTO_VSCODE: a
     # deployment that asked for Spyder shouldn't also be handed ~300MB of VS
     # Code it never mentioned. Asked here rather than after `acorn apply`
     # because the VS Code job starts first (it overlaps the Python setup), so
@@ -682,9 +682,9 @@ if ($AutoSetup.ToLower() -eq "false") {
     $ProfileEditor = ""
     if ($ProfilePath) {
         try {
-            $env:SEEDLING_HOME = $SeedlingHome
-            $env:SEEDLING_NO_LOG = "1"
-            $ProfileEditor = (& $SeedCli apply $ProfilePath --print-editor | Out-String).Trim()
+            $env:ACORN_HOME = $ACORNHome
+            $env:ACORN_NO_LOG = "1"
+            $ProfileEditor = (& $AcornCli apply $ProfilePath --print-editor | Out-String).Trim()
         } catch {
             $ProfileEditor = ""
         }
@@ -699,7 +699,7 @@ if ($AutoSetup.ToLower() -eq "false") {
     if ($SkipVscode) {
         Info "Profile selects '$ProfileEditor' as the editor; skipping VS Code."
     } elseif ($AutoVscode.ToLower() -eq "false") {
-        Info "Skipping VS Code install (SEEDLING_AUTO_VSCODE=$AutoVscode)."
+        Info "Skipping VS Code install (ACORN_AUTO_VSCODE=$AutoVscode)."
     } else {
         Info "Setting up VS Code in the background (continues while Python is set up) ..."
         $VscodeJob = Start-Job -ScriptBlock {
@@ -707,13 +707,13 @@ if ($AutoSetup.ToLower() -eq "false") {
             # automatic variable, and binding a parameter to it kills the
             # job instantly ("Cannot overwrite variable home").
             param($cli, $seedHome)
-            $env:SEEDLING_HOME = $seedHome
-            $env:SEEDLING_NO_LOG = "1"
+            $env:ACORN_HOME = $seedHome
+            $env:ACORN_NO_LOG = "1"
             # -y: this runs as a background job with no console to prompt at,
-            # and the user already opted in via SEEDLING_AUTO_VSCODE.
+            # and the user already opted in via ACORN_AUTO_VSCODE.
             & $cli vscode --no-open -y
             "SEEDVSC_EXIT=$LASTEXITCODE"
-        } -ArgumentList $SeedCli, $SeedlingHome
+        } -ArgumentList $AcornCli, $ACORNHome
     }
 
     if ($ProfilePath) {
@@ -722,30 +722,30 @@ if ($AutoSetup.ToLower() -eq "false") {
         # rather than layering on top of it -- otherwise every machine would
         # carry a 'dev' venv the admin never asked for.
         Info "Applying deployment profile: $ProfilePath"
-        $env:SEEDLING_HOME = $SeedlingHome
-        & $SeedCli python
-        if ($LASTEXITCODE -eq 0) { & $SeedCli apply $ProfilePath }
+        $env:ACORN_HOME = $ACORNHome
+        & $AcornCli python
+        if ($LASTEXITCODE -eq 0) { & $AcornCli apply $ProfilePath }
         if ($LASTEXITCODE -eq 0) {
             $DevReady = $true
         } else {
             Warn "The deployment profile didn't fully apply."
             Warn "Re-run it later with:  acorn apply"
         }
-    } elseif (Test-Path (Join-Path $SeedlingHome "python\venvs\dev")) {
+    } elseif (Test-Path (Join-Path $ACORNHome "python\venvs\dev")) {
         Info "Default 'dev' venv already exists, leaving it as-is."
         $DevReady = $true
     } else {
         Info "Setting up the default environment: newest Python + a 'dev' venv ..."
-        $env:SEEDLING_HOME = $SeedlingHome
-        & $SeedCli python
-        if ($LASTEXITCODE -eq 0) { & $SeedCli venv dev }
+        $env:ACORN_HOME = $ACORNHome
+        & $AcornCli python
+        if ($LASTEXITCODE -eq 0) { & $AcornCli venv dev }
         if ($LASTEXITCODE -eq 0) {
             # Make 'dev' the venv new shells auto-activate -- unless the user
             # already chose one (reinstall case).
-            $env:SEEDLING_NO_LOG = "1"
-            $existingDefault = & $SeedCli config get default_venv
-            Remove-Item Env:SEEDLING_NO_LOG -ErrorAction SilentlyContinue
-            if (-not $existingDefault) { & $SeedCli config set default_venv dev }
+            $env:ACORN_NO_LOG = "1"
+            $existingDefault = & $AcornCli config get default_venv
+            Remove-Item Env:ACORN_NO_LOG -ErrorAction SilentlyContinue
+            if (-not $existingDefault) { & $AcornCli config set default_venv dev }
             $DevReady = $true
         } else {
             Warn "Default environment setup didn't finish (network problem?)."
@@ -766,7 +766,7 @@ if ($AutoSetup.ToLower() -eq "false") {
         # status file ("<phase> <done> <total>"); poll it and repaint one
         # console line in place. Only repaint on change, so the install
         # transcript doesn't fill with duplicate frames.
-        $StatusFile = Join-Path $SeedlingHome "extensions\vscode\setup-status"
+        $StatusFile = Join-Path $ACORNHome "extensions\vscode\setup-status"
         $lastBar = ""
         while ($VscodeJob.State -eq "Running") {
             Start-Sleep -Milliseconds 500
@@ -819,36 +819,36 @@ if ($AutoSetup.ToLower() -eq "false") {
 # 5. Write the `acorn` PowerShell function and hook it into $PROFILE
 # ---------------------------------------------------------------------------
 Info "Writing shell integration ..."
-$templatePath = Join-Path $SrcDir "src\seedling\shell\acorn.ps1.template"
+$templatePath = Join-Path $SrcDir "src\acorn\shell\acorn.ps1.template"
 $content = Get-Content $templatePath -Raw
-$content = $content -replace [regex]::Escape("__SEEDLING_HOME_PLACEHOLDER__"), $SeedlingHome
-$seedPs1 = Join-Path $SeedlingHome "system\shell\acorn.ps1"
+$content = $content -replace [regex]::Escape("__ACORN_HOME_PLACEHOLDER__"), $ACORNHome
+$seedPs1 = Join-Path $ACORNHome "system\shell\acorn.ps1"
 Set-Content -Path $seedPs1 -Value $content -Encoding UTF8
 
 $hookLine = ". `"$seedPs1`""
 
-function Add-SeedlingHook($ProfilePath) {
+function Add-ACORNHook($ProfilePath) {
     if (-not (Test-Path $ProfilePath)) {
         New-Item -ItemType File -Force -Path $ProfilePath | Out-Null
     }
-    # Drop hook lines left by older seedling layouts (e.g. ~\seedling\shell\
+    # Drop hook lines left by older acorn layouts (e.g. ~\acorn\shell\
     # before it moved under system\) before adding the current one, so a
     # reinstall never leaves a stale line erroring in every new shell.
     $lines = @(Get-Content $ProfilePath -ErrorAction SilentlyContinue)
     $cleaned = @($lines | Where-Object {
-        -not ($_.Contains($SeedlingHome) -and ($_ -match "acorn\.(ps1|sh)") -and $_ -ne $hookLine)
+        -not ($_.Contains($ACORNHome) -and ($_ -match "acorn\.(ps1|sh)") -and $_ -ne $hookLine)
     })
     if ($cleaned.Count -ne $lines.Count) {
         Set-Content -Path $ProfilePath -Value $cleaned
-        Info "Removed stale seedling hook line(s) from $ProfilePath"
+        Info "Removed stale acorn hook line(s) from $ProfilePath"
     }
     if (-not ($cleaned -contains $hookLine)) {
-        Add-Content -Path $ProfilePath -Value "`n# seedling`n$hookLine"
-        Info "Added seedling to $ProfilePath"
+        Add-Content -Path $ProfilePath -Value "`n# acorn`n$hookLine"
+        Info "Added acorn to $ProfilePath"
     }
 }
 
-Add-SeedlingHook $PROFILE
+Add-ACORNHook $PROFILE
 
 # Windows PowerShell (5.1, "Desktop" edition) and PowerShell (6+, "Core")
 # keep SEPARATE profile files under Documents\WindowsPowerShell\ and
@@ -866,14 +866,14 @@ Add-SeedlingHook $PROFILE
 # convenience.
 if ($PSVersionTable.PSEdition -eq "Core" -and $PROFILE -match "\\PowerShell\\") {
     $siblingProfile = $PROFILE -replace "\\PowerShell\\", "\WindowsPowerShell\"
-    Add-SeedlingHook $siblingProfile
+    Add-ACORNHook $siblingProfile
 } elseif ($PSVersionTable.PSEdition -ne "Core" -and $PROFILE -match "\\WindowsPowerShell\\" `
           -and (Get-Command pwsh -ErrorAction SilentlyContinue)) {
     $siblingProfile = $PROFILE -replace "\\WindowsPowerShell\\", "\PowerShell\"
-    Add-SeedlingHook $siblingProfile
+    Add-ACORNHook $siblingProfile
 }
 
-Info "seedling is installed."
+Info "acorn is installed."
 Write-Host ""
 if ($DevReady) {
     Write-Host "Open a new terminal (or run: . `"$seedPs1`") --"
@@ -881,7 +881,7 @@ if ($DevReady) {
     Write-Host "  python / ipython          # the newest Python, ready to go"
     Write-Host "  acorn install <package>    # add packages to 'dev'"
     Write-Host "  acorn venv myproject       # create another venv"
-    Write-Host "  acorn summary              # see everything seedling has installed"
+    Write-Host "  acorn summary              # see everything acorn has installed"
 } else {
     Write-Host "Open a new terminal (or run: . `"$seedPs1`") and try:"
     Write-Host "  acorn python               # install the newest Python"
@@ -899,5 +899,5 @@ Write-Host "you want to pull in changes."
 # most for piped `irm | iex` installs: without it the transcript keeps
 # recording the user's session long after the install finished. Guarded:
 # transcription may never have started (locked logs dir).
-Write-Host "seedling install completed (exit code 0)"
+Write-Host "acorn install completed (exit code 0)"
 try { Stop-Transcript | Out-Null } catch { }

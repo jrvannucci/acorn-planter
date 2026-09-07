@@ -1,7 +1,7 @@
 # Command reference
 
 Every `acorn` command and flag, as currently implemented. For the guided
-tour, start with **[Using seedling](GUIDE.md)**.
+tour, start with **[Using acorn](GUIDE.md)**.
 
 ```{raw} html
 :file: _include/command-explorer.html

@@ -1,4 +1,4 @@
-"""Sphinx configuration for the seedling documentation site.
+"""Sphinx configuration for the acorn documentation site.
 
 The docs are the same Markdown the repo already ships -- MyST-Parser renders
 it, so there's no second source of truth to keep in sync:
@@ -7,7 +7,7 @@ it, so there's no second source of truth to keep in sync:
     time (see ``_generate_home`` below), so everything in the README is on the
     docs site and the two never drift. It's git-ignored -- don't edit it.
   * The rest are rendered as-is, in two tracks: ``GUIDE`` / ``COMMANDS`` /
-    ``DESIGN`` for people using seedling, ``DEPLOYMENT`` / ``OFFLINE`` for
+    ``DESIGN`` for people using acorn, ``DEPLOYMENT`` / ``OFFLINE`` for
     people deploying it. ``DOCUMENTATION.md`` is the map that routes between
     them.
 
@@ -40,18 +40,18 @@ _HERE = Path(__file__).resolve().parent
 _REPO = _HERE.parent
 
 # Repo-root files the README links to (that aren't docs pages) point here.
-# Derived from seedling's own PUBLIC_REPO rather than spelled out again, so a
+# Derived from acorn's own PUBLIC_REPO rather than spelled out again, so a
 # fork or a repo rename doesn't leave the docs site linking at the old owner.
 # Imported straight from the source tree (no install needed), the same way
-# installers/build_offline.py borrows seedling's helpers.
+# installers/build_offline.py borrows acorn's helpers.
 sys.path.insert(0, str(_REPO / "src"))
-from seedling import PUBLIC_REPO  # noqa: E402
+from acorn import PUBLIC_REPO  # noqa: E402
 
 _GH_BLOB = PUBLIC_REPO.removesuffix(".git") + "/blob/main/"
 
-project = "seedling"
-author = "seedling contributors"
-copyright = "seedling contributors"
+project = "ACORN"
+author = "acorn contributors"
+copyright = "acorn contributors"
 
 extensions = [
     "myst_parser",
@@ -80,7 +80,7 @@ suppress_warnings = ["config.cache"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
-html_title = "seedling"
+html_title = "ACORN"
 
 # custom.css widens the content column and lets table cells wrap, so the
 # wide reference tables (the profile comparison matrix, the command
@@ -111,9 +111,9 @@ def _generate_home(*_args) -> None:
     body = re.sub(r"(!?\[[^\]]*\])\(([^)]+)\)", _fix, readme)
 
     toctree = (
-        "\n\n```{toctree}\n:maxdepth: 2\n:hidden:\n:caption: Using seedling\n\n"
+        "\n\n```{toctree}\n:maxdepth: 2\n:hidden:\n:caption: Using acorn\n\n"
         "GUIDE\nCOMMANDS\nDESIGN\n```\n"
-        "\n```{toctree}\n:maxdepth: 2\n:hidden:\n:caption: Deploying seedling\n\n"
+        "\n```{toctree}\n:maxdepth: 2\n:hidden:\n:caption: Deploying acorn\n\n"
         "DEPLOYMENT\nPROFILES\nPROFILE-EXAMPLES\nCUSTOM-COMMANDS\nOFFLINE\n"
         "LICENSING\n```\n"
         "\n```{toctree}\n:maxdepth: 1\n:hidden:\n:caption: More\n\n"

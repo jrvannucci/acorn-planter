@@ -20,8 +20,8 @@
     <path d="M12 26 C12 15 4 13 -2 15 C-2 24 4 29 12 26 Z" fill="#74C69D" stroke="#1B4332" stroke-width="1.6" stroke-linejoin="round"/>
     <path d="M12 21 C12 12 22 10 28 12 C28 20 22 24 12 21 Z" fill="#95D5B2" stroke="#1B4332" stroke-width="1.6" stroke-linejoin="round"/>
   </g>
-  <text x="118" y="78" class="head fg" font-size="46" font-weight="700">seedling</text>
-  <text x="60" y="118" class="fmute" font-size="19" font-style="italic">A tidy, single-folder global Python distributor and local environment manager</text>
+  <text x="118" y="78" class="head fg" font-size="46" font-weight="700">ACORN</text>
+  <text x="60" y="118" class="fmute" font-size="19" font-style="italic">Global Python environments and development suites, ready when you are</text>
 
   <!-- ============ "what it manages" eyebrow ============ -->
   <text x="800" y="160" text-anchor="middle" class="fsage" font-size="15" font-weight="700" letter-spacing="1.2">
@@ -144,7 +144,7 @@
 
   <!-- ============ Foundation ============ -->
   <rect x="60" y="657" width="1480" height="98" rx="14" class="barfill"/>
-  <text x="800" y="695" text-anchor="middle" class="fw" font-size="22" font-weight="700">One folder: ~/seedling</text>
+  <text x="800" y="695" text-anchor="middle" class="fw" font-size="22" font-weight="700">One folder: ~/acorn</text>
   <text x="800" y="725" text-anchor="middle" class="fw" font-size="16" opacity="0.88">no messy global installs, no scattered config — fully removable, no trace left behind</text>
 
   <!-- ============ Closing line ============ -->

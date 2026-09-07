@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 from conftest import make_venv_dirs
 
-from seedling import lock, paths
+from acorn import lock, paths
 
 
 def test_second_holder_is_excluded(home):
@@ -96,7 +96,7 @@ def test_same_venv_contends_however_it_is_spelled(home):
 
 def test_active_venv_lock_is_a_noop_without_a_venv(home, monkeypatch):
     """With no VIRTUAL_ENV, uv falls back to a .venv in the working
-    directory -- outside seedling's world, and not its to serialize."""
+    directory -- outside acorn's world, and not its to serialize."""
     monkeypatch.delenv("VIRTUAL_ENV", raising=False)
     with lock.active_venv_lock() as acquired:
         assert acquired is False
@@ -117,7 +117,7 @@ def test_active_venv_lock_follows_virtual_env(home, monkeypatch):
 
 def test_unwritable_lock_dir_does_not_block_the_command(home, monkeypatch):
     """Losing serialization is bad; refusing to work at all because a lock
-    file couldn't be written is worse -- the same trade-off seedling already
+    file couldn't be written is worse -- the same trade-off acorn already
     makes for its logs."""
     def _boom():
         raise OSError("read-only file system")

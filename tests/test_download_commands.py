@@ -1,19 +1,19 @@
 """acorn download-whls / download-requirements -- the offline wheel-bundle
 builders. uv's `pip download` is stubbed (monkeypatched uv_tool.run), so these
-run offline and fast; what's under test is the command line seedling hands to
+run offline and fast; what's under test is the command line acorn hands to
 `uvx pip download` and how it wires into the offline `package_index` setting."""
 
 from __future__ import annotations
 
 import pytest
 
-from seedling import config
+from acorn import config
 
 
 @pytest.fixture
 def uv_calls(monkeypatch):
     """Capture the argument list of every uv_tool.run call instead of running uv."""
-    from seedling import uv_tool
+    from acorn import uv_tool
     calls: list[list[str]] = []
     monkeypatch.setattr(uv_tool, "run", lambda args, **kw: calls.append(list(args)))
     return calls
@@ -135,7 +135,7 @@ def twine_calls(monkeypatch):
     """Capture args AND kwargs -- the env is where the token has to travel,
     so a test that only saw argv couldn't tell the two apart."""
     import subprocess
-    from seedling import uv_tool
+    from acorn import uv_tool
     seen: list[tuple[list[str], dict]] = []
 
     def _run(args, **kw):
@@ -173,7 +173,7 @@ def test_upload_publishes_every_distribution_via_uvx_twine(
 def test_the_token_travels_in_the_environment_not_argv(
         run_cli, home, tmp_path, twine_calls):
     """A command line is visible to `ps`, lands in shell history, and is
-    echoed into seedling's own command log."""
+    echoed into acorn's own command log."""
     d = _wheelhouse(tmp_path)
     config.set_value("package_upload_url", "https://pypi.corp/api/pypi/local/")
     config.set_value("package_upload_token", "s3cret-token")

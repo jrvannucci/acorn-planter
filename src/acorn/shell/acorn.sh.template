@@ -1,0 +1,196 @@
+# acorn shell integration (bash/zsh)
+# Installed by install.sh. Sourced from your ~/.bashrc or ~/.zshrc.
+#
+# `acorn` is a shell FUNCTION, not just a binary, because `acorn activate`
+# needs to modify environment variables in *your current shell* -- something
+# a plain subprocess can never do.
+
+__ACORN_HOME="__ACORN_HOME_PLACEHOLDER__"
+__ACORN_CLI="$__ACORN_HOME/system/bin/acorn-cli"
+
+# acorn-cli itself resolves the acorn home from this variable (falling
+# back to ~/acorn). Exporting it here is what makes a custom
+# ACORN_HOME_DIR from global.conf work at runtime, not just at
+# install time. For default installs this is a no-op.
+export ACORN_HOME="$__ACORN_HOME"
+
+# acorn-cli/uv/micromamba themselves, so they run as bare commands in ANY
+# process that inherits this shell's environment -- not just one that goes
+# through the `acorn` function below. This is what makes `acorn-cli` (and
+# `uv`, `micromamba`) reachable from a script, a CI job, or an AI coding
+# agent's shell tool: PATH is inherited across subshells and `exec`, a shell
+# FUNCTION is not. The function still wins for a person typing `acorn` at
+# this prompt (bash/zsh resolve functions before PATH).
+case ":$PATH:" in
+    *":$__ACORN_HOME/system/bin:"*) ;;
+    *) PATH="$__ACORN_HOME/system/bin:$PATH"; export PATH ;;
+esac
+
+# Command-line tools installed with `acorn forge-install` (from conda-forge) put
+# their launchers here; add it to PATH so they run as bare commands. Guarded so
+# repeated sourcing never stacks duplicate entries.
+case ":$PATH:" in
+    *":$__ACORN_HOME/system/conda/shims:"*) ;;
+    *) PATH="$__ACORN_HOME/system/conda/shims:$PATH"; export PATH ;;
+esac
+
+# Same, for Python applications installed with `acorn tool-install` (from PyPI,
+# via uv). A separate directory because it's a separate tool root -- see
+# uv_tool.tool_install_env.
+case ":$PATH:" in
+    *":$__ACORN_HOME/system/shims:"*) ;;
+    *) PATH="$__ACORN_HOME/system/shims:$PATH"; export PATH ;;
+esac
+
+# If the venv this shell has active was just deleted (purge, remove-user,
+# remove-venv(-all), remove-python...), deactivate it instead of leaving a
+# dangling prompt pointing at a folder that no longer exists. Only the
+# shell itself can do this -- acorn-cli is a child process.
+__acorn_deactivate_if_gone() {
+    if [ -n "${VIRTUAL_ENV:-}" ] && [ ! -d "$VIRTUAL_ENV" ]; then
+        if command -v deactivate >/dev/null 2>&1 || declare -f deactivate >/dev/null 2>&1; then
+            deactivate
+            echo "(deactivated: the venv this shell had active no longer exists)"
+        fi
+    fi
+}
+
+acorn() {
+    if [ "$1" = "activate" ]; then
+        shift
+        local script
+        script="$("$__ACORN_CLI" activate "$@" --print-path)"
+        local status=$?
+        if [ $status -ne 0 ] || [ -z "$script" ]; then
+            "$__ACORN_CLI" activate "$@"
+            return $status
+        fi
+        # shellcheck disable=SC1090
+        source "$script"
+        echo "Activated${1:+: $1}"
+        return 0
+    fi
+
+    if [ "$1" = "repo-cd" ]; then
+        shift
+        local target
+        target="$("$__ACORN_CLI" repo-cd "$@" --print-path)"
+        local status=$?
+        if [ $status -ne 0 ] || [ -z "$target" ]; then
+            "$__ACORN_CLI" repo-cd "$@"
+            return $status
+        fi
+        cd "$target" || return 1
+        echo "-> $target"
+        return 0
+    fi
+
+    if [ "$1" = "deactivate" ]; then
+        if command -v deactivate >/dev/null 2>&1 || declare -f deactivate >/dev/null 2>&1; then
+            deactivate
+        else
+            echo "No active acorn venv to deactivate."
+        fi
+        return 0
+    fi
+
+    if [ "$1" = "purge" ] || [ "$1" = "remove-user" ] || [ "$1" = "purge-and-reinstall" ]; then
+        # These commands may finish their own deletion via an invisible
+        # background helper. acorn-cli has exited by then, so this
+        # still-loaded function is the only thing left that can tell the
+        # user whether the cleanup actually succeeded -- and, for
+        # purge-and-reinstall, run the reinstall acorn-cli staged before it
+        # deleted its own executable.
+        "$__ACORN_CLI" "$@"
+        __acorn_status=$?
+        __acorn_deactivate_if_gone
+        __acorn_marker="${TMPDIR:-/tmp}/acorn-cleanup.pending"
+        if [ "$__acorn_status" -eq 0 ] && [ -f "$__acorn_marker" ]; then
+            printf 'Waiting for the background cleanup to finish '
+            __acorn_tries=0
+            while [ -d "$__ACORN_HOME" ] && [ "$__acorn_tries" -lt 30 ]; do
+                sleep 1
+                printf '.'
+                __acorn_tries=$((__acorn_tries + 1))
+            done
+            echo ""
+            if [ -d "$__ACORN_HOME" ]; then
+                echo "Cleanup hasn't finished: files remain at $__ACORN_HOME."
+                echo "Something may still be holding them open; delete the folder by hand if it persists."
+            else
+                echo "Confirmed: $__ACORN_HOME has been fully removed."
+            fi
+        fi
+        # Reinstall only after the wipe is confirmed gone -- the installer
+        # must never run against a half-deleted tree.
+        __acorn_reinstall="${TMPDIR:-/tmp}/acorn-reinstall.sh"
+        if [ "$1" = "purge-and-reinstall" ] && [ "$__acorn_status" -eq 0 ] \
+           && [ ! -d "$__ACORN_HOME" ] && [ -f "$__acorn_reinstall" ]; then
+            echo ""
+            echo "Reinstalling acorn ..."
+            sh "$__acorn_reinstall"
+            __acorn_status=$?
+            rm -f "$__acorn_reinstall"
+        fi
+        return $__acorn_status
+    fi
+
+    "$__ACORN_CLI" "$@"
+    __acorn_status=$?
+    __acorn_deactivate_if_gone
+    return $__acorn_status
+}
+
+# Auto-activate the configured default venv in every new shell
+# (set one with: acorn config set default_venv <name>). Skipped when some
+# venv is already active, or when auto-activation is turned off with
+# `acorn auto-activate False`. ACORN_NO_LOG keeps this startup query from
+# spamming acorn's command log on every shell launch.
+if [ -z "$VIRTUAL_ENV" ]; then
+    # Honour `acorn auto-activate False` without a acorn-cli launch: settings.json
+    # is written by Python's json.dumps (deterministic formatting), so a plain
+    # grep for the disabled state is reliable, and skipping here also saves the
+    # config-get process below. Only an explicit `false` disables it; an
+    # absent key (older installs) stays enabled.
+    __acorn_settings="$__ACORN_HOME/system/config/settings.json"
+    if [ -f "$__acorn_settings" ] && \
+       grep -Eq '"auto_activate"[[:space:]]*:[[:space:]]*false' "$__acorn_settings"; then
+        __acorn_default_venv=""
+    else
+        __acorn_default_venv="$(ACORN_NO_LOG=1 "$__ACORN_CLI" config get default_venv 2>/dev/null)"
+    fi
+    if [ -n "$__acorn_default_venv" ]; then
+        acorn activate "$__acorn_default_venv" >/dev/null 2>&1 \
+            || echo "acorn: couldn't auto-activate default venv '$__acorn_default_venv'"
+    fi
+    unset __acorn_default_venv __acorn_settings
+fi
+
+# Run configured startup commands (see docs/CUSTOM-COMMANDS.md), in order, in
+# EVERY new shell -- unlike default_venv auto-activation above, this is not
+# skipped just because a venv is already active: it is a deliberate hook for
+# an organization's own startup routine (a connectivity check, a sync, a
+# reminder), not tied to venv state at all. A failing command warns and does
+# not stop the rest, or the shell from opening -- a typo in this list must
+# not lock anyone out of their terminal.
+#
+# No `jq` assumed (this has to work on a bare offline machine): settings.json
+# is written by Python's json.dumps(indent=2, sort_keys=True), so its
+# formatting is deterministic and a plain sed extraction is reliable, the
+# same reasoning that already lets auto_activate above be a plain grep. This
+# is only used to decide WHETHER anything is configured, so an org that
+# hasn't set startup_commands pays nothing at all; ONLY the actual running
+# of the list is handed to acorn-cli, and as ONE process
+# (`acorn custom --startup`, which loops internally) rather than one acorn-cli
+# cold start per configured name -- terminal-open latency shouldn't scale
+# with how many startup commands an org has.
+__acorn_settings_startup="$__ACORN_HOME/system/config/settings.json"
+if [ -f "$__acorn_settings_startup" ]; then
+    __acorn_startup_names="$(sed -n '/"startup_commands": \[/,/\]/p' "$__acorn_settings_startup" \
+        | sed -n 's/^[[:space:]]*"\(.*\)"[,]*[[:space:]]*$/\1/p')"
+    if [ -n "$__acorn_startup_names" ]; then
+        "$__ACORN_CLI" custom --startup
+    fi
+    unset __acorn_startup_names
+fi
+unset __acorn_settings_startup

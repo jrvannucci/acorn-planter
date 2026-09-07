@@ -43,7 +43,7 @@ packages = [
     "pandas==2.2.3",
 ]
 default = true
-# Only the four pinned packages above -- not seedling's usual ipython/ruff/
+# Only the four pinned packages above -- not acorn's usual ipython/ruff/
 # ipykernel. Everyone gets the same list, and the marker's machine matches.
 default_packages = false
 ```
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
 ```sh
 # global.conf
-SEEDLING_CUSTOM_COMMANDS="custom-commands.toml"
+ACORN_CUSTOM_COMMANDS="custom-commands.toml"
 ```
 
 No SDK, no special orchestration API — the script shells out to `acorn`

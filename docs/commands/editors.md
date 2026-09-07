@@ -5,9 +5,9 @@
 ## `acorn vscode [path] [--reinstall] [--no-open] [-y]`
 
 Opens VS Code at `path` (defaults to the current directory), installing a
-fully portable copy into `~/seedling/extensions/vscode/app` first if none
+fully portable copy into `~/acorn/extensions/vscode/app` first if none
 exists — though a default install already did that up front (see
-`SEEDLING_AUTO_VSCODE` in `global.conf`), so normally this just opens.
+`ACORN_AUTO_VSCODE` in `global.conf`), so normally this just opens.
 `--no-open` installs/verifies without opening a window (what the
 installer's default setup uses).
 
@@ -16,8 +16,8 @@ installer's default setup uses).
   on a metered or locked-down connection. It prints the size and prompts;
   declining exits 0 and tells you how to install later. Once VS Code *is*
   installed there is no prompt — opening stays instant.
-- `-y`/`--yes` (or `SEEDLING_YES=1`) skips that prompt, and
-  `--non-interactive` (or `SEEDLING_NONINTERACTIVE=1`) skips the install
+- `-y`/`--yes` (or `ACORN_YES=1`) skips that prompt, and
+  `--non-interactive` (or `ACORN_NONINTERACTIVE=1`) skips the install
   rather than waiting for input. `--reinstall` is exempt: asking for a
   reinstall already says you want the download.
 - `acorn vscode-repo` shares the same gate and the same flags, since it can
@@ -34,7 +34,7 @@ installer's default setup uses).
   - `python.terminal.activateEnvironment: true`
   - `python.analysis.typeCheckingMode: "basic"`
   - `files.autoSave: "onFocusChange"`
-  - `python.venvPath` set to `~/seedling/python/venvs`, so every `acorn venv`
+  - `python.venvPath` set to `~/acorn/python/venvs`, so every `acorn venv`
     shows up in VS Code's interpreter picker automatically
   - Telemetry, auto-update, and extension auto-update all turned off
 - **Default extensions** installed on first install:
@@ -58,11 +58,11 @@ installer's default setup uses).
   with a warning rather than falling back to that behavior.
 - All subprocess calls (extension installs, opening a window) run with
   stdout/stderr/stdin redirected away from your terminal, and the window-
-  open call is fully detached from seedling's own process — `acorn vscode`
+  open call is fully detached from acorn's own process — `acorn vscode`
   returns immediately either way and never blocks on VS Code's own output.
 - Idempotent: a plain `acorn vscode` with no `--reinstall` only ever
   downloads/reinstalls/re-adds extensions on the very first run for a given
-  `~/seedling`; every call after that just opens a window.
+  `~/acorn`; every call after that just opens a window.
 - Platform support: downloads the correct stable-build archive for
   Windows (`win32-x64-archive`), macOS (`darwin` / `darwin-arm64`), and
   Linux (`linux-x64` / `linux-arm64`) automatically.
@@ -94,21 +94,21 @@ MATLAB or R usually want. Same shape as `acorn vscode`, and it asks before
 its first-time ~200 MB download in exactly the same way.
 
 `-y`/`--yes` skips the first-run "install this ~200 MB?" prompt;
-`--non-interactive` (or `SEEDLING_NONINTERACTIVE=1`) refuses to prompt at
+`--non-interactive` (or `ACORN_NONINTERACTIVE=1`) refuses to prompt at
 all and aborts instead — the same two shared confirmation knobs every
-consequential-but-not-destructive prompt in seedling honors (see
+consequential-but-not-destructive prompt in acorn honors (see
 [Non-interactive mode & previews](../DESIGN.md#non-interactive-mode--previews)).
 
 Underneath it's `acorn tool-install spyder`, but the command exists because
 three things have to be arranged that a plain application install can't
 know about:
 
-- **Its settings stay inside seedling.** Spyder would otherwise write to
-  `~/.config/spyder-6` or `%APPDATA%`; seedling points it at
-  `~/seedling/extensions/spyder-config` (`--conf-dir`), so `acorn purge`
+- **Its settings stay inside acorn.** Spyder would otherwise write to
+  `~/.config/spyder-6` or `%APPDATA%`; acorn points it at
+  `~/acorn/extensions/spyder-config` (`--conf-dir`), so `acorn purge`
   still leaves nothing behind.
 - **It's pointed at a venv.** Unlike VS Code, whose Python extension
-  discovers environments itself, Spyder has to be told. seedling writes the
+  discovers environments itself, Spyder has to be told. acorn writes the
   interpreter into its `spyder.ini`, **merging** rather than overwriting, so
   your own Spyder settings survive.
 - **`spyder-kernels` is installed into that venv**, pinned to the minor
@@ -124,7 +124,7 @@ Most specific wins:
    exist is an error, not a fall back to a different one.
 2. **The venv active in this shell** (`VIRTUAL_ENV`) — so `acorn activate
    analysis && acorn spyder` gives you that environment, the same way
-   `acorn install` targets it. Any active venv counts, seedling-managed or
+   `acorn install` targets it. Any active venv counts, acorn-managed or
    not.
 3. **`default_venv`** — so it still works from a shell with nothing
    activated.
@@ -136,16 +136,16 @@ packages; it says so.
 
 > **Close Spyder before switching venvs.** A running instance won't pick up
 > the new interpreter, and Spyder rewrites its own config on exit — so it can
-> overwrite the setting seedling just wrote.
+> overwrite the setting acorn just wrote.
 
 - Installing `spyder-kernels` may **downgrade `ipykernel`** in that venv:
-  it requires `ipykernel<7`, and seedling's default venv packages install a
+  it requires `ipykernel<7`, and acorn's default venv packages install a
   newer one, so this happens on a stock venv. It's required for Spyder's
-  console to work at all, and seedling says so explicitly when it happens —
+  console to work at all, and acorn says so explicitly when it happens —
   including that anything else in that venv (Jupyter, VS Code notebooks)
   gets the older version too. The cap is `spyder-kernels`', not Spyder's,
   and upstream is already relaxing it (3.2 raises it to `<7.3`); because
-  seedling reads the required version from Spyder's own environment rather
+  acorn reads the required version from Spyder's own environment rather
   than pinning one, that fixes itself when it ships.
 
 > **x86_64 only.** Spyder comes from PyPI, and PyQt5's Qt payload publishes

@@ -69,14 +69,14 @@ def _varrow(x: float, y1: float, y2: float) -> str:
 
 
 def build_install_flow() -> None:
-    """Run the one-liner -> seedling sets up everything -> open a terminal
+    """Run the one-liner -> acorn sets up everything -> open a terminal
     -> python just works (highlighted). A straight left-to-right chain."""
     w, h = 1040, 150
     box_h = 84
     y = (h - box_h) / 2
     boxes = [
         (190, ["Run the", "one-liner"], ICE, NAVY, NAVY, False),
-        (260, ["seedling sets up everything", "Python needs, automatically"], ICE, NAVY, NAVY, False),
+        (260, ["acorn sets up everything", "Python needs, automatically"], ICE, NAVY, NAVY, False),
         (190, ["Open a new", "terminal"], ICE, NAVY, NAVY, False),
         (330, ["python just works",
                "acorn install requests adds packages",
@@ -138,7 +138,7 @@ def build_lifecycle() -> None:
 
 def build_why_vs_usual() -> None:
     """Getting started with Python -> branches into "the usual way" (red)
-    and "with seedling" (green/navy)."""
+    and "with acorn" (green/navy)."""
     w, h = 760, 300
     top_w, top_h = 300, 56
     top_x, top_y = (w - top_w) / 2, 20
@@ -161,7 +161,7 @@ def build_why_vs_usual() -> None:
     svg.append(_varrow(right_cx, branch_y, label_y + 24))
 
     svg.append(f'<text x="{left_cx:.0f}" y="{label_y:.0f}" text-anchor="middle" class="body" font-size="13.5" font-weight="700" fill="{NAVY}">The usual way</text>')
-    svg.append(f'<text x="{right_cx:.0f}" y="{label_y:.0f}" text-anchor="middle" class="body" font-size="13.5" font-weight="700" fill="{NAVY}">With seedling</text>')
+    svg.append(f'<text x="{right_cx:.0f}" y="{label_y:.0f}" text-anchor="middle" class="body" font-size="13.5" font-weight="700" fill="{NAVY}">With acorn</text>')
 
     svg.append(_wrap_box(top_x, top_y, top_w, top_h, ["Getting started with Python"],
                          fill=NAVY, text_fill=WHITE, stroke=NAVY, bold_first=True))

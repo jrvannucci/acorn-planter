@@ -1,8 +1,8 @@
 # Third-party notices
 
-seedling is licensed under the Apache License, Version 2.0 — see
+acorn is licensed under the Apache License, Version 2.0 — see
 [LICENSE](LICENSE). This file documents third-party software in relation to
-seedling: what it bundles (nothing), and what it downloads on your behalf.
+acorn: what it bundles (nothing), and what it downloads on your behalf.
 
 For the redistribution question specifically — what *you* may copy onto a
 share when you build an offline bundle — see
@@ -10,9 +10,9 @@ share when you build an offline bundle — see
 
 ---
 
-## seedling bundles no third-party code
+## acorn bundles no third-party code
 
-- **seedling's runtime has no third-party dependencies.** It runs on the
+- **acorn's runtime has no third-party dependencies.** It runs on the
   Python standard library alone (`dependencies = []` in
   [`src/pyproject.toml`](src/pyproject.toml)); there is nothing to vendor and
   nothing to attribute here.
@@ -21,13 +21,13 @@ share when you build an offline bundle — see
   test asserts no binary payload is ever tracked.
 
 So there is no bundled third-party software carrying its own license into
-seedling's distribution.
+acorn's distribution.
 
 ---
 
-## Software seedling downloads at your direction
+## Software acorn downloads at your direction
 
-seedling is a fetcher: at your command it downloads and manages the tools
+acorn is a fetcher: at your command it downloads and manages the tools
 below from their publishers. It does **not** redistribute them, and it grants
 you no rights to them — your relationship is with each publisher, on their
 terms. They are listed here so you know what is involved and under what
@@ -44,7 +44,7 @@ license.
 | [VSCodium](https://github.com/VSCodium/vscodium) *(optional alternative)* | VSCodium releases | MIT |
 | [Open VSX](https://open-vsx.org) extensions *(optional alternative)* | Eclipse Foundation | Per extension, openly licensed |
 
-Everything in the first three rows is required for seedling's core job of
+Everything in the first three rows is required for acorn's core job of
 managing interpreters, environments, and packages; every other row is
 optional. See [docs/LICENSING.md](docs/LICENSING.md) for which of these
 restrict redistribution and how `build-offline` handles them.
@@ -53,7 +53,7 @@ restrict redistribution and how `build-offline` handles them.
 
 ## Build and development tooling
 
-These are used to build or develop seedling and are **not** distributed with
+These are used to build or develop acorn and are **not** distributed with
 it or downloaded by it at runtime:
 
 - [Hatchling](https://github.com/pypa/hatch) (MIT) — the build backend that

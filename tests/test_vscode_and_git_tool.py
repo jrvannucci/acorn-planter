@@ -10,8 +10,8 @@ import urllib.error
 import pytest
 
 from conftest import needs_git, windows_only
-from seedling import config, git_tool, paths
-from seedling.commands import vscode_cmd
+from acorn import config, git_tool, paths
+from acorn.commands import vscode_cmd
 
 
 def _preseed_vscode(home):
@@ -28,7 +28,7 @@ def _preseed_vscode(home):
         code.chmod(0o755)
 
 
-def test_default_settings_point_python_venvpath_at_seedlings_venvs(home):
+def test_default_settings_point_python_venvpath_at_acorns_venvs(home):
     """So every `acorn venv` shows up in VS Code's interpreter picker without
     anyone pointing VS Code at it by hand."""
     vscode_cmd._write_default_settings()
@@ -268,7 +268,7 @@ def test_download_progress_reporter_throttles_by_percent(home):
 
 
 def test_fetch_reports_progress(home, tmp_path):
-    from seedling import download
+    from acorn import download
     src = tmp_path / "payload.bin"
     src.write_bytes(b"x" * 700_000)  # bigger than one 256KB chunk
     url = "file:///" + str(src).replace("\\", "/")

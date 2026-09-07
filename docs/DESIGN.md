@@ -1,7 +1,7 @@
 # Design and safety
 
-Why seedling behaves the way it does. None of this is required reading to use
-it — but if you are evaluating seedling for other people, or wondering why a
+Why acorn behaves the way it does. None of this is required reading to use
+it — but if you are evaluating acorn for other people, or wondering why a
 removal did something unexpected, the reasoning is here.
 
 ---
@@ -47,12 +47,12 @@ permission-denied failures, rather than just calling
    small invisible helper that finishes the deletion a moment after
    `acorn-cli` exits — and says so, instead of reporting an error. The
    `acorn` shell function (still loaded in your session) then waits for the
-   helper and prints an explicit confirmation — "Confirmed: ~/seedling has
+   helper and prints an explicit confirmation — "Confirmed: ~/acorn has
    been fully removed" — or a warning with the leftover path if something
    is still holding files open, so the outcome is never silent.
 
 If a file is genuinely still stuck after all retries — something *outside*
-seedling holding it open — you get its exact path printed, instead of a
+acorn holding it open — you get its exact path printed, instead of a
 vague "something might be in use" message.
 
 ---
@@ -68,7 +68,7 @@ Every remove command (`remove-venv`, `remove-venv-all`, `remove-python`,
 `remove-repo`, `remove-user`, `purge`) escalates only as far as it has to:
 
 1. **Delete.** Usually nothing is holding anything, and **nothing is closed.**
-2. **Find out what's blocking, and close only that.** seedling asks the
+2. **Find out what's blocking, and close only that.** acorn asks the
    Windows **Restart Manager** — the API installers use for *"the following
    applications are using files that need to be updated"* — which names the
    processes holding the surviving files. It reports them and closes just
@@ -82,7 +82,7 @@ Every remove command (`remove-venv`, `remove-venv-all`, `remove-python`,
    that; a scoped search covers it, matching processes by where they live
    rather than by name.
 3. **Last resort.** Only if the targeted close didn't free the tree does
-   seedling force-close every Python and VS Code process, which is what it
+   acorn force-close every Python and VS Code process, which is what it
    used to do unconditionally.
 
 Earlier versions ran step 3 up front, every time — so removing a throwaway venv
@@ -95,11 +95,11 @@ alone; and a process named nothing like Python — a PyQt/PySide app's
 still caught, because it lives inside the tree being deleted.
 
 `acorn kill-processes` is the manual equivalent, and follows the same
-principle: it closes **only seedling's processes by default**, and needs an
+principle: it closes **only acorn's processes by default**, and needs an
 explicit `--system` for the machine-wide sweep.
 
 ```
-acorn kill-processes             # only seedling's own processes (default)
+acorn kill-processes             # only acorn's own processes (default)
 acorn kill-processes --system    # every python + VS Code on the machine
 acorn kill-processes <name>      # every process with that name
 ```
@@ -123,7 +123,7 @@ kill that closes VS Code, so you see it while you can still act on it.
 
 It reports rather than blocks. `-y` still proceeds — scripted teardowns keep
 working — but the warning is printed either way, so it lands in the terminal
-and in seedling's run log. `--preview` shows it too.
+and in acorn's run log. `--preview` shows it too.
 
 `acorn purge --keep-repos` and `acorn purge-and-reinstall` don't warn: they move
 repos to safety and restore them, so nothing is at risk.
@@ -146,13 +146,13 @@ parent too, for `--preview` only — it isn't destructive, so `-y`/
 `--non-interactive` are accepted but have nothing to confirm.)
 
 - `-y` / `--yes` — skip the confirmation prompt and proceed.
-  (`SEEDLING_YES=1` is the environment equivalent.)
+  (`ACORN_YES=1` is the environment equivalent.)
 - `--preview` — print exactly what would be deleted (full paths; for
   `kill-processes`, the actual matching processes running right now), then
   exit without changing anything.
 - `--non-interactive` — never wait for keyboard input. Anything that would
   have prompted aborts safely instead, unless `-y` was also given.
-  (`SEEDLING_NONINTERACTIVE=1` is the environment equivalent.) This is the
+  (`ACORN_NONINTERACTIVE=1` is the environment equivalent.) This is the
   mode for scripts and CI, where a forgotten prompt would otherwise hang
   the job forever.
 
@@ -162,7 +162,7 @@ Two `acorn install` runs against the same venv have uv unpacking wheels into
 one `site-packages` at once, and the loser can leave a half-written
 distribution behind — one that imports but is missing modules. It is a quiet
 failure with a confusing symptom, and it stops being hypothetical the moment
-anything automated drives seedling: parallel CI jobs, a profile being applied
+anything automated drives acorn: parallel CI jobs, a profile being applied
 while someone works, several AI agents sharing a machine.
 
 So the commands that mutate a venv (`install`, `uninstall`, `venv`,
@@ -171,7 +171,7 @@ So the commands that mutate a venv (`install`, `uninstall`, `venv`,
 - **Per-venv, keyed by absolute path.** Installing into `web` while `ml`
   builds is normal and must not serialize. Path rather than name because
   `acorn install` follows `VIRTUAL_ENV` wherever it points, including outside
-  `~/seedling`, and two unrelated `.venv` directories mustn't queue behind
+  `~/acorn`, and two unrelated `.venv` directories mustn't queue behind
   each other for sharing a leaf name.
 - **OS file locks, not PID files.** A PID file has to answer "is the holder
   still alive?", and every answer is wrong somewhere: PIDs get reused, a
@@ -187,12 +187,12 @@ So the commands that mutate a venv (`install`, `uninstall`, `venv`,
 - **A lock it can't take is not a reason to refuse to work.** If the lock
   file itself can't be created — read-only or full disk — the command runs
   unlocked. Losing serialization is bad; refusing to run at all because a
-  zero-byte file couldn't be written is worse, and it matches how seedling
+  zero-byte file couldn't be written is worse, and it matches how acorn
   already treats its logs.
 
-The lock is advisory and seedling-scoped: it serializes `acorn` commands
+The lock is advisory and acorn-scoped: it serializes `acorn` commands
 against each other, and cannot stop someone running `uv pip install --python
-<that venv>` by hand. Lock files live in `~/seedling/system/locks/`, are
+<that venv>` by hand. Lock files live in `~/acorn/system/locks/`, are
 empty, and are never deleted — only unlocked. Removing one is a race in its
 own right, since a process can hold a lock on a file another is about to
 unlink and recreate.
@@ -200,7 +200,7 @@ unlink and recreate.
 ## Command logging
 
 Every `acorn` invocation appends to a daily log file under
-`~/seedling/system/logs/` (e.g. `acorn-2026-07-05.log`):
+`~/acorn/system/logs/` (e.g. `acorn-2026-07-05.log`):
 
 - the exact command line and a timestamp,
 - everything the command printed — stdout *and* stderr, including the
@@ -211,21 +211,21 @@ Every `acorn` invocation appends to a daily log file under
 
 Log files older than 30 days are pruned automatically. Logging never
 interferes with the command itself: if the log file can't be written, the
-command carries on unlogged. Set `SEEDLING_NO_LOG=1` to disable logging for
+command carries on unlogged. Set `ACORN_NO_LOG=1` to disable logging for
 a given call (the shell integration uses this itself for its startup
 `default_venv` query, so opening a terminal doesn't spam the log).
 
 One deliberate exception: `acorn run` logs the invocation but **not** the
 child's output. The command it launches inherits the real file descriptors
-rather than seedling's tee, which is what keeps its stdout byte-exact and
-pipeable — a JSON-emitting tool run under `acorn run` must not have seedling
+rather than acorn's tee, which is what keeps its stdout byte-exact and
+pipeable — a JSON-emitting tool run under `acorn run` must not have acorn
 in the middle of it.
 
 ---
 
 ## Download verification
 
-The two things seedling downloads itself as plain archives — portable
+The two things acorn downloads itself as plain archives — portable
 MinGit on Windows and VS Code — are verified against their publishers'
 SHA-256 checksums before extraction (GitHub's release-asset digest for
 MinGit; VS Code's update API hash for VS Code). A checksum mismatch deletes

@@ -1,5 +1,5 @@
 # Build-time dependencies for the Sphinx docs site (see docs/conf.py).
-# Not a runtime dependency of seedling itself -- only the docs workflow and
+# Not a runtime dependency of acorn itself -- only the docs workflow and
 # local `sphinx-build` need these. Diagrams are pre-rendered SVGs, so no
 # mermaid/JS toolchain is needed to build the site.
 sphinx>=7,<9

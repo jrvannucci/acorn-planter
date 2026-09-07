@@ -1,4 +1,4 @@
-"""`acorn custom` dispatch (seedling/commands/custom_cmd.py): running a `run`
+"""`acorn custom` dispatch (acorn/commands/custom_cmd.py): running a `run`
 entry (ambient and venv-routed), running a `script` entry, argv passthrough,
 the `toplevel` short-circuit in cli.py, and collision handling with built-in
 commands.
@@ -16,8 +16,8 @@ import sys
 
 from conftest import make_venv_dirs, needs_bash, needs_powershell
 
-from seedling import cli, config, paths
-from seedling.commands import custom_cmd
+from acorn import cli, config, paths
+from acorn.commands import custom_cmd
 
 
 def _write_toml(tmp_path, text: str):

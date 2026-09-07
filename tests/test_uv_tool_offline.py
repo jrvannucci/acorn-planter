@@ -12,7 +12,7 @@ import time
 import pytest
 
 from conftest import UV, needs_uv
-from seedling import config, paths, uv_tool
+from acorn import config, paths, uv_tool
 
 
 def test_build_env_sets_cache_dir(home):
@@ -92,7 +92,7 @@ class TestOfflineWheelDirectory:
             "offlinepkg-1.0.dist-info/METADATA":
                 b"Metadata-Version: 2.1\nName: offlinepkg\nVersion: 1.0\n",
             "offlinepkg-1.0.dist-info/WHEEL":
-                b"Wheel-Version: 1.0\nGenerator: seedling-tests\n"
+                b"Wheel-Version: 1.0\nGenerator: acorn-tests\n"
                 b"Root-Is-Purelib: true\nTag: py3-none-any\n",
         }
         record_lines = []

@@ -9,7 +9,7 @@ import json
 
 import pytest
 
-from seedling import bundle as bundle_mod, config, profile as profile_mod
+from acorn import bundle as bundle_mod, config, profile as profile_mod
 
 
 def _bundle(tmp_path, text: str):
@@ -68,7 +68,7 @@ def test_it_knows_nothing_about_profiles():
     ('[editor]\nstage = "yes"', "stage must be true or false"),
     ('[git]\nmingit = "yes"', "mingit must be true or false"),
     (r"[[repo]]" + chr(10) + 'url = "x"', "unknown key"),
-    ('schema = 99', "newer than this seedling understands"),
+    ('schema = 99', "newer than this acorn understands"),
     ('pythons = [""]', "non-empty strings"),
 ])
 def test_invalid_declarations_are_rejected(text, fragment):
@@ -101,7 +101,7 @@ def test_the_declared_superset_stands_alone(home):
 
 
 def test_what_every_bundle_always_carries_counts_as_declared(home):
-    """seedling always downloads hatchling + the default venv packages, so a
+    """acorn always downloads hatchling + the default venv packages, so a
     profile using them isn't unsatisfiable against a bundle that lists none."""
     inv = bundle_mod.Inventory.from_bundle(bundle_mod.parse(""))
     for name in bundle_mod.ALWAYS_PRESENT:
@@ -129,7 +129,7 @@ def _fake_bundle_dir(root, *, wheels=(), pythons=(), tools=(), vscode=False):
             "packages": {f"{t}-1.0-0.tar.bz2": {"name": t} for t in tools},
         }), encoding="utf-8")
     if vscode:
-        (root / "seedling" / "vendor" / "vscode").mkdir(parents=True)
+        (root / "acorn" / "vendor" / "vscode").mkdir(parents=True)
     return root
 
 
@@ -380,26 +380,26 @@ class TestCheckConf:
     def test_agreement_reports_nothing(self):
         b = self._bundle(flavor="vscodium", extensions=["a", "b"])
         assert bundle_mod.check_conf(b, {
-            "SEEDLING_VSCODE_FLAVOR": "vscodium",
-            "SEEDLING_VSCODE_EXTENSIONS": "a,b"}) == []
+            "ACORN_VSCODE_FLAVOR": "vscodium",
+            "ACORN_VSCODE_EXTENSIONS": "a,b"}) == []
 
     def test_a_flavor_mismatch_is_caught(self):
         """Staging VSCodium while every user's settings expect the Microsoft
         build isn't visible until someone opens the editor, air-gapped."""
         b = self._bundle(flavor="vscodium")
-        problems = bundle_mod.check_conf(b, {"SEEDLING_VSCODE_FLAVOR": "microsoft"})
+        problems = bundle_mod.check_conf(b, {"ACORN_VSCODE_FLAVOR": "microsoft"})
         assert len(problems) == 1 and "flavor" in problems[0]
 
     def test_an_extension_the_bundle_doesnt_stage_is_caught(self):
         b = self._bundle(extensions=["ms-python.python"])
         problems = bundle_mod.check_conf(b, {
-            "SEEDLING_VSCODE_EXTENSIONS": "ms-python.python,ms-azuretools.docker"})
+            "ACORN_VSCODE_EXTENSIONS": "ms-python.python,ms-azuretools.docker"})
         assert len(problems) == 1 and "ms-azuretools.docker" in problems[0]
 
     def test_a_gallery_mismatch_is_caught(self):
         b = self._bundle(gallery="https://a/vscode")
         problems = bundle_mod.check_conf(
-            b, {"SEEDLING_EXTENSION_GALLERY": "https://b/vscode"})
+            b, {"ACORN_EXTENSION_GALLERY": "https://b/vscode"})
         assert len(problems) == 1 and "gallery" in problems[0]
 
     def test_an_unset_conf_key_constrains_nothing(self):
@@ -409,17 +409,17 @@ class TestCheckConf:
 
     def test_extensions_none_is_not_a_conflict(self):
         b = self._bundle(extensions=["a"])
-        assert bundle_mod.check_conf(b, {"SEEDLING_VSCODE_EXTENSIONS": "none"}) == []
+        assert bundle_mod.check_conf(b, {"ACORN_VSCODE_EXTENSIONS": "none"}) == []
 
 
 def test_read_conf_matches_the_installers_parser(tmp_path):
     conf = tmp_path / "global.conf"
-    conf.write_text('# comment\nSEEDLING_VSCODE_FLAVOR="vscodium"\n'
-                    'NOT_QUOTED=bare\nSEEDLING_PACKAGE_INDEX="S:/wheels"\n',
+    conf.write_text('# comment\nACORN_VSCODE_FLAVOR="vscodium"\n'
+                    'NOT_QUOTED=bare\nACORN_PACKAGE_INDEX="S:/wheels"\n',
                     encoding="utf-8")
     values = bundle_mod.read_conf(conf)
-    assert values == {"SEEDLING_VSCODE_FLAVOR": "vscodium",
-                      "SEEDLING_PACKAGE_INDEX": "S:/wheels"}, \
+    assert values == {"ACORN_VSCODE_FLAVOR": "vscodium",
+                      "ACORN_PACKAGE_INDEX": "S:/wheels"}, \
         "one KEY=\"value\" per line, exactly as install.ps1 reads it"
 
 
@@ -440,7 +440,7 @@ def test_an_unknown_platform_is_rejected_with_the_valid_list():
     with pytest.raises(bundle_mod.BundleError) as e:
         bundle_mod.parse('platforms = ["Plan9/sparc"]')
     msg = str(e.value)
-    assert "isn't one seedling knows" in msg and "linux/x86_64" in msg
+    assert "isn't one acorn knows" in msg and "linux/x86_64" in msg
 
 
 def test_linux_lists_several_manylinux_tags():

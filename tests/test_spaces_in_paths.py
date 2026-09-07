@@ -16,21 +16,21 @@ from conftest import (BASH, make_repo_copy, make_venv_dirs, needs_bash,
 
 @pytest.fixture
 def spaced_home(tmp_path, monkeypatch):
-    """Like the `home` fixture, but the seedling home has a space in it."""
-    h = tmp_path / "space dir" / "seedling"
+    """Like the `home` fixture, but the acorn home has a space in it."""
+    h = tmp_path / "space dir" / "acorn"
     for var in conftest._ISOLATED_ENV_VARS:
         monkeypatch.delenv(var, raising=False)
-    monkeypatch.setenv("SEEDLING_HOME", str(h))
-    monkeypatch.setenv("SEEDLING_NO_LOG", "1")
+    monkeypatch.setenv("ACORN_HOME", str(h))
+    monkeypatch.setenv("ACORN_NO_LOG", "1")
     conftest._rebind_paths(h)
-    from seedling.commands import kill_cmd
+    from acorn.commands import kill_cmd
     monkeypatch.setattr(kill_cmd, "kill_python_and_vscode", lambda: [])
     yield h
     conftest._restore_paths()
 
 
 def _run(capsys, *argv):
-    from seedling import cli
+    from acorn import cli
     code = cli.main(list(argv))
     out = capsys.readouterr()
     return code, out.out + out.err
@@ -56,7 +56,7 @@ def test_offline_uv_toml_generated_for_spaced_index(spaced_home):
     """A wheels directory under a spaced path must still produce a usable
     file:// index URL. uv accepts a literal space, but the URL must at
     least round-trip the whole path."""
-    from seedling import config, uv_tool
+    from acorn import config, uv_tool
     config.set_value("package_index", r"C:\Program Files\wheels")
     env = uv_tool._build_env(None)
     toml = open(env["UV_CONFIG_FILE"], encoding="utf-8").read()
@@ -65,7 +65,7 @@ def test_offline_uv_toml_generated_for_spaced_index(spaced_home):
 
 
 def test_deferred_delete_bat_quotes_spaced_path(spaced_home, monkeypatch):
-    from seedling import fsutil
+    from acorn import fsutil
     launched = {}
     monkeypatch.setattr(fsutil.subprocess, "Popen",
                         lambda cmd, **kw: launched.setdefault("cmd", cmd))
@@ -84,19 +84,19 @@ def test_installer_into_spaced_home(tmp_path):
     hook line, uv tool install target -- all must survive."""
     copy = make_repo_copy(tmp_path / "copy")
     fake_home = tmp_path / "home dir"
-    seedling_home = fake_home / "seedling"
+    acorn_home = fake_home / "acorn"
     fake_home.mkdir()
-    plant_stub_uv(seedling_home)
+    plant_stub_uv(acorn_home)
 
     result = subprocess.run(
         [BASH, "-c",
          f"cd '{copy.as_posix()}' && "
-         f"HOME='{fake_home.as_posix()}' SHELL=/bin/bash SEEDLING_AUTO_SETUP=false "
+         f"HOME='{fake_home.as_posix()}' SHELL=/bin/bash ACORN_AUTO_SETUP=false "
          f"sh ./GET_STARTED/install.cmd"],
         capture_output=True, text=True, timeout=120)
     assert result.returncode == 0, result.stdout + result.stderr
-    assert (seedling_home / "system" / "src" / "src" / "pyproject.toml").exists()
+    assert (acorn_home / "system" / "src" / "src" / "pyproject.toml").exists()
     bashrc = (fake_home / ".bashrc").read_text()
     # hook line must be quoted so a spaced path sources correctly
     assert '. "' in bashrc and "acorn.sh" in bashrc
-    assert "space" in str(seedling_home) or "home dir" in bashrc
+    assert "space" in str(acorn_home) or "home dir" in bashrc

@@ -59,7 +59,7 @@
 
 <rect x="40" y="128" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
 <text x="52" y="148" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn where</text>
-<text x="364" y="146" class="body" font-size="12.5" fill="#52796F">Prints the seedling home directory.</text>
+<text x="364" y="146" class="body" font-size="12.5" fill="#52796F">Prints the acorn home directory.</text>
 <rect x="40" y="168" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
 <text x="52" y="188" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn --version</text>
 <text x="364" y="186" class="body" font-size="12.5" fill="#52796F">Prints the version of acorn that's actually running.</text>
@@ -81,5 +81,5 @@
 <text x="364" y="397" class="body" font-size="12.5" fill="#52796F">it.</text>
 <rect x="40" y="412" width="300" height="30" rx="8" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.95"/>
 <text x="52" y="432" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace" font-size="12.5" font-weight="700" fill="#1B4332">acorn config [get|set|unset]</text>
-<text x="364" y="430" class="body" font-size="12.5" fill="#52796F">Views and changes seedling's own settings (default_venv, package_index, vscode_flavor, ...).</text>
+<text x="364" y="430" class="body" font-size="12.5" fill="#52796F">Views and changes acorn's own settings (default_venv, package_index, vscode_flavor, ...).</text>
 </svg>

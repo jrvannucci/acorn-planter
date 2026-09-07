@@ -6,7 +6,7 @@ from __future__ import annotations
 import subprocess
 
 from conftest import GIT, needs_git
-from seedling import git_tool, paths
+from acorn import git_tool, paths
 
 
 def _init_repo(path, *, commit=True):
@@ -96,7 +96,7 @@ def test_scan_of_missing_directory_is_empty(tmp_path):
 def test_remove_repo_warns_before_deleting_dirty_work(run_cli, home, monkeypatch):
     repo = _init_repo(paths.repo_dir("work"))
     (repo / "tracked.txt").write_text("unsaved edits")
-    monkeypatch.setattr("seedling.commands.kill_cmd.kill_python_and_vscode",
+    monkeypatch.setattr("acorn.commands.kill_cmd.kill_python_and_vscode",
                         lambda: [])
     code, out = run_cli("remove-repo", "work", "--preview")
     assert code == 0
@@ -129,7 +129,7 @@ def test_warning_still_prints_under_yes(run_cli, home, monkeypatch):
     """-y skips prompts, but the record of what was destroyed must survive."""
     repo = _init_repo(paths.repo_dir("work"))
     (repo / "tracked.txt").write_text("unsaved edits")
-    monkeypatch.setattr("seedling.commands.kill_cmd.kill_python_and_vscode",
+    monkeypatch.setattr("acorn.commands.kill_cmd.kill_python_and_vscode",
                         lambda: [])
     code, out = run_cli("remove-user", "-y")
     assert "would destroy" in out

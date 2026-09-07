@@ -2,14 +2,14 @@
 # POSIX launcher for the offline bundle builder (invoked by
 # offline-bundler.cmd's line 1 on macOS/Linux). Finds a Python 3 and hands off
 # to installers/build_offline.py, the engine one directory up.
-# This is NOT a `acorn` command -- it prepares the distribution before seedling
+# This is NOT a `acorn` command -- it prepares the distribution before acorn
 # is installed anywhere.
 set -e
 
 DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 
 # Pick the first interpreter that actually RUNS and is 3.12+ (the builder
-# imports seedling's own modules, so it shares seedling's requires-python
+# imports acorn's own modules, so it shares acorn's requires-python
 # floor). The `-c` probe matters on Windows/git-bash, where `python3` is often
 # a Microsoft Store stub that only prints an ad and exits non-zero --
 # command -v would still "find" it.

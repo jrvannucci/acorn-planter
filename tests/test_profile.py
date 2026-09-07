@@ -1,4 +1,4 @@
-"""Deployment profiles: parsing/validation (seedling/profile.py) and the
+"""Deployment profiles: parsing/validation (acorn/profile.py) and the
 idempotent applier (`acorn apply`).
 
 Validation is where most of the value is -- a profile is distributed to a
@@ -11,8 +11,8 @@ from __future__ import annotations
 import pytest
 
 from conftest import make_venv_dirs
-from seedling import config, paths, profile as profile_mod
-from seedling.commands import apply_cmd
+from acorn import config, paths, profile as profile_mod
+from acorn.commands import apply_cmd
 
 
 def _write(tmp_path, text: str):
@@ -231,7 +231,7 @@ def test_apply_writes_settings_and_is_then_idempotent(run_cli, home, tmp_path):
 def test_apply_installs_profile_tools(run_cli, home, tmp_path, monkeypatch):
     """A profile's [tools] are installed by apply (from conda_channel, which on
     an offline bundle points at the bundled channel)."""
-    from seedling.commands import apply_cmd
+    from acorn.commands import apply_cmd
     installed = []
     monkeypatch.setattr(apply_cmd.forge_cmd, "install",
                         lambda args: (installed.append(args.spec), 0)[1])
@@ -248,7 +248,7 @@ def test_apply_installs_profile_tools(run_cli, home, tmp_path, monkeypatch):
 
 
 def test_apply_skips_an_already_installed_tool(run_cli, home, tmp_path, monkeypatch):
-    from seedling.commands import apply_cmd
+    from acorn.commands import apply_cmd
     paths.FORGE_MANIFEST_DIR.mkdir(parents=True, exist_ok=True)
     paths.forge_manifest_file("ripgrep").write_text('{"commands": ["rg"]}')
     called = []
@@ -637,7 +637,7 @@ class TestProfileEditor:
     def test_valid_values_come_from_the_registry(self, tmp_path):
         """The error lists what's actually registered, so registering an
         editor makes it profile-selectable with no second list to update."""
-        from seedling.commands import editors
+        from acorn.commands import editors
         with pytest.raises(profile_mod.ProfileError) as excinfo:
             profile_mod.load(self._write(tmp_path, 'editor = "nope"\n'))
         for key in editors.REGISTRY:
@@ -668,7 +668,7 @@ class TestProfileEditorQuery:
     def test_prints_nothing_when_the_profile_is_silent(
             self, run_cli, home, tmp_path):
         """Empty means 'the profile doesn't say', which is the installer's
-        signal to let SEEDLING_AUTO_VSCODE decide as it always has."""
+        signal to let ACORN_AUTO_VSCODE decide as it always has."""
         path = self._profile(tmp_path, 'python = ["3.12"]\n')
         code, out = run_cli("apply", str(path), "--print-editor")
         assert code == 0
@@ -680,7 +680,7 @@ class TestProfileEditorQuery:
         # Editor is a frozen dataclass, so patch the module-level run() that
         # each registration closes over -- the lambda resolves it at call
         # time, so this still intercepts an install attempt.
-        from seedling.commands import spyder_cmd, vscode_cmd
+        from acorn.commands import spyder_cmd, vscode_cmd
 
         def boom(*a, **k):
             raise AssertionError("--print-editor must not install anything")
@@ -757,7 +757,7 @@ def test_editor_validates_without_the_cli_having_been_imported():
     Editors register themselves at import time, so that path saw an EMPTY
     registry and rejected every valid editor with 'Valid values: .'. Run in
     a subprocess so the import state is genuinely cold; importing
-    seedling.profile alone must be enough.
+    acorn.profile alone must be enough.
     """
     import subprocess
     import sys
@@ -765,7 +765,7 @@ def test_editor_validates_without_the_cli_having_been_imported():
 
     code = (
         "import sys; sys.path.insert(0, r'%s')\n"
-        "from seedling import profile\n"
+        "from acorn import profile\n"
         "p = profile.parse('editor = \"spyder\"')\n"
         "assert p.editors == ['spyder'], p.editors\n"
         "print('ok')\n" % str(SRC)
@@ -791,7 +791,7 @@ def test_every_documented_example_profile_is_valid():
     import re
 
     from conftest import REPO_ROOT
-    from seedling import custom_commands as cc_mod
+    from acorn import custom_commands as cc_mod
 
     pages = sorted((REPO_ROOT / "docs" / "profile-examples").glob("*.md"))
     assert len(pages) >= 5, "profile-examples/ lost its subpages?"

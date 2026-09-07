@@ -8,13 +8,13 @@ import json
 
 from conftest import make_base_python, make_venv_dirs
 
-from seedling import config, paths
-from seedling.commands import list_cmd, status_cmd, summary_cmd
+from acorn import config, paths
+from acorn.commands import list_cmd, status_cmd, summary_cmd
 
 
 def _json_stdout(capsys, argv):
     """Run a command and parse stdout, which must be pure JSON."""
-    from seedling import cli
+    from acorn import cli
     code = cli.main(list(argv))
     captured = capsys.readouterr()
     return code, json.loads(captured.out), captured.err
@@ -90,12 +90,12 @@ def test_health_check_json_and_text_agree(home, run_cli):
 
 
 def test_package_list_translates_json_to_uv_format(home, monkeypatch):
-    """seedling spells it --json everywhere; uv spells it --format json.
+    """acorn spells it --json everywhere; uv spells it --format json.
     Callers shouldn't have to know which layer they're talking to."""
     seen = {}
     monkeypatch.setattr(list_cmd.uv_tool, "run",
                         lambda argv, **kw: seen.setdefault("argv", argv))
-    from seedling import cli
+    from acorn import cli
     cli.main(["package-list", "--json"])
     assert seen["argv"] == ["pip", "list", "--format", "json"]
 
@@ -104,7 +104,7 @@ def test_package_list_leaves_an_explicit_format_alone(home, monkeypatch):
     seen = {}
     monkeypatch.setattr(list_cmd.uv_tool, "run",
                         lambda argv, **kw: seen.setdefault("argv", argv))
-    from seedling import cli
+    from acorn import cli
     cli.main(["package-list", "--json", "--format", "freeze"])
     assert seen["argv"] == ["pip", "list", "--format", "freeze"]
 
@@ -114,7 +114,7 @@ def test_package_list_note_goes_to_stderr_under_json(home, monkeypatch, capsys):
     parser, so under --json it moves off stdout."""
     monkeypatch.delenv("VIRTUAL_ENV", raising=False)
     monkeypatch.setattr(list_cmd.uv_tool, "run", lambda argv, **kw: None)
-    from seedling import cli
+    from acorn import cli
     cli.main(["package-list", "--json"])
     captured = capsys.readouterr()
     assert captured.out == ""
@@ -124,7 +124,7 @@ def test_package_list_note_goes_to_stderr_under_json(home, monkeypatch, capsys):
 def test_package_list_note_stays_on_stdout_for_humans(home, monkeypatch, capsys):
     monkeypatch.delenv("VIRTUAL_ENV", raising=False)
     monkeypatch.setattr(list_cmd.uv_tool, "run", lambda argv, **kw: None)
-    from seedling import cli
+    from acorn import cli
     cli.main(["package-list"])
     assert "no venv looks active" in capsys.readouterr().out
 

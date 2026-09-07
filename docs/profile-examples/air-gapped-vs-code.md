@@ -51,8 +51,8 @@ default = true
 # GET_STARTED/global.conf, in the copy you distribute.
 # "microsoft" is the default, but state it explicitly here -- this file is
 # what a reviewer reads to see which build was staged.
-SEEDLING_VSCODE_FLAVOR="microsoft"
-SEEDLING_VSCODE_EXTENSIONS="ms-python.python,ms-python.vscode-pylance,ms-python.debugpy,ms-toolsai.jupyter,charliermarsh.ruff"
+ACORN_VSCODE_FLAVOR="microsoft"
+ACORN_VSCODE_EXTENSIONS="ms-python.python,ms-python.vscode-pylance,ms-python.debugpy,ms-toolsai.jupyter,charliermarsh.ruff"
 ```
 
 The share declares its own contents, and the profile is checked against them:
@@ -88,11 +88,11 @@ GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd
 
 - `ms-python.vscode-pylance` is the whole point of this variant. It is
   licensed to run only in official Microsoft products, so it belongs with
-  `SEEDLING_VSCODE_FLAVOR="microsoft"` and nowhere else — pairing it with
+  `ACORN_VSCODE_FLAVOR="microsoft"` and nowhere else — pairing it with
   VSCodium gets you an extension that refuses to load.
 - `--accept-third-party-terms` is required because VS Code and Marketplace
   extensions are marked **restricted**: staging them on a share is
-  redistribution *you* are performing. seedling grants no rights; the flag is
+  redistribution *you* are performing. acorn grants no rights; the flag is
   you asserting you hold them. It resists `--yes` on purpose, so an
   unattended build can't acknowledge licence terms on your behalf.
 - **The two extension lists must agree.** The one in `global.conf` seeds each
@@ -128,7 +128,7 @@ An empty `attention` list is a real answer, not a missing one: every wheel here
 resolved to a permissive licence. That is what `--accept-third-party-terms`
 does *not* cover — the acknowledgement is about VS Code and the Marketplace,
 and the wheels are reported separately so the two aren't confused for each
-other. Verify with `acorn whl-licenses S:\seedling\wheels`.
+other. Verify with `acorn whl-licenses S:\acorn\wheels`.
 
 **What the bundle looks like**
 
@@ -140,7 +140,7 @@ and `MANIFEST.json` records those as `restricted` — which is exactly what
 ```
 offline-bundle/
 ├── MANIFEST.json            lists VS Code + extensions as RESTRICTED
-├── seedling/
+├── acorn/
 │   ├── GET_STARTED/                 install.cmd + global.conf
 │   ├── GET_STARTED_OFFLINE_BUNDLE/  offline-bundle.toml
 │   ├── installation-profile/        the profile above
@@ -149,7 +149,7 @@ offline-bundle/
 │       ├── vscode/
 │       │   └── app/             official VS Code, portable
 │       │       ├── Code.exe
-│       │       ├── bin/code.cmd     the CLI entry point seedling drives
+│       │       ├── bin/code.cmd     the CLI entry point acorn drives
 │       │       └── data/            portable-mode settings AND extensions,
 │       │                            incl. ms-python.vscode-pylance-*
 │       ├── micromamba/          micromamba.exe
@@ -164,7 +164,7 @@ mode, and it is why `acorn purge` leaves nothing behind.
 
 **What a cert file looks like.** Any PEM-encoded certificate, one or more per
 file. The installer concatenates *every* `.pem` and `.crt` in the folder into
-`~/seedling/system/certs/ca-bundle.pem`, so a root and an intermediate can be
+`~/acorn/system/certs/ca-bundle.pem`, so a root and an intermediate can be
 separate files:
 
 ```

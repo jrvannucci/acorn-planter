@@ -1,0 +1,209 @@
+# acorn shell integration (PowerShell)
+# Installed by install.ps1. Dot-sourced from your $PROFILE.
+#
+# `acorn` is a PowerShell FUNCTION, not just a binary, because `acorn activate`
+# needs to modify environment/session state in *your current shell* --
+# something a plain child process can never do.
+
+$script:ACORNHome = "__ACORN_HOME_PLACEHOLDER__"
+$script:ACORNCli = Join-Path $script:ACORNHome "system\bin\acorn-cli.exe"
+$script:ACORNSettings = Join-Path $script:ACORNHome "system\config\settings.json"
+
+# acorn-cli itself resolves the acorn home from this variable (falling
+# back to ~/acorn). Setting it here is what makes a custom
+# ACORN_HOME_DIR from global.conf work at runtime, not just at
+# install time. For default installs this is a no-op.
+$env:ACORN_HOME = $script:ACORNHome
+
+# Command-line tools installed with `acorn forge-install` (from conda-forge) put
+# their launchers here; add it to PATH so they run as bare commands. Guarded so
+# repeated dot-sourcing never stacks duplicate entries.
+$script:ACORNToolShims = Join-Path $script:ACORNHome "system\conda\shims"
+if (($env:PATH -split ';') -notcontains $script:ACORNToolShims) {
+    $env:PATH = "$script:ACORNToolShims;$env:PATH"
+}
+
+# Same, for Python applications installed with `acorn tool-install` (from PyPI,
+# via uv). A separate directory because it's a separate tool root -- see
+# uv_tool.tool_install_env.
+$script:ACORNAppShims = Join-Path $script:ACORNHome "system\shims"
+if (($env:PATH -split ';') -notcontains $script:ACORNAppShims) {
+    $env:PATH = "$script:ACORNAppShims;$env:PATH"
+}
+
+# If the venv this shell has active was just deleted (purge, remove-user,
+# remove-venv(-all), remove-python...), deactivate it instead of leaving a
+# dangling prompt pointing at a folder that no longer exists. Only the
+# shell itself can do this -- acorn-cli is a child process.
+function script:ACORNDeactivateIfGone {
+    if ($env:VIRTUAL_ENV -and -not (Test-Path $env:VIRTUAL_ENV)) {
+        if (Get-Command deactivate -ErrorAction SilentlyContinue) {
+            deactivate
+            Write-Host "(deactivated: the venv this shell had active no longer exists)"
+        }
+    }
+}
+
+function acorn {
+    # Deliberately a SIMPLE function (no param()/[CmdletBinding]): that keeps
+    # the automatic $args holding every argument verbatim. An advanced function
+    # would bind parameters, and a bare `-e` (as in `acorn install -e .`) then
+    # fails as an ambiguous prefix of the common params -ErrorAction/-ErrorVariable
+    # before acorn-cli ever runs. $args passes flags through untouched.
+    if ($Args.Count -ge 1 -and $Args[0] -eq "activate") {
+        $rest = @($Args[1..($Args.Count - 1)])
+        $scriptPath = & $script:ACORNCli activate @rest --print-path
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($scriptPath)) {
+            & $script:ACORNCli activate @rest
+            return
+        }
+        . $scriptPath
+        Write-Host "Activated: $($rest[0])"
+        return
+    }
+
+    if ($Args.Count -ge 1 -and $Args[0] -eq "repo-cd") {
+        # The @() must wrap the WHOLE if: assigning from an if-statement
+        # pipes its output, which unwraps a one-element array to a bare
+        # string -- and splatting a string can enumerate per-character.
+        $rest = @(if ($Args.Count -gt 1) { $Args[1..($Args.Count - 1)] } else { @() })
+        $target = & $script:ACORNCli repo-cd @rest --print-path
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($target)) {
+            & $script:ACORNCli repo-cd @rest
+            return
+        }
+        Set-Location $target
+        Write-Host "-> $target"
+        return
+    }
+
+    if ($Args.Count -ge 1 -and $Args[0] -eq "deactivate") {
+        if (Get-Command deactivate -ErrorAction SilentlyContinue) {
+            deactivate
+        } else {
+            Write-Host "No active acorn venv to deactivate."
+        }
+        return
+    }
+
+    if ($Args.Count -ge 1 -and ($Args[0] -eq "purge" -or $Args[0] -eq "remove-user" -or $Args[0] -eq "purge-and-reinstall")) {
+        # These commands may finish their own deletion via an invisible
+        # background helper (a program can't delete its own running
+        # executable on Windows). acorn-cli has exited by then, so this
+        # still-loaded function is the only thing left that can tell the
+        # user whether the cleanup actually succeeded -- and, for
+        # purge-and-reinstall, run the reinstall acorn-cli staged before it
+        # deleted its own executable.
+        & $script:ACORNCli @Args
+        $exitCode = $LASTEXITCODE
+        ACORNDeactivateIfGone
+        $pending = @(Get-ChildItem -Path (Join-Path $env:TEMP "acorn-cleanup-*.bat") -ErrorAction SilentlyContinue)
+        if ($exitCode -eq 0 -and $pending.Count -gt 0) {
+            Write-Host "Waiting for the background cleanup to finish " -NoNewline
+            $deadline = (Get-Date).AddSeconds(30)
+            while ((Test-Path $script:ACORNHome) -and ((Get-Date) -lt $deadline)) {
+                Start-Sleep -Milliseconds 500
+                Write-Host "." -NoNewline
+            }
+            Write-Host ""
+            if (Test-Path $script:ACORNHome) {
+                Write-Host "Cleanup hasn't finished: files remain at $($script:ACORNHome)." -ForegroundColor Yellow
+                Write-Host "Something may still be holding them open; delete the folder by hand if it persists."
+            } else {
+                Write-Host "Confirmed: $($script:ACORNHome) has been fully removed." -ForegroundColor Green
+            }
+        }
+        # Reinstall only after the wipe is confirmed gone -- the installer
+        # must never run against a half-deleted tree.
+        $reinstall = Join-Path $env:TEMP "acorn-reinstall.ps1"
+        if ($Args[0] -eq "purge-and-reinstall" -and $exitCode -eq 0 `
+            -and (-not (Test-Path $script:ACORNHome)) -and (Test-Path $reinstall)) {
+            Write-Host ""
+            Write-Host "Reinstalling acorn ..."
+            & $reinstall
+            Remove-Item -Force $reinstall -ErrorAction SilentlyContinue
+        }
+        return
+    }
+
+    & $script:ACORNCli @Args
+    ACORNDeactivateIfGone
+}
+
+# Auto-activate the configured default venv in every new shell
+# (set one with: acorn config set default_venv <name>). Skipped when some
+# venv is already active.
+#
+# This runs on EVERY terminal that opens without a venv active, so it avoids
+# launching acorn-cli entirely: acorn-cli.exe is a Python program, and its cold
+# start -- previously TWICE here, to read the setting and again to resolve the
+# activation script -- dominated the time to open a terminal. Instead we read
+# default_venv straight from settings.json and dot-source the venv's own
+# Activate.ps1, both native PowerShell. The acorn-cli path is kept only as a
+# fallback for anything the shortcut can't handle (a custom venv layout, a
+# missing script), so correctness never depends on it.
+if (-not $env:VIRTUAL_ENV) {
+    $script:ACORNDefaultVenv = $null
+    if (Test-Path $script:ACORNSettings) {
+        try {
+            $script:ACORNCfg = Get-Content -Raw $script:ACORNSettings | ConvertFrom-Json
+            # auto_activate defaults to on: only an explicit `false` disables
+            # it, so an absent/null value (older settings files) still
+            # activates. Toggle with `acorn auto-activate True|False`.
+            if ($script:ACORNCfg.auto_activate -ne $false) {
+                $script:ACORNDefaultVenv = $script:ACORNCfg.default_venv
+            }
+        } catch {
+            # A malformed settings file must not break every new shell; fall
+            # through to the acorn-cli path, which reports the real problem.
+            $script:ACORNDefaultVenv = $null
+            $env:ACORN_NO_LOG = "1"
+            $script:ACORNDefaultVenv = (& $script:ACORNCli config get default_venv 2>$null | Select-Object -First 1)
+            Remove-Item Env:ACORN_NO_LOG -ErrorAction SilentlyContinue
+        }
+    }
+    if ($script:ACORNDefaultVenv) {
+        $script:ACORNActivate = Join-Path $script:ACORNHome `
+            ("python\venvs\" + $script:ACORNDefaultVenv + "\Scripts\Activate.ps1")
+        if (Test-Path $script:ACORNActivate) {
+            . $script:ACORNActivate
+            Write-Host "Activated: $($script:ACORNDefaultVenv)"
+        } else {
+            acorn activate $script:ACORNDefaultVenv | Out-Null
+        }
+    }
+}
+
+# Run configured startup commands (see docs/CUSTOM-COMMANDS.md), in order, in
+# EVERY new shell -- unlike default_venv auto-activation above, this is not
+# skipped just because a venv is already active: it is a deliberate hook for
+# an organization's own startup routine (a connectivity check, a sync, a
+# reminder), not tied to venv state at all. A failing command warns and does
+# not stop the rest, or the shell from opening -- a typo in this list must
+# not lock anyone out of their terminal.
+#
+# The settings.json check below is a native-PowerShell short-circuit so an
+# org that hasn't configured this pays nothing at all; ONLY the actual
+# running of the list is handed to acorn-cli, and as ONE process
+# (`acorn custom --startup`, which loops internally) rather than one acorn-cli
+# cold start per configured name -- terminal-open latency shouldn't scale
+# with how many startup commands an org has.
+$script:ACORNStartupCommands = @()
+if (Test-Path $script:ACORNSettings) {
+    try {
+        # `.startup_commands` is $null when the key is absent (older
+        # settings files, or nothing configured) -- and @($null) is a
+        # ONE-element array in PowerShell, not an empty one, so wrapping
+        # with @() must happen AFTER this truthiness check, never before,
+        # or an absent key would look like one configured command.
+        $script:ACORNStartupCommandsRaw = (Get-Content -Raw $script:ACORNSettings | ConvertFrom-Json).startup_commands
+        if ($script:ACORNStartupCommandsRaw) {
+            $script:ACORNStartupCommands = @($script:ACORNStartupCommandsRaw)
+        }
+    } catch {
+        $script:ACORNStartupCommands = @()
+    }
+}
+if ($script:ACORNStartupCommands.Count -gt 0) {
+    & $script:ACORNCli custom --startup
+}

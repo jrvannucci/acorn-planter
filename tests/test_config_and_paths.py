@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 
-from seedling import PUBLIC_REPO, config, paths
+from acorn import PUBLIC_REPO, config, paths
 
 
 def test_defaults_when_no_settings_file(home):
@@ -26,11 +26,11 @@ def test_load_tolerates_utf8_bom_from_powershell_installer(home):
     # on WinPowerShell 5.1 writes a UTF-8 BOM. Reading it must still work --
     # otherwise every conf-seeded setting is silently dropped on Windows.
     paths.ensure_layout()
-    payload = {"update_source": "https://example.com/seedling.git",
-               "shared_root": r"C:\seedling"}
+    payload = {"update_source": "https://example.com/acorn.git",
+               "shared_root": r"C:\acorn"}
     paths.CONFIG_FILE.write_text(json.dumps(payload), encoding="utf-8-sig")  # BOM
     assert paths.CONFIG_FILE.read_bytes()[:3] == b"\xef\xbb\xbf"  # sanity: BOM present
-    assert config.get("update_source") == "https://example.com/seedling.git"
+    assert config.get("update_source") == "https://example.com/acorn.git"
     assert config.is_multi_user() is True
 
 
@@ -90,7 +90,7 @@ def test_apply_runtime_env_skips_missing_bundle(home):
     assert "SSL_CERT_FILE" not in os.environ
 
 
-def test_seedling_home_env_override(home):
+def test_acorn_home_env_override(home):
     assert paths.HOME == home
     assert str(paths.CONFIG_FILE).startswith(str(home))
 
@@ -108,7 +108,7 @@ def test_alias_and_venv_path_helpers(home):
 
 
 def test_public_repo_matches_installer_defaults():
-    """seedling's own origin lives in ONE place (seedling.PUBLIC_REPO), but the
+    """acorn's own origin lives in ONE place (acorn.PUBLIC_REPO), but the
     installers can't import Python -- a piped `curl ... | sh` has no checkout
     beside it -- so they carry the same URL as their baked-in default. That
     agreement used to rest on a code comment; this asserts it.
@@ -123,33 +123,33 @@ def test_public_repo_matches_installer_defaults():
 
     repo_root = Path(__file__).resolve().parents[1]
     patterns = {
-        "installers/install.sh": r'DEFAULT_SEEDLING_REPO="([^"]+)"',
-        "installers/install.ps1": r'\$DefaultSeedlingRepo = "([^"]+)"',
-        "GET_STARTED/global.conf": r'SEEDLING_REPO_URL="([^"]+)"',
+        "installers/install.sh": r'DEFAULT_ACORN_REPO="([^"]+)"',
+        "installers/install.ps1": r'\$DefaultACORNRepo = "([^"]+)"',
+        "GET_STARTED/global.conf": r'ACORN_REPO_URL="([^"]+)"',
     }
     for rel, pattern in patterns.items():
         text = (repo_root / rel).read_text(encoding="utf-8")
         found = re.search(pattern, text)
         assert found, f"{rel}: no default repo URL found (pattern changed?)"
         assert found.group(1) == PUBLIC_REPO, (
-            f"{rel} points at {found.group(1)!r}, but seedling.PUBLIC_REPO is "
+            f"{rel} points at {found.group(1)!r}, but acorn.PUBLIC_REPO is "
             f"{PUBLIC_REPO!r}")
 
 
 def test_every_path_constant_is_rebound_into_the_test_home(home):
-    """No path constant may still point at the developer's real ~/seedling
+    """No path constant may still point at the developer's real ~/acorn
     while a test is running.
 
     conftest rebinds paths.* onto a tmp_path per test. That rebinding is
     hand-written, so a constant added to paths.py but not to _rebind_paths
     keeps its import-time value -- and every failure mode is silent: tests
-    read and write the developer's actual seedling install, pass, and only
+    read and write the developer's actual acorn install, pass, and only
     a destructive test reveals it. This asserts the invariant directly
     (everything lives under the sandbox) rather than checking the
     bookkeeping, so it also catches a constant that is mirrored but not
     rebound.
     """
-    from seedling import paths as p
+    from acorn import paths as p
 
     stray: list[str] = []
 
@@ -178,13 +178,13 @@ def test_git_dir_is_rebound_into_the_test_home(home):
     """git_tool.GIT_DIR is derived from paths at import time, so rebinding
     paths alone doesn't move it -- conftest has to rebind it separately.
     Same silent failure mode, so same guard."""
-    from seedling import git_tool
+    from acorn import git_tool
 
     assert home in git_tool.GIT_DIR.parents
 
 
 def test_the_upload_token_is_masked_wherever_settings_are_printed(run_cli, home):
-    """seedling tees command output into ~/seedling/system/logs, so an
+    """acorn tees command output into ~/acorn/system/logs, so an
     unmasked token would be written to disk by the act of reading it back."""
     config.set_value("package_upload_token", "s3cret-token")
 
@@ -206,12 +206,12 @@ def test_an_unset_secret_is_not_shown_as_masked(run_cli, home):
 # --- secrets must not reach the log or the screen -------------------------
 
 def test_a_secret_setting_never_reaches_the_daily_log(run_cli, home):
-    """seedling tees every command's output into system/logs, and the log
+    """acorn tees every command's output into system/logs, and the log
     lives as long as the install. `config set` carries the value on the
     command line, so BOTH the recorded argv and the echoed confirmation had
     to be masked -- the argv line was still leaking after the echo was
     fixed."""
-    from seedling import runlog
+    from acorn import runlog
     secret = "s3cr3t-token-value"
     argv = ["config", "set", "package_upload_token", secret]
     assert secret not in " ".join(runlog._redacted(argv))
@@ -226,7 +226,7 @@ def test_a_secret_setting_never_reaches_the_daily_log(run_cli, home):
 def test_summary_masks_secrets_in_both_output_forms(run_cli, home):
     """`acorn config` masked them from the start; `acorn summary` prints the
     same settings and did not."""
-    from seedling import config
+    from acorn import config
     config.set_value("package_upload_token", "s3cr3t-token-value")
     for args in (("summary",), ("summary", "--json")):
         code, out = run_cli(*args)

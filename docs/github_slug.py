@@ -2,7 +2,7 @@
 
 These pages are read in TWO places -- rendered by GitHub in the repo, and
 built into the docs site -- and every in-page link in them was written for
-GitHub's slugger. MyST's differs on exactly the characters seedling's
+GitHub's slugger. MyST's differs on exactly the characters acorn's
 headings are full of: it maps `offline-bundle.toml` to "offline-bundle-toml"
 where GitHub gives "offline-bundletoml", and collapses the doubled hyphen
 that dropping an "&" or an em dash leaves behind. The result was ~35

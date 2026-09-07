@@ -1,7 +1,7 @@
 # Just Python
 
 No editor, no repos. For people who already have their own setup and want
-seedling only for interpreters and environments.
+acorn only for interpreters and environments.
 
 **Assumes**
 
@@ -38,7 +38,7 @@ default = true
 ```
 
 Omitting `editor` means `acorn apply` installs none. Whether the installer
-sets up VS Code is then `SEEDLING_AUTO_VSCODE`'s decision in `global.conf`
+sets up VS Code is then `ACORN_AUTO_VSCODE`'s decision in `global.conf`
 — set it to `"false"` for a genuinely editor-free install.
 
 Point your own editor at the environment with the interpreter path:

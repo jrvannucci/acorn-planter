@@ -7,7 +7,7 @@ packages into them.
 
 ## `acorn venv <name> [--python <tag>] [--no-default-packages]`
 
-Creates a virtual environment at `~/seedling/python/venvs/<name>` via
+Creates a virtual environment at `~/acorn/python/venvs/<name>` via
 `uv venv --python <interpreter>`, then installs the default packages
 (`ipython`, `ruff`, and `ipykernel`, unless changed via
 `acorn config set venv_default_packages ...`) into it.
@@ -24,7 +24,7 @@ Creates a virtual environment at `~/seedling/python/venvs/<name>` via
   confirmation) *except* for its "activate with: source .../activate" hint,
   which is filtered out -- that's not how `acorn activate` actually works
   (it's a shell function, not a sourced script path), so showing it would
-  just be confusing. seedling prints its own `acorn activate <name>`
+  just be confusing. acorn prints its own `acorn activate <name>`
   instruction instead.
 
 ```
@@ -34,7 +34,7 @@ acorn venv myproject --python 311
 
 ## `acorn venv-list [--json]`
 
-Lists every venv under `~/seedling/python/venvs`, showing the Python
+Lists every venv under `~/acorn/python/venvs`, showing the Python
 version each was created with (read straight from its `pyvenv.cfg`) and
 marking whichever one matches the current `VIRTUAL_ENV` (i.e. the one
 you're actually inside right now) as active.
@@ -43,7 +43,7 @@ you're actually inside right now) as active.
 acorn venv-list
 ```
 ```
-Venvs in ~/seedling/python/venvs:
+Venvs in ~/acorn/python/venvs:
   myproject  [python 3.12.4]  (active)
   scratch    [python 3.11.9]
 ```
@@ -112,7 +112,7 @@ Three guarantees worth relying on:
 - **The command's exit code is yours, verbatim.** `acorn run -- pytest`
   returns what pytest returned.
 - **stdout and stderr are the command's, untouched.** The child writes to
-  the real file descriptors, so its output does not pass through seedling's
+  the real file descriptors, so its output does not pass through acorn's
   logging tee and stays byte-exact and pipeable. The invocation is logged;
   the child's output is not, deliberately.
 - **It's argv, not a shell.** No pipes, redirection, or glob expansion. Put
@@ -131,7 +131,7 @@ so `$(acorn which myproject)` works. Same resolution order as `acorn run`.
 acorn which
 ```
 ```
-/home/you/seedling/python/venvs/myproject/bin/python
+/home/you/acorn/python/venvs/myproject/bin/python
 ```
 
 **stdout carries the path and only the path.** Every diagnostic goes to
@@ -146,9 +146,9 @@ acorn which myproject --json
   "schema": 1,
   "found": true,
   "name": "myproject",
-  "path": "/home/you/seedling/python/venvs/myproject",
-  "python_executable": "/home/you/seedling/python/venvs/myproject/bin/python",
-  "bin_dir": "/home/you/seedling/python/venvs/myproject/bin",
+  "path": "/home/you/acorn/python/venvs/myproject",
+  "python_executable": "/home/you/acorn/python/venvs/myproject/bin/python",
+  "bin_dir": "/home/you/acorn/python/venvs/myproject/bin",
   "source": "argument"
 }
 ```
@@ -276,7 +276,7 @@ argument-forwarding and `VIRTUAL_ENV` warning behavior as `install`/
 `uninstall`/`package-list`.
 
 A package that **isn't** installed is `uv pip show`'s normal "not found"
-case, not a seedling-level error: uv prints its own warning and `acorn show`
+case, not a acorn-level error: uv prints its own warning and `acorn show`
 exits with uv's own exit code (`1`) — nothing is wrapped in a second
 `error: ... failed` line.
 
@@ -286,14 +286,14 @@ acorn show requests
 ```
 Name: requests
 Version: 2.34.2
-Location: ~/seedling/python/venvs/dev/Lib/site-packages
+Location: ~/acorn/python/venvs/dev/Lib/site-packages
 Requires: certifi, charset-normalizer, idna, urllib3
 Required-by:
 ```
 
 ## `acorn remove-venv <name> [-y] [--preview] [--non-interactive]`
 
-Deletes a single venv from `~/seedling/python/venvs`. Force-closes
+Deletes a single venv from `~/acorn/python/venvs`. Force-closes
 Python/VS Code processes first (see `acorn kill-processes`) so a running
 interpreter or open file inside the venv can't block deletion. Warns (but
 doesn't block) if the target looks like the currently active venv
@@ -317,7 +317,7 @@ acorn remove-venv myproject -y
 
 ## `acorn remove-venv-all [-y] [--preview] [--non-interactive]`
 
-Deletes **every** venv under `~/seedling/python/venvs`, with the same
+Deletes **every** venv under `~/acorn/python/venvs`, with the same
 process-closing behavior as `acorn remove-venv`. Lists them all before
 asking for confirmation (skippable with `-y`); `--preview` lists them and
 exits without deleting; `--non-interactive` refuses to prompt and aborts

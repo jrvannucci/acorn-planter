@@ -9,7 +9,7 @@ import time
 
 
 from conftest import windows_only
-from seedling import fsutil
+from acorn import fsutil
 
 
 def test_rmtree_clears_read_only_files(home):
@@ -68,7 +68,7 @@ def test_rmtree_escapes_own_cwd(home, monkeypatch):
 
 def test_classifier_accepts_only_cli_paths(home):
     bin_exe = home / "system" / "bin" / "acorn-cli.exe"
-    tool_py = home / "system" / "tool" / "seedling" / "Scripts" / "python.exe"
+    tool_py = home / "system" / "tool" / "acorn" / "Scripts" / "python.exe"
     a_dir = home / "system"
     for p in (bin_exe, tool_py):
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -95,7 +95,7 @@ def test_deferred_delete_finishes_after_locker_exits(home):
     """End-to-end self-deletion: a child process holds a file open (like the
     running acorn-cli), robust_rmtree can't remove it, the deferred helper
     wipes everything shortly after the child exits -- invisibly."""
-    tooldir = home / "system" / "tool" / "seedling" / "Scripts"
+    tooldir = home / "system" / "tool" / "acorn" / "Scripts"
     tooldir.mkdir(parents=True)
     (home / "system" / "bin").mkdir(parents=True)
     (home / "system" / "bin" / "acorn-cli.exe").write_text("shim")
