@@ -437,6 +437,11 @@ which affects all PowerShell scripts for that account. In noninteractive
 installations it prints the command instead. It does not change Group Policy
 or an `AllSigned` requirement.
 
+If you installed from a copy your organization put together, they may have
+set `ACORN_POWERSHELL_POLICY` in `global.conf` so this is handled for you —
+either applied silently at install time, or left to policy they manage
+centrally. See [deployment guide](DEPLOYMENT.md).
+
 For an existing installation, run this in PowerShell and reopen the terminal:
 
 ```powershell

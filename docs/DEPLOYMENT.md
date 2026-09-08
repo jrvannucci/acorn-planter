@@ -88,6 +88,15 @@ or environment variables:
   portable VS Code during install, so `acorn vscode` opens instantly
   instead of downloading ~300 MB on first use. Only applies when
   `ACORN_AUTO_SETUP` is `true`.
+- `ACORN_POWERSHELL_POLICY` (default: empty; Windows only) — what the
+  installer does about PowerShell's execution policy, which must allow local
+  scripts or the `acorn` shell command never loads in a new terminal. Empty
+  asks an interactive installer and otherwise only prints the command;
+  `RemoteSigned` (or `true`) sets it for the installing user with no prompt,
+  so base users never encounter it; `skip` (or `false`) leaves the policy
+  entirely alone, for a fleet that manages it by Group Policy. Cannot
+  override a `MachinePolicy`/`UserPolicy` or `AllSigned` requirement either
+  way. See [the GUIDE troubleshooting note](GUIDE.md#powershell-says-running-scripts-is-disabled).
 - `ACORN_PYTHON_MIRROR` (default: empty = internet) — where `acorn
   python` downloads interpreter builds: a URL of an internal mirror, or a
   plain directory of python-build-standalone archives on a share. Seeds
@@ -406,6 +415,7 @@ The questions that come up in a review, and where the answer is documented:
 | Question | Answer |
 |---|---|
 | What does it write outside its own folder? | The shell hook line in the user's profile. Nothing else — no registry, no `%APPDATA%`, no system paths. See [the folder layout](GUIDE.md#the-folder-layout). |
+| Does the Windows installer change the PowerShell execution policy? | Only if it can't otherwise get the profile to load, and by default only after asking. `ACORN_POWERSHELL_POLICY=RemoteSigned` in your `global.conf` makes it silent for a managed rollout; `skip` stops it looking at the policy at all. It never touches Group Policy or an `AllSigned` requirement, and only ever sets `CurrentUser` scope. See [`global.conf`](#deployment-configuration-globalconf). |
 | Does it need administrator rights? | No. Only the [`admin-*` family](#admin-commands-shared-root-teardown) does, and only for cross-user teardown. |
 | Where does code come from? | Whatever you set in `global.conf`. Pointed at internal mirrors, it never contacts github.com or pypi.org — see [OFFLINE.md](OFFLINE.md). |
 | Are downloads verified? | Yes — SHA-256 against the publisher's checksum, with an explicit warning when no checksum can be obtained. See [Download verification](DESIGN.md#download-verification). |

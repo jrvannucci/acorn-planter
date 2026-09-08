@@ -837,7 +837,19 @@ Set-Content -Path $seedPs1 -Value $content -Encoding UTF8
 $hookLine = ". `"$seedPs1`""
 
 function Enable-ACORNProfilePolicy {
-    param([bool]$CanPrompt = (-not [Console]::IsInputRedirected))
+    param(
+        # ACORN_POWERSHELL_POLICY, resolved by the caller. "" asks an
+        # interactive person and otherwise only prints the command;
+        # "remotesigned"/"true" is the deployment answering yes on the user's
+        # behalf; "skip"/"false" is the deployment saying it manages policy
+        # itself (Group Policy, a machine image) and the installer must not
+        # look at or touch it.
+        [string]$Preference = "",
+        [bool]$CanPrompt = (-not [Console]::IsInputRedirected)
+    )
+    $pref = $Preference.Trim().ToLower()
+    if ($pref -in @("skip", "false", "no", "off")) { return $true }
+    $forced = $pref -in @("true", "remotesigned", "remote-signed", "force")
     # Ignore Process: install.cmd uses Bypass only for this installer process.
     try {
         $policy = "Restricted"
@@ -858,9 +870,17 @@ function Enable-ACORNProfilePolicy {
         }
         Warn "RemoteSigned lets locally created scripts run for your account; downloaded scripts need a trusted signature."
         Write-Host "To enable the profile: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned"
-        if ($env:ACORN_NONINTERACTIVE -or -not $CanPrompt) { return $false }
-        $answer = Read-Host "Set RemoteSigned for your account? This affects all your PowerShell scripts [y/N]"
-        if ($answer -notmatch '^(?i:y|yes)$') { return $false }
+        if ($forced) {
+            # The deployment already answered, in global.conf. Machine-wide
+            # policy and AllSigned were ruled out above -- those it still
+            # cannot override -- so this only removes the prompt on the path
+            # the installer could always handle.
+            Info "Setting RemoteSigned for your account (ACORN_POWERSHELL_POLICY)."
+        } else {
+            if ($env:ACORN_NONINTERACTIVE -or -not $CanPrompt) { return $false }
+            $answer = Read-Host "Set RemoteSigned for your account? This affects all your PowerShell scripts [y/N]"
+            if ($answer -notmatch '^(?i:y|yes)$') { return $false }
+        }
         try {
             Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force -ErrorAction Stop
         } catch {
@@ -927,7 +947,14 @@ if ($PSVersionTable.PSEdition -eq "Core" -and $PROFILE -match "\\PowerShell\\") 
     Add-ACORNHook $siblingProfile
 }
 
-$ProfilePolicyReady = Enable-ACORNProfilePolicy
+# ACORN_POWERSHELL_POLICY: env var (one run) beats global.conf beats "" --
+# the same precedence every other setting here uses.
+$PsPolicyPref = if ($env:ACORN_POWERSHELL_POLICY) {
+    $env:ACORN_POWERSHELL_POLICY
+} elseif ($Conf["ACORN_POWERSHELL_POLICY"]) {
+    $Conf["ACORN_POWERSHELL_POLICY"]
+} else { "" }
+$ProfilePolicyReady = Enable-ACORNProfilePolicy -Preference $PsPolicyPref
 Info "acorn is installed."
 if (-not $ProfilePolicyReady) {
     Warn "Installation is complete, but the acorn shell command requires the profile policy issue above to be resolved."
