@@ -70,6 +70,9 @@ textarea { resize:vertical; font-family:var(--mono); font-size:.86rem; line-heig
 .tag button:hover { color:var(--danger); }
 .add-row { display:flex; gap:.4rem; }
 .add-row input { flex:1; }
+details.bulk { margin-top:.4rem; }
+details.bulk > summary { cursor:pointer; font-size:.83rem; color:var(--accent); }
+details.bulk textarea { margin-top:.45rem; }
 button { font:inherit; border-radius:5px; border:1px solid var(--line); background:var(--raised); color:var(--accent); padding:.4rem .8rem; cursor:pointer; }
 button:hover { background:var(--raised-2); }
 button.primary { background:var(--accent); color:var(--page); border-color:var(--accent); }
@@ -321,6 +324,65 @@ function miniToml(text){
   }
   return root;
 }
+/* Bulk package entry. `mode` is "req" (a requirements.txt), "whl" / "whl-pin"
+   (a list of wheel / sdist filenames), or "plain" (one spec per line/comma).
+   Returns { specs, skipped } -- skipped counts requirements lines that name no
+   package (a -r/-c include, an -e path, a bare --hash or option line). */
+function bulkParse(text, mode){
+  text = String(text || "");
+  if(mode === "req"){
+    var specs = [], skipped = 0;
+    text.replace(/\\\r?\n/g, " ").split(/\r?\n/).forEach(function(raw){
+      var line = raw.replace(/\s+#.*$/, "").trim();
+      if(!line || line[0] === "#") return;
+      if(line[0] === "-"){ skipped++; return; }
+      line = line.split(";")[0].replace(/\s*--hash[ =]\S+/g, "").trim().split(/\s+/)[0];
+      if(line) specs.push(line); else skipped++;
+    });
+    return { specs: specs, skipped: skipped };
+  }
+  if(mode === "whl" || mode === "whl-pin"){
+    var out = [];
+    text.split(/[\s,]+/).forEach(function(raw){
+      var tok = raw.trim().replace(/^.*[\/\\]/, "");
+      if(!tok) return;
+      var stem, ver = null;
+      if(/\.whl$/i.test(tok)){
+        var p = tok.slice(0, -4).split("-");
+        if(p.length < 2) return;
+        stem = p[0]; ver = p[1];
+      } else {
+        var m = tok.match(/^(.+)-([^-]+)\.(?:tar\.gz|tar\.bz2|zip)$/i);
+        if(!m) return;
+        stem = m[1]; ver = m[2];
+      }
+      var name = canonical(stem);
+      out.push(mode === "whl-pin" && ver ? name + "==" + ver : name);
+    });
+    return { specs: out, skipped: 0 };
+  }
+  return { specs: text.split(/[\n,]+/).map(function(s){ return s.trim(); }).filter(Boolean), skipped: 0 };
+}
+function mergeInto(arr, add){
+  var n = 0;
+  add.forEach(function(v){ if(v && arr.indexOf(v) === -1){ arr.push(v); n++; } });
+  return n;
+}
+/* Wire a bulk-add block: `root` contains [data-bulk=src|mode|add|msg]. */
+function bulkWidget(root, getArr, onChange){
+  var q = function(s){ return root.querySelector('[data-bulk="' + s + '"]'); };
+  q("add").onclick = function(){
+    var r = bulkParse(q("src").value, q("mode").value);
+    var added = mergeInto(getArr(), r.specs);
+    var dup = r.specs.length - added;
+    var msg = r.specs.length ? added + " added" : "nothing recognised in that";
+    if(dup) msg += "  (" + dup + " already listed)";
+    if(r.skipped) msg += "  — ignored " + r.skipped + " include/option line(s)";
+    q("msg").textContent = msg;
+    q("src").value = "";
+    onChange();
+  };
+}
 /* ==== END SHARED PRELUDE ==== */
 
 /* ---- schema (mirrors acorn/profile.py + acorn/bundle.py) ----------------- */
@@ -446,7 +508,14 @@ function venvHtml(v, vi){
     '  </div>',
     '  <div class="field" style="margin:.5rem 0 0"><label class="head" style="font-size:.78rem">packages</label>',
     '    <div class="add-row"><input type="text" data-vf="pkg-in" placeholder="pandas==2.2.3"><button type="button">Add</button></div>',
-    '    <div class="taglist">' + tagsHtml(v.packages, "vpkg" + vi) + '</div></div>',
+    '    <div class="taglist">' + tagsHtml(v.packages, "vpkg" + vi) + '</div>',
+    '    <details class="bulk" data-vbulk><summary>Bulk add from a requirements file or wheel list</summary>',
+    '      <textarea data-bulk="src" rows="3" placeholder="Paste requirements.txt lines, or *.whl filenames."></textarea>',
+    '      <div class="add-row" style="margin-top:.4rem"><select data-bulk="mode" style="width:auto">',
+    '        <option value="req">requirements.txt</option><option value="whl">wheel filenames &rarr; names</option>',
+    '        <option value="whl-pin">wheel filenames &rarr; name==version</option><option value="plain">plain list</option></select>',
+    '        <button type="button" data-bulk="add">Add all</button><span data-bulk="msg" class="help" style="margin:0;align-self:center"></span></div>',
+    '    </details></div>',
     '  <div class="checks" style="margin-top:.4rem">',
     '    <label><input type="checkbox" data-vf="isdefault"' + (v.isdefault ? " checked" : "") + '> default venv</label>',
     '    <label>default_packages:<select data-vf="defpkgs" style="width:auto;display:inline-block;margin-left:.3rem">',
@@ -525,6 +594,7 @@ function wire(card, p, pi){
     var addPkg = function(){ var val = pin.value.trim(); if(val && v.packages.indexOf(val) === -1) v.packages.push(val); pin.value = ""; render(); };
     pin.nextElementSibling.onclick = addPkg;
     pin.onkeydown = function(e){ if(e.key === "Enter"){ e.preventDefault(); addPkg(); } };
+    bulkWidget(vc.querySelector("[data-vbulk]"), function(){ return v.packages; }, render);
     vc.querySelector('[data-vact="del"]').onclick = function(){
       p.venvs.splice(vi, 1);
       if(!p.venvs.some(function(x){ return x.isdefault; }) && p.venvs[0]) p.venvs[0].isdefault = true;
