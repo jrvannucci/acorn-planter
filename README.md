@@ -4,69 +4,41 @@
 
 **Global Python environments and development suites, ready when you are.**
 
-ACORN gives you one place to configure and manage your Python interpreters,
-virtual environments, packages, repositories, and development tools. Shared
-settings apply across your environments, while profiles assemble the suite
-that fits your work. Install online or bring a complete bundle to an offline
-network.
+**Install Python, your editor, and your tools. Start writing Python.**
 
-**Build the planter. Distribute the planter. Use ACORN.**
+ACORN takes care of setting up Python, a working environment, VS Code, and
+configured development tools so you can get started quickly. It keeps your
+managed setup together in one folder—`~/acorn` by default—and handles where
+its components are installed. You can focus on using Python instead of
+organizing installations and finding the right executable.
 
-The offline builder bundles **`acorn-planter`** with its installers,
-configuration, profiles, and the resources needed for offline installation.
-The administrator transfers this prepared distribution to the target network.
-Users run its installer to create their own **`acorn`** development suite.
+Run the installer, open a fresh terminal, and start working. Use the `acorn`
+command to add packages, switch environments, and open your editor as your
+needs grow.
 
-`acorn-planter` is the distribution repository or folder. `acorn` is the
-installed Python package and CLI, with a default user directory of `~/acorn`.
-The bundle archive contains a self-contained `acorn-planter/`: its wheels,
-Python builds, conda channel, and manifest live inside that folder. Resource
-paths in `acorn-planter/global.conf` can point elsewhere when needed.
-
-The repository and extracted offline bundle use the same layout:
-
-```text
-GET_STARTED/                  user installation and removal launchers
-GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
-acorn-planter/                 master configuration, profiles and resources
-  global.conf
-  offline-bundle.toml
-  installation-profile/
-  src/acorn/
-  installers/
-  examples/
-```
-
-Run `GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd` to build the distribution.
-Transfer the complete output, including both launcher folders. Users run
-`GET_STARTED/install.cmd`; their personal suite is installed into `~/acorn`.
-The shared wheelhouse and interpreter archives remain in the planter.
-
-![ACORN manages Python environments and development suites in one folder.](docs/diagrams/mission.svg)
-
----
+[Install ACORN](#install) · [See the everyday workflow](#the-everyday-workflow)
 
 ## Your development suite
 
-![Shared configuration, a chosen profile, and a ready development suite.](docs/diagrams/development-suite.svg)
+![Animated walkthrough of installing ACORN from a shared planter, applying assigned profiles, activating an environment, running Python, and opening VS Code.](docs/_static/acorn-user-demo.gif)
 
-- **Global defaults for your environments.** Configure installation with
-  `global.conf`, then manage your settings with `acorn config`.
-- **Python versions and packages together.** Create environments for different
-  projects and keep their dependencies separate.
-- **Development tools within reach.** Open VS Code or Spyder against the
-  environment you are using.
-- **Online and offline installation.** Prepare a bundle of resources and
-  validate profiles before taking your suite to an offline network.
+*Illustrated team setup: Alice installs from the network share, activates her
+`analysis` environment, uses NumPy, and opens VS Code.*
 
-Profiles let you describe a repeatable setup for yourself or use one supplied
-by your administrator. Your managed environments and tools live under `~/acorn`.
+- **Get a working Python setup.** The installer prepares Python, a default
+  environment, and your configured editor and tools.
+- **Let ACORN handle locations.** Your managed environments, tools, settings,
+  and caches stay together under your ACORN folder.
+- **Use simple commands.** Install packages, activate an environment, or open
+  VS Code without tracking down individual installations.
+- **Reuse your setup when needed.** Profiles let you recreate your own suite
+  on another computer or use one supplied by your administrator.
 
 ---
 
 ## Install
 
-Nothing needs to be pre-installed — not Python, not uv, nothing.
+You do not need to install Python or uv first; ACORN sets them up for you.
 
 **macOS / Linux:**
 ```sh
@@ -124,7 +96,71 @@ you're done with it, `acorn purge` removes the folder and the shell hook.
 
 ---
 
+## Bring your own suite
+
+Keep your personal `profile.toml` in a repository or another location you can
+access. On another computer, download it and install ACORN, then open a fresh
+terminal and apply it:
+
+```sh
+acorn apply ./profile.toml
+acorn activate dev          # use an environment named in your profile
+acorn vscode
+```
+
+Your profile describes the setup to recreate; it does not carry your working
+files or uncommitted changes. Package sources and repositories must be
+reachable from that computer. See [profiles](docs/PROFILES.md) to define your
+own environments and tools.
+
+When finished, save or push your work outside the ACORN folder, then run
+`acorn purge` to remove your installation, including repositories stored
+inside it. On someone else's computer, use your own account or a separate
+ACORN installation directory so their existing suite is not affected.
+
+---
+
 ## For organizations 🏢
+
+**Administrators distribute a suite to users; individuals bring their own
+suite to another machine.** Both start with the same ACORN installation and
+commands. Profiles and offline bundles extend that setup to repeatable team
+and personal workflows.
+
+**Build the planter. Distribute the planter. Use ACORN.**
+
+![How administrators build and distribute ACORN Planter, and how users install and use their personal development suite.](docs/diagrams/usage-workflow.svg)
+
+The offline builder bundles **`acorn-planter`** with its installers,
+configuration, profiles, and the resources needed for offline installation.
+The administrator transfers this prepared distribution to the target network.
+Users run its installer to create their own **`acorn`** development suite.
+
+`acorn-planter` is the distribution repository or folder. `acorn` is the
+installed Python package and CLI, with a default user directory of `~/acorn`.
+The bundle archive contains a self-contained `acorn-planter/`: its wheels,
+Python builds, conda channel, and manifest live inside that folder. Resource
+paths in `acorn-planter/global.conf` can point elsewhere when needed.
+
+The repository and extracted offline bundle use the same layout:
+
+```text
+GET_STARTED/                  user installation and removal launchers
+GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
+acorn-planter/                 master configuration, profiles and resources
+  global.conf
+  offline-bundle.toml
+  installation-profile/
+  src/acorn/
+  installers/
+  examples/
+```
+
+Run `GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd` to build the distribution.
+Transfer the complete output, including both launcher folders. Users run
+`GET_STARTED/install.cmd`; their personal suite is installed into `~/acorn`.
+The shared wheelhouse and interpreter archives remain in the planter.
+
 
 acorn is also built to be **deployed** — by one person, to everyone else,
 including on networks where the usual Python setup path doesn't work at all.

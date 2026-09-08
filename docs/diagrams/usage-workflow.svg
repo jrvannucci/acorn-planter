@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1570" viewBox="0 0 1200 1570" role="img" aria-labelledby="title desc">
+<title id="title">From one shared planter to each person's development suite</title>
+<desc id="desc">An administrator declares and builds the offline resource superset, transfers the complete distribution to a shared location, and supplies validated user profiles. Users install ACORN once and manage their own environments, tools and repositories through the CLI. Shared downloads stay on the network; each user's installed suite lives in their acorn folder.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#488475"/></marker></defs>
+<rect width="1200" height="1570" rx="24" fill="#F5F7F2"/>
+<g font-family="Arial, Helvetica, sans-serif">
+
+<text x="44" y="49" font-size="16" fill="#397966" font-weight="700">ACORN  /  HOW IT WORKS</text>
+<text x="44" y="99" font-size="42" fill="#173F35" font-weight="700">One shared planter.</text>
+<text x="44" y="148" font-size="42" fill="#173F35" font-weight="700">A development suite for every user.</text>
+<text x="44" y="186" font-size="23" fill="#53665C" font-weight="400">Global Python environments and development suites, ready when you are.</text>
+<rect x="36" y="220" width="1128" height="340" rx="16" fill="#FFFFFF" stroke="#D7E1D8"/>
+<rect x="56" y="244" width="48" height="48" rx="24" fill="#173F35" stroke="#173F35"/>
+<text x="72" y="276" font-size="25" fill="#FFFFFF" font-weight="700">1</text>
+<text x="124" y="263" font-size="14" fill="#547467" font-weight="700">ADMINISTRATOR  ·  CONNECTED MACHINE</text>
+<text x="124" y="298" font-size="30" fill="#173F35" font-weight="700">Build what your users can install</text>
+<text x="124" y="330" font-size="19" fill="#53665C" font-weight="400">The offline bundle is the resource superset. Profiles must fit what it contains.</text>
+<g transform="translate(1060 251)" fill="none" stroke="#397966" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<path d="M0 16L28 2L56 16L28 30Z M0 16V47L28 62L56 47V16 M28 30V62 M14 9L42 23"/>
+</g>
+<rect x="62" y="356" width="515" height="155" rx="16" fill="#EEF4ED" stroke="#EEF4ED"/>
+<text x="82" y="387" font-size="13" fill="#547467" font-weight="700">DECLARE</text>
+<text x="82" y="419" font-size="20" fill="#173F35" font-weight="700" font-family="Consolas, monospace">acorn-planter/offline-bundle.toml</text>
+<text x="82" y="450" font-size="18" fill="#173F35" font-weight="400">Python versions, package versions and dependencies,</text>
+<text x="82" y="478" font-size="18" fill="#173F35" font-weight="400">native tools, editor and required extensions.</text>
+<rect x="597" y="356" width="541" height="155" rx="16" fill="#EEF4ED" stroke="#EEF4ED"/>
+<text x="617" y="387" font-size="13" fill="#547467" font-weight="700">RUN</text>
+<text x="617" y="419" font-size="19" fill="#173F35" font-weight="400" font-family="Consolas, monospace">GET_STARTED_OFFLINE_BUNDLE/</text>
+<text x="617" y="447" font-size="22" fill="#173F35" font-weight="700" font-family="Consolas, monospace">offline-bundler.cmd</text>
+<text x="617" y="479" font-size="18" fill="#173F35" font-weight="400">Download resources; check profiles and editor settings.</text>
+<text x="63" y="539" font-size="19" fill="#173F35" font-weight="700">Result: a compressed distribution + UNPACK.cmd, with an inventory and license manifest.</text>
+<path d="M92 562V598" stroke="#488475" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="123" y="588" font-size="14" fill="#547467" font-weight="700">TRANSFER THE COMPLETE DISTRIBUTION TO THE OFFLINE NETWORK</text>
+<rect x="36" y="610" width="1128" height="365" rx="16" fill="#FFFFFF" stroke="#D7E1D8"/>
+<rect x="56" y="634" width="48" height="48" rx="24" fill="#173F35" stroke="#173F35"/>
+<text x="72" y="666" font-size="25" fill="#FFFFFF" font-weight="700">2</text>
+<text x="124" y="653" font-size="14" fill="#547467" font-weight="700">ADMINISTRATOR  ·  SHARED NETWORK LOCATION</text>
+<text x="124" y="688" font-size="30" fill="#173F35" font-weight="700">Publish the planter and choose who gets what</text>
+<text x="124" y="720" font-size="19" fill="#53665C" font-weight="400">Extract the bundle, configure network paths, and validate the profiles you supply.</text>
+<g transform="translate(1060 641)" fill="none" stroke="#397966" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<rect x="2" y="2" width="52" height="22" rx="5"/><rect x="2" y="33" width="52" height="22" rx="5"/><path d="M12 13H14 M12 44H14 M24 13H44 M24 44H44"/>
+</g>
+<rect x="62" y="746" width="515" height="170" rx="16" fill="#EEF4ED" stroke="#EEF4ED"/>
+<text x="82" y="777" font-size="13" fill="#547467" font-weight="700">SHARED DISTRIBUTION</text>
+<text x="82" y="809" font-size="20" fill="#173F35" font-weight="700" font-family="Consolas, monospace">GET_STARTED/  +  acorn-planter/</text>
+<text x="82" y="840" font-size="18" fill="#173F35" font-weight="400">Planter: config, profiles, installers and source;</text>
+<text x="82" y="868" font-size="18" fill="#173F35" font-weight="400">wheels, Python builds, conda channel and native tools.</text>
+<text x="82" y="895" font-size="17" fill="#53665C" font-weight="400">Keep both GET_STARTED folders with the planter.</text>
+<rect x="597" y="746" width="541" height="170" rx="16" fill="#EEF4ED" stroke="#EEF4ED"/>
+<text x="617" y="777" font-size="13" fill="#547467" font-weight="700">ADMINISTRATOR CONTROLS</text>
+<text x="617" y="809" font-size="20" fill="#173F35" font-weight="700" font-family="Consolas, monospace">global.conf</text>
+<text x="617" y="838" font-size="18" fill="#173F35" font-weight="400">Shared settings; resource paths may point elsewhere.</text>
+<text x="617" y="866" font-size="20" fill="#173F35" font-weight="700" font-family="Consolas, monospace">installation-profile/*.toml</text>
+<text x="617" y="895" font-size="18" fill="#173F35" font-weight="400">Default for everyone; extra profiles select users.</text>
+<text x="63" y="950" font-size="19" fill="#173F35" font-weight="700">New profiles can be created inside the air gap and checked against the existing bundle.</text>
+<path d="M92 977V1013" stroke="#488475" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="123" y="1004" font-size="14" fill="#547467" font-weight="700">USERS INSTALL FROM THE SHARE  ·  SHARED DOWNLOADS STAY THERE</text>
+<rect x="36" y="1025" width="1128" height="439" rx="16" fill="#FFFFFF" stroke="#D7E1D8"/>
+<rect x="56" y="1049" width="48" height="48" rx="24" fill="#173F35" stroke="#173F35"/>
+<text x="72" y="1081" font-size="25" fill="#FFFFFF" font-weight="700">3</text>
+<text x="124" y="1068" font-size="14" fill="#547467" font-weight="700">USER  ·  THEIR OWN MACHINE</text>
+<text x="124" y="1103" font-size="30" fill="#173F35" font-weight="700">Install once. Use ACORN every day.</text>
+<text x="124" y="1135" font-size="19" fill="#53665C" font-weight="400">Run GET_STARTED/install.cmd, then open a fresh terminal to use your personal suite.</text>
+<g transform="translate(1060 1056)" fill="none" stroke="#397966" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<rect x="0" y="0" width="58" height="42" rx="5"/><path d="M29 43V55 M14 55H44 M12 13L20 21L12 29 M28 29H42"/>
+</g>
+<rect x="62" y="1161" width="515" height="238" rx="16" fill="#17342D" stroke="#17342D"/>
+<text x="82" y="1193" font-size="13" fill="#A7D5BE" font-weight="700">YOUR TERMINAL</text>
+<text x="82" y="1233" font-size="23" fill="#FFFFFF" font-weight="400" font-family="Consolas, monospace">acorn activate dev</text>
+<text x="82" y="1262" font-size="18" fill="#B8CEC1" font-weight="400">Work in the environment you need.</text>
+<text x="82" y="1301" font-size="23" fill="#FFFFFF" font-weight="400" font-family="Consolas, monospace">acorn install pandas</text>
+<text x="82" y="1330" font-size="17" fill="#B8CEC1" font-weight="400">Add packages available from your configured source.</text>
+<text x="82" y="1370" font-size="23" fill="#FFFFFF" font-weight="400" font-family="Consolas, monospace">acorn vscode</text>
+<rect x="597" y="1161" width="541" height="238" rx="16" fill="#EEF4ED" stroke="#EEF4ED"/>
+<text x="617" y="1193" font-size="13" fill="#547467" font-weight="700">YOUR INSTALLED SUITE  ·  DEFAULT LOCATION</text>
+<text x="617" y="1227" font-size="24" fill="#173F35" font-weight="700" font-family="Consolas, monospace">~/acorn/</text>
+<text x="637" y="1260" font-size="18" fill="#173F35" font-weight="400" font-family="Consolas, monospace">python/       interpreters + environments</text>
+<text x="637" y="1292" font-size="18" fill="#173F35" font-weight="400" font-family="Consolas, monospace">extensions/   editor + Python applications</text>
+<text x="637" y="1324" font-size="18" fill="#173F35" font-weight="400" font-family="Consolas, monospace">repo/         your cloned repositories</text>
+<text x="637" y="1356" font-size="18" fill="#173F35" font-weight="400" font-family="Consolas, monospace">system/       CLI, settings, logs + caches</text>
+<text x="617" y="1383" font-size="17" fill="#53665C" font-weight="400">Each user has their own installation.</text>
+<text x="63" y="1438" font-size="19" fill="#173F35" font-weight="700">Repositories come from your internal network. The offline builder does not bundle them.</text>
+<text x="44" y="1508" font-size="19" fill="#53665C" font-weight="400">Connected installations can use online sources directly; the CLI and personal suite are the same.</text>
+<text x="44" y="1541" font-size="16" fill="#397966" font-weight="700">PLAN → BUILD → DISTRIBUTE → INSTALL → WORK</text>
+</g></svg>

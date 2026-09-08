@@ -133,11 +133,13 @@ def _generate_diagrams(*_args) -> None:
     diagrams_dir = _HERE / "diagrams"
     sys.path.insert(0, str(diagrams_dir))
     import generate_family_commands
+    import generate_usage
     import generate_overview
     import generate_bundle_superset
     import generate_marketing_flows
     import generate_profile_flows
 
+    generate_usage.build()
     generate_overview.build()
     generate_bundle_superset.main()
     generate_profile_flows.main()
