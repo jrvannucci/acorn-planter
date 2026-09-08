@@ -176,17 +176,17 @@ B_MID_X, B_MID_W = 560, 340
 B_CANVAS_W = 940
 
 
-B_HEAD_H = 40   # height of the "offline-bundle/" header drawn inside the box
+B_HEAD_H = 40   # height of the "acorn-planter/" header drawn inside the box
 B_BOX_PAD = 16  # gap between the box's outer edge and the header/chips it contains
 
 
 B_CONF_LABEL = "offline-bundle.toml"
-B_CONF_NOTE = "in GET_STARTED_OFFLINE_BUNDLE/; declares the bundle resources, checked against global.conf"
+B_CONF_NOTE = "in acorn-planter/; declares the bundle resources, checked against global.conf"
 B_CONF_VIA = "declares what to stage"
 B_CONF_GAP = 30  # room for the connector arrow + its label
 
 B_TRIGGER_LABEL = "offline-bundler.cmd"
-B_TRIGGER_NOTE = "you run this yourself, on a connected machine -- no arguments, nothing runs on its own"
+B_TRIGGER_NOTE = "bundles acorn-planter and its resources on a connected machine; run with no arguments"
 B_TRIGGER_GAP = 26
 
 # which offline-bundle.toml key decides which staged folder. Keyed by the
@@ -640,8 +640,8 @@ PROFILES = [
         subtitle="Spyder, two venvs -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public acorn repo", kind="internet", items=[
-                    item("acorn itself", "the install one-liner"),
+                group("github.com", "the acorn-planter repo", kind="internet", items=[
+                    item("acorn-planter", "the install one-liner"),
                 ]),
                 group("pypi.org", "the public package index", kind="internet", items=[
                     item("Packages", "acorn venv / apply"),
@@ -664,7 +664,7 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("github.com", "acorn itself, plus platform.git, shared-lib.git", kind="internet", items=[
-                    item("acorn itself", "the install one-liner"),
+                    item("acorn-planter", "the install one-liner"),
                     item("Repos", "acorn repo-clone"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
@@ -694,8 +694,8 @@ PROFILES = [
         subtitle="One shared venv -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public acorn repo", kind="internet", items=[
-                    item("acorn itself", "the install one-liner"),
+                group("github.com", "the acorn-planter repo", kind="internet", items=[
+                    item("acorn-planter", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
                     item("Packages", "acorn apply"),
@@ -720,8 +720,8 @@ PROFILES = [
         subtitle="Pinned, reproducible -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public acorn repo", kind="internet", items=[
-                    item("acorn itself", "the install one-liner"),
+                group("github.com", "the acorn-planter repo", kind="internet", items=[
+                    item("acorn-planter", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
                     item("Packages (pinned)", "acorn apply"),
@@ -751,7 +751,7 @@ PROFILES = [
                     item("Interpreters", "acorn python"),
                 ]),
                 group("gitlab.corp.example", "your internal git host", kind="internal", items=[
-                    item("acorn itself", "acorn update-commands"),
+                    item("acorn-planter", "acorn update-commands"),
                     item("Repos", "acorn repo-clone"),
                 ]),
             ],
@@ -771,8 +771,8 @@ PROFILES = [
         title="Internal PyPI only",
         subtitle="Bundle tools and wheels; upload wheels to the internal index",
         build=[
-            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
-                "acorn/", "copied in, refreshed every re-run"),
+            brow("acorn-planter", "this git checkout", "global.conf, src/, installers/",
+                "src/ + global.conf", "source refreshed on every build"),
             brow("Packages + Spyder", "pypi.org", "acorn upload-whls <wheels-dir>",
                 "wheels/", "upload to the internal index"),
             brow("uv", "astral.sh", "the binary itself",
@@ -795,7 +795,7 @@ PROFILES = [
                     item("Spyder", "acorn apply"),
                 ]),
                 group("S:\\acorn (the offline build)", "everything else, copied once", kind="bundle", items=[
-                    item("acorn itself", "system/src/"),
+                    item("acorn-planter", "system/src/"),
                     item("uv", "system/bin/"),
                     item("Interpreters", "acorn python"),
                     item("conda-forge tools", "acorn forge-install"),
@@ -819,8 +819,8 @@ PROFILES = [
         title="Air-gapped (VSCodium)",
         subtitle="VSCodium and Open VSX -- built once, carried in",
         build=[
-            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
-                "acorn/", "copied in, refreshed every re-run"),
+            brow("acorn-planter", "this git checkout", "global.conf, src/, installers/",
+                "src/ + global.conf", "source refreshed on every build"),
             brow("Packages", "pypi.org", "every venv package",
                 "wheels/", "staged into the bundle"),
             brow("uv", "astral.sh", "the binary itself",
@@ -837,7 +837,7 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("the share (the offline build)", "offline-bundle/, copied once", kind="bundle", items=[
-                    item("acorn itself", "system/src/"),
+                    item("acorn-planter", "system/src/"),
                     item("Packages", "acorn install"),
                     item("uv", "system/bin/"),
                     item("Interpreters", "acorn python"),
@@ -862,8 +862,8 @@ PROFILES = [
         title="Air-gapped (VS Code)",
         subtitle="Keeps Pylance -- built once, carried in",
         build=[
-            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
-                "acorn/", "copied in, refreshed every re-run"),
+            brow("acorn-planter", "this git checkout", "global.conf, src/, installers/",
+                "src/ + global.conf", "source refreshed on every build"),
             brow("Packages", "pypi.org", "every venv package",
                 "wheels/", "staged into the bundle"),
             brow("uv", "astral.sh", "the binary itself",
@@ -880,7 +880,7 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("the share (the offline build)", "offline-bundle/, copied once", kind="bundle", items=[
-                    item("acorn itself", "system/src/"),
+                    item("acorn-planter", "system/src/"),
                     item("Packages", "acorn install"),
                     item("uv", "system/bin/"),
                     item("Interpreters", "acorn python"),
@@ -905,8 +905,8 @@ PROFILES = [
         title="Air-gapped (everything)",
         subtitle="Every capability at once -- the maximal case",
         build=[
-            brow("acorn itself", "this git checkout", "GET_STARTED/, src/, installers/",
-                "acorn/", "copied in, refreshed every re-run"),
+            brow("acorn-planter", "this git checkout", "global.conf, src/, installers/",
+                "src/ + global.conf", "source refreshed on every build"),
             brow("Packages + Spyder", "pypi.org", "every venv package, per interpreter",
                 "wheels/", "staged into the bundle"),
             brow("uv", "astral.sh", "the binary itself",
@@ -925,7 +925,7 @@ PROFILES = [
         pull=dict(
             groups=[
                 group("S:\\acorn (the offline build)", "one shared offline build, staged once", kind="bundle", items=[
-                    item("acorn itself", "system/src/"),
+                    item("acorn-planter", "system/src/"),
                     item("Packages + Spyder", "acorn install / apply"),
                     item("uv", "system/bin/"),
                     item("Interpreters x2", "acorn python 3.12 / 3.11"),
@@ -956,8 +956,8 @@ PROFILES = [
         subtitle="Interpreters and venvs only -- installs straight from the internet",
         pull=dict(
             groups=[
-                group("github.com", "the public acorn repo", kind="internet", items=[
-                    item("acorn itself", "the install one-liner"),
+                group("github.com", "the acorn-planter repo", kind="internet", items=[
+                    item("acorn-planter", "the install one-liner"),
                 ]),
                 group("pypi.org", "package index", kind="internet", items=[
                     item("Packages", "acorn venv"),

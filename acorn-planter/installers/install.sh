@@ -8,7 +8,7 @@
 #   sh installers/install.sh
 #
 # Usage (remote):
-#   curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.sh | sh
 #   ACORN_REPO=https://github.com/someone/fork.git curl -fsSL .../installers/install.sh | sh
 
 set -eu
@@ -17,7 +17,7 @@ set -eu
 # out, so a conf that still matches them changes nothing -- only edited
 # values have any effect. The baked-in copies exist for the piped
 # one-liner install, where no local global.conf exists yet to consult.
-DEFAULT_ACORN_REPO="https://github.com/jrvannucci/acorn.git"
+DEFAULT_ACORN_REPO="https://github.com/jrvannucci/acorn-planter.git"
 DEFAULT_VENV_PACKAGES="ipython,ruff,ipykernel"
 
 ACORN_REPO_FROM_ENV="${ACORN_REPO:-}"
@@ -54,7 +54,7 @@ SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 # one level up.
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# GET_STARTED/global.conf is the deployment config: organizations
+# global.conf is the deployment config: organizations
 # distributing acorn from their own git host or a network drive set the
 # source (and any install-time settings) there ONCE, and their users install
 # with no flags or env vars. Standard internet installs ship a conf whose
@@ -78,8 +78,8 @@ ACORN_PROFILE=""
 ACORN_CUSTOM_COMMANDS=""
 ACORN_STARTUP_COMMANDS=""
 CONF_FILE=""
-if [ -f "$REPO_ROOT/GET_STARTED/global.conf" ]; then
-    CONF_FILE="$REPO_ROOT/GET_STARTED/global.conf"
+if [ -f "$REPO_ROOT/global.conf" ]; then
+    CONF_FILE="$REPO_ROOT/global.conf"
     . "$CONF_FILE"
 fi
 
@@ -143,7 +143,7 @@ CLONE_MODE=0
 if [ -f "$REPO_ROOT/src/pyproject.toml" ]; then
     ORIGINAL_SRC="$REPO_ROOT"
     CLEANUP_ORIGINAL_SRC=0
-elif [ -d "$ACORN_REPO" ] && [ -f "$ACORN_REPO/src/pyproject.toml" ]; then
+elif [ -d "$ACORN_REPO" ] && { [ -f "$ACORN_REPO/src/pyproject.toml" ] || [ -f "$ACORN_REPO/acorn-planter/src/pyproject.toml" ]; }; then
     # ACORN_REPO can be a plain directory instead of a git URL -- e.g. a
     # network drive holding a copy of this repo, on machines/networks with
     # no GitHub access at all.
@@ -158,6 +158,11 @@ else
     CLONE_MODE=1
     info "Cloning $ACORN_REPO ..."
     git clone --depth 1 "$ACORN_REPO" "$ORIGINAL_SRC"
+fi
+
+SOURCE_ROOT="$ORIGINAL_SRC"
+if [ -f "$ORIGINAL_SRC/acorn-planter/src/pyproject.toml" ]; then
+    ORIGINAL_SRC="$ORIGINAL_SRC/acorn-planter"
 fi
 
 # ---------------------------------------------------------------------------
@@ -181,7 +186,15 @@ mkdir -p "$ACORN_HOME/system/bin" \
 # ---------------------------------------------------------------------------
 info "Copying source into $ACORN_HOME/system/src ..."
 rm -rf "$ACORN_HOME/system/src"
-cp -R "$ORIGINAL_SRC" "$ACORN_HOME/system/src"
+mkdir -p "$ACORN_HOME/system/src"
+# Shared resource collections stay at their configured source, not in each user copy.
+for _source_entry in "$ORIGINAL_SRC"/* "$ORIGINAL_SRC"/.[!.]* "$ORIGINAL_SRC"/..?*; do
+    [ -e "$_source_entry" ] || continue
+    case "$(basename "$_source_entry")" in
+        wheels|python-builds|conda-channel|MANIFEST.json|.git|.venv) continue ;;
+    esac
+    cp -R "$_source_entry" "$ACORN_HOME/system/src/"
+done
 SRC_DIR="$ACORN_HOME/system/src"
 # No git checkout lives inside ~/acorn: updates re-download from the
 # recorded update_source (see below) instead of `git pull`-ing, so the
@@ -361,7 +374,7 @@ if [ -d "$SRC_DIR/vendor" ]; then
 fi
 
 if [ "$CLEANUP_ORIGINAL_SRC" = "1" ]; then
-    rm -rf "$ORIGINAL_SRC"
+    rm -rf "$SOURCE_ROOT"
 fi
 
 # ---------------------------------------------------------------------------
@@ -370,8 +383,8 @@ fi
 #     clobber choices made later with `acorn config set`).
 # ---------------------------------------------------------------------------
 # Piped installs have no local conf, but the clone we just copied does.
-if [ -z "$CONF_FILE" ] && [ -f "$SRC_DIR/GET_STARTED/global.conf" ]; then
-    . "$SRC_DIR/GET_STARTED/global.conf"
+if [ -z "$CONF_FILE" ] && [ -f "$SRC_DIR/global.conf" ]; then
+    . "$SRC_DIR/global.conf"
 fi
 
 # Record where this install came from, so `acorn update-commands` knows

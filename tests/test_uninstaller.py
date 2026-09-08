@@ -14,7 +14,7 @@ from conftest import BASH, REPO_ROOT, needs_bash
 
 pytestmark = needs_bash
 
-UNINSTALL_SH = REPO_ROOT / "installers" / "uninstall.sh"
+UNINSTALL_SH = REPO_ROOT / "acorn-planter" / "installers" / "uninstall.sh"
 
 
 def _mini_repo(tmp_path, home_dir_value):
@@ -24,7 +24,7 @@ def _mini_repo(tmp_path, home_dir_value):
     (copy / "installers").mkdir(parents=True)
     shutil.copy(UNINSTALL_SH, copy / "installers" / "uninstall.sh")
     (copy / "GET_STARTED").mkdir(parents=True, exist_ok=True)
-    (copy / "GET_STARTED" / "global.conf").write_text(f'ACORN_HOME_DIR="{home_dir_value}"\n')
+    (copy / "global.conf").write_text(f'ACORN_HOME_DIR="{home_dir_value}"\n')
     return copy
 
 

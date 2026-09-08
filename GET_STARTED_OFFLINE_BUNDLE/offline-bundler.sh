@@ -26,4 +26,4 @@ if [ -z "$PY" ]; then
     exit 1
 fi
 
-exec "$PY" "$DIR/../installers/build_offline.py" "$@"
+exec "$PY" "$DIR/../acorn-planter/installers/build_offline.py" "$@"

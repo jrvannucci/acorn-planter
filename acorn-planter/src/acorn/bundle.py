@@ -319,6 +319,8 @@ class Inventory:
         thing available on the air-gapped side -- where the question isn't
         "what did we mean to build" but "will this profile work here"."""
         root = Path(root)
+        if (root / "acorn-planter").is_dir():
+            root = root / "acorn-planter"
         inv = cls(source=f"bundle at {root}")
 
         for whl in (root / "wheels").glob("*"):
@@ -345,7 +347,7 @@ class Inventory:
                     if name:
                         inv.tools.add(canonical(name))
 
-        vendor = root / "acorn" / "vendor"
+        vendor = root / "vendor"
         inv.vscode = (vendor / "vscode").is_dir()
         inv.mingit = (vendor / "git").is_dir()
 

@@ -34,7 +34,7 @@ def build():
         ("Configure globally", "global.conf supplies installation settings; acorn config manages your defaults."),
         ("Build your environments", "Manage Python versions, virtual environments, packages, and repositories."),
         ("Bring your development tools", "Connect VS Code, Spyder, Python applications, and conda-forge tools."),
-        ("Prepare for offline work", "Bundle resources online, validate profiles, then install on the offline network."),
+        ("Bundle acorn-planter", "Build the distribution online, transfer it, then install ACORN for each user."),
     ]
     for i, (title, detail) in enumerate(rows):
         y = 240 + i * 104

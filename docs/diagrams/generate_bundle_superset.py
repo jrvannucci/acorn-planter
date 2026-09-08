@@ -43,7 +43,7 @@ CONTENTS = [
     ("conda-channel/", "conda-forge command-line tools"),
     ("vendor/vscode/", "the editor, with its extensions"),
     ("vendor/uv/, vendor/git/", "uv, and MinGit when asked for"),
-    ("acorn/", "the source users install from"),
+    ("src/ + global.conf", "source, installer and configuration"),
 ]
 
 PROFILES = [
@@ -56,7 +56,7 @@ POINTERS = [
     ("ACORN_PACKAGE_INDEX", "wheels/"),
     ("ACORN_PYTHON_MIRROR", "python-builds/"),
     ("ACORN_CONDA_CHANNEL", "conda-channel/"),
-    ("ACORN_REPO_URL", "acorn/"),
+    ("ACORN_REPO_URL", "acorn-planter/"),
 ]
 
 

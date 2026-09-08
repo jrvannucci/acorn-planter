@@ -23,7 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # build_offline.py lives in installers/ and isn't a package; load it directly.
 _spec = importlib.util.spec_from_file_location(
-    "build_offline", REPO_ROOT / "installers" / "build_offline.py")
+    "build_offline", REPO_ROOT / "acorn-planter" / "installers" / "build_offline.py")
 build_offline = importlib.util.module_from_spec(_spec)
 sys.modules["build_offline"] = build_offline
 _spec.loader.exec_module(build_offline)
@@ -206,13 +206,13 @@ def test_an_empty_bundle_flag_ignores_the_file(tmp_path, capsys):
 
 def _fake_bundle(tmp_path, versions=("3.12",), floor='">=3.12"'):
     out = tmp_path / "bundle"
-    (out / "acorn" / "src").mkdir(parents=True)
-    (out / "acorn" / "src" / "pyproject.toml").write_text(
+    (out / "acorn-planter" / "src").mkdir(parents=True)
+    (out / "acorn-planter" / "src" / "pyproject.toml").write_text(
         f'[project]\nname = "acorn"\nrequires-python = {floor}\n',
         encoding="utf-8")
-    (out / "wheels").mkdir()
+    (out / "acorn-planter" / "wheels").mkdir()
     for v in versions:
-        tag = out / "python-builds" / "20260623"
+        tag = out / "acorn-planter" / "python-builds" / "20260623"
         tag.mkdir(parents=True, exist_ok=True)
         (tag / f"cpython-{v}.9+20260623-x86_64-pc-windows-msvc-"
                "install_only_stripped.tar.gz").write_text("archive")
@@ -258,7 +258,7 @@ def test_the_wheel_download_runs_under_that_cache(tmp_path, monkeypatch):
 def test_discover_mirrored_versions(tmp_path):
     out = _fake_bundle(tmp_path, versions=("3.12", "3.13"))
     assert build_offline.discover_mirrored_versions(
-        out / "python-builds") == ["3.12", "3.13"]
+        out / "acorn-planter" / "python-builds") == ["3.12", "3.13"]
 
 
 def test_discover_mirrored_versions_empty_when_no_mirror(tmp_path):
@@ -320,7 +320,7 @@ def test_verify_bundle_passes_a_complete_bundle(tmp_path, monkeypatch, capsys):
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "acorn", uv, ["hatchling", "ipython"]) is True
+        out, out / "acorn-planter", uv, ["hatchling", "ipython"]) is True
     assert "Preflight passed" in capsys.readouterr().out
 
 
@@ -331,7 +331,7 @@ def test_verify_bundle_fails_when_venv_packages_are_missing(tmp_path, monkeypatc
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "acorn", uv, ["hatchling", "ipython"]) is False
+        out, out / "acorn-planter", uv, ["hatchling", "ipython"]) is False
     out_text = capsys.readouterr().out
     assert "Preflight FAILED" in out_text
     assert "acorn venv --python 3.12" in out_text
@@ -344,7 +344,7 @@ def test_verify_bundle_fails_when_the_interpreter_wont_install(tmp_path, monkeyp
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "acorn", uv, ["hatchling"]) is False
+        out, out / "acorn-planter", uv, ["hatchling"]) is False
     assert "won't install from the mirror" in capsys.readouterr().out
 
 
@@ -356,14 +356,14 @@ def test_verify_bundle_needs_an_interpreter_meeting_the_floor(tmp_path, monkeypa
     uv = tmp_path / "uv.exe"
     uv.write_text("x")
     assert build_offline.verify_bundle(
-        out, out / "acorn", uv, ["hatchling"]) is False
+        out, out / "acorn-planter", uv, ["hatchling"]) is False
     assert "requires-python" in capsys.readouterr().out
 
 
 def test_verify_bundle_reports_a_missing_uv(tmp_path, capsys):
     out = _fake_bundle(tmp_path)
     assert build_offline.verify_bundle(
-        out, out / "acorn", tmp_path / "absent-uv", ["hatchling"]) is False
+        out, out / "acorn-planter", tmp_path / "absent-uv", ["hatchling"]) is False
     assert "nothing to verify with" in capsys.readouterr().out
 
 
@@ -376,7 +376,7 @@ def test_verify_only_rejects_a_missing_bundle(tmp_path, capsys):
 def test_verify_only_runs_the_check_and_returns_its_verdict(tmp_path, monkeypatch,
                                                             capsys):
     out = _fake_bundle(tmp_path)
-    (out / "acorn" / "vendor" / "uv").mkdir(parents=True)
+    (out / "acorn-planter" / "vendor" / "uv").mkdir(parents=True)
     monkeypatch.setattr(build_offline, "verify_bundle",
                         lambda *a, **kw: False)
     assert build_offline.main(["--bundle=", "--verify-only", "-o", str(out)]) == 1
@@ -430,11 +430,12 @@ def test_resolve_archive_format_explicit_passes_through(fmt):
 
 def _fake_output_dir(tmp_path) -> Path:
     out = tmp_path / "offline-bundle"
-    (out / "acorn" / "GET_STARTED").mkdir(parents=True)
-    (out / "acorn" / "GET_STARTED" / "global.conf").write_text("ACORN_REPO_URL=x\n")
-    (out / "wheels").mkdir()
-    (out / "wheels" / "hatchling-1.0-py3-none-any.whl").write_text("wheel")
-    (out / "MANIFEST.json").write_text("{}")
+    (out / "GET_STARTED").mkdir(parents=True)
+    (out / "acorn-planter").mkdir(exist_ok=True)
+    (out / "acorn-planter" / "global.conf").write_text("ACORN_REPO_URL=x\n")
+    (out / "acorn-planter" / "wheels").mkdir()
+    (out / "acorn-planter" / "wheels" / "hatchling-1.0-py3-none-any.whl").write_text("wheel")
+    (out / "acorn-planter" / "MANIFEST.json").write_text("{}")
     return out
 
 
@@ -448,9 +449,9 @@ def test_archive_bundle_zip_contains_the_whole_tree_under_one_folder(tmp_path):
     # the same layout install.cmd/acorn apply expect -- not the contents
     # spilled loose at the archive root.
     assert all(n.startswith("offline-bundle/") for n in names)
-    assert "offline-bundle/acorn/GET_STARTED/global.conf" in names
-    assert "offline-bundle/wheels/hatchling-1.0-py3-none-any.whl" in names
-    assert "offline-bundle/MANIFEST.json" in names
+    assert "offline-bundle/acorn-planter/global.conf" in names
+    assert "offline-bundle/acorn-planter/wheels/hatchling-1.0-py3-none-any.whl" in names
+    assert "offline-bundle/acorn-planter/MANIFEST.json" in names
 
 
 def test_archive_bundle_tar_gz_contains_the_whole_tree_under_one_folder(tmp_path):
@@ -461,13 +462,13 @@ def test_archive_bundle_tar_gz_contains_the_whole_tree_under_one_folder(tmp_path
         names = tf.getnames()
     assert all(n.startswith("offline-bundle/") or n == "offline-bundle"
               for n in names)
-    assert "offline-bundle/acorn/GET_STARTED/global.conf" in names
+    assert "offline-bundle/acorn-planter/global.conf" in names
 
 
 def test_archive_bundle_leaves_the_original_folder_in_place(tmp_path):
     out = _fake_output_dir(tmp_path)
     build_offline.archive_bundle(out, "zip")
-    assert (out / "acorn" / "GET_STARTED" / "global.conf").exists()
+    assert (out / "acorn-planter" / "global.conf").exists()
 
 
 def test_archive_bundle_returns_none_and_warns_on_failure(tmp_path, monkeypatch,
@@ -1104,10 +1105,10 @@ def test_the_spec_supplies_the_deploy_root(tmp_path, capsys):
 def test_the_flag_still_beats_the_spec_deploy_root(tmp_path, capsys):
     spec = _spec_and_profile(tmp_path, 'deploy_root = "S:\\tools"\n')
     code = build_offline.main(["--dry-run", "--bundle", str(spec),
-                               "--deploy-root", "T:\other",
+                               "--deploy-root", r"T:\other",
                                "--output", str(tmp_path / "out")])
     assert code == 0
-    assert "Deploy path : T:\other" in capsys.readouterr().out
+    assert r"Deploy path : T:\other" in capsys.readouterr().out
 
 
 def test_wheels_are_downloaded_for_each_declared_platform(tmp_path, monkeypatch):
@@ -1206,8 +1207,8 @@ def test_the_archive_ships_an_unpacker_beside_it(tmp_path):
     then run the installer inside" is an instruction to get wrong on a
     locked-down machine by someone who has never used tar."""
     out = tmp_path / "offline-bundle"
-    (out / "acorn").mkdir(parents=True)
-    (out / "acorn" / "x").write_text("x")
+    (out / "acorn-planter").mkdir(parents=True)
+    (out / "acorn-planter" / "x").write_text("x")
     archive = build_offline.archive_bundle(out, "tar.gz")
     script = build_offline.write_unpacker(archive, out.name)
 
@@ -1226,8 +1227,8 @@ def test_the_unpacker_actually_round_trips(tmp_path):
     import shutil
     import subprocess
     out = tmp_path / "offline-bundle"
-    (out / "acorn" / "GET_STARTED").mkdir(parents=True)
-    (out / "acorn" / "GET_STARTED" / "install.cmd").write_text("rem hi")
+    (out / "GET_STARTED").mkdir(parents=True)
+    (out / "GET_STARTED" / "install.cmd").write_text("rem hi")
     archive = build_offline.archive_bundle(out, "tar.gz")
     build_offline.write_unpacker(archive, out.name)
 
@@ -1237,7 +1238,7 @@ def test_the_unpacker_actually_round_trips(tmp_path):
     result = subprocess.run(["tar", "-xzf", archive.name], cwd=received,
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    assert (received / out.name / "acorn" / "GET_STARTED" /
+    assert (received / out.name / "GET_STARTED" /
             "install.cmd").is_file()
 
 
@@ -1299,3 +1300,72 @@ def test_build_wheels_runs_one_pass_per_version_set_per_interpreter(tmp_path):
         ("3.11", ["pip", "pandas==2.1.4"]), ("3.11", ["pandas==2.2.3"]),
     ]
 
+
+
+@pytest.mark.parametrize("system,root,sep", [("Windows", "S:/suite", "\\"), ("Linux", "/srv/suite", "/")])
+def test_deployment_config_points_inside_planter(system, root, sep):
+    values = build_offline.deployment_config(root, system, conda=True)
+    planter = root + sep + "acorn-planter"
+    assert values == {
+        "ACORN_REPO_URL": planter,
+        "ACORN_PACKAGE_INDEX": planter + sep + "wheels",
+        "ACORN_PYTHON_MIRROR": planter + sep + "python-builds",
+        "ACORN_CONDA_CHANNEL": planter + sep + "conda-channel",
+    }
+
+
+def test_rebuild_preserves_all_planter_payloads(tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "README.md").write_text("first")
+    monkeypatch.setattr(build_offline, "REPO_ROOT", source)
+    output = tmp_path / "output"
+    output.mkdir()
+    planter = build_offline.stage_repo(output)
+    for name in ("wheels", "python-builds", "conda-channel", "vendor"):
+        (planter / name).mkdir()
+        (planter / name / "payload").write_bytes(b"retained")
+    (planter / "MANIFEST.json").write_text("{}")
+    (source / "README.md").write_text("second")
+    build_offline.stage_repo(output)
+    assert (planter / "README.md").read_text() == "second"
+    assert (planter / "MANIFEST.json").read_text() == "{}"
+    for name in ("wheels", "python-builds", "conda-channel", "vendor"):
+        assert (planter / name / "payload").read_bytes() == b"retained"
+    assert not list(output.glob(".planter-payloads-*"))
+
+
+def test_source_refresh_does_not_copy_planter_resource_collections(tmp_path):
+    from acorn.commands import update_cmd
+    source = tmp_path / "acorn-planter"
+    (source / "src").mkdir(parents=True)
+    (source / "src" / "pyproject.toml").write_text('[project]\nname="acorn"\n')
+    for name in ("wheels", "python-builds", "conda-channel"):
+        (source / name).mkdir()
+        (source / name / "payload").write_text("shared")
+    (source / "MANIFEST.json").write_text("{}")
+    target = tmp_path / "user" / "system" / "src"
+    target.mkdir(parents=True)
+    assert update_cmd._refresh_from_directory(target, source)
+    assert (target / "src" / "pyproject.toml").exists()
+    for name in ("wheels", "python-builds", "conda-channel", "MANIFEST.json"):
+        assert not (target / name).exists()
+        assert (source / name).exists()
+
+
+def test_stage_distribution_keeps_launchers_outside_master(tmp_path):
+    output = tmp_path / "bundle"
+    planter = build_offline.stage_repo(output)
+    assert (output / "GET_STARTED" / "install.cmd").is_file()
+    assert (output / "GET_STARTED_OFFLINE_BUNDLE" / "offline-bundler.cmd").is_file()
+    assert (planter / "global.conf").is_file()
+    assert (planter / "offline-bundle.toml").is_file()
+    assert (planter / "installation-profile" / "profile.toml").is_file()
+    assert (planter / "src" / "pyproject.toml").is_file()
+    assert not (planter / "GET_STARTED").exists()
+    assert not (planter / "tests").exists()
+
+
+def test_stage_distribution_rejects_source_overwrite():
+    with pytest.raises(ValueError, match="overwrite the source"):
+        build_offline.stage_repo(build_offline.REPO_ROOT.parent)

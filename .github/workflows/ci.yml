@@ -42,7 +42,7 @@ jobs:
         # reaches users (the tarfile extraction-filter change is the case that
         # prompted this). Betas are deliberately excluded: add the next version
         # here when it reaches its first stable release, and raise the floor in
-        # src/pyproject.toml + ruff.toml when one goes end-of-life.
+        # acorn-planter/src/pyproject.toml + ruff.toml when one goes end-of-life.
         os: [windows-latest, ubuntu-latest]
         python: ["3.12", "3.13", "3.14"]
 

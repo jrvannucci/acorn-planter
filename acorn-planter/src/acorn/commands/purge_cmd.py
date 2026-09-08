@@ -37,8 +37,8 @@ _BACKUP_NAME_RE = re.compile(r"^acorn-repo-backup(-\d+)?$")
 _PUBLIC_REPO = PUBLIC_REPO
 
 _PUBLIC_REINSTALL_LINES = [
-    f"  macOS/Linux:  curl -fsSL {PUBLIC_RAW_BASE}/installers/install.sh | sh",
-    f"  PowerShell:   irm {PUBLIC_RAW_BASE}/installers/install.ps1 | iex",
+    f"  macOS/Linux:  curl -fsSL {PUBLIC_RAW_BASE}/acorn-planter/installers/install.sh | sh",
+    f"  PowerShell:   irm {PUBLIC_RAW_BASE}/acorn-planter/installers/install.ps1 | iex",
 ]
 
 
@@ -64,6 +64,8 @@ def _print_reinstall(update_source) -> None:
         return
 
     is_url = "://" in source or source.startswith("git@")
+    if not is_url and (Path(source) / "acorn-planter" / "installers").is_dir():
+        source = str(Path(source) / "acorn-planter")
     if is_url:
         print(f"  this copy was installed from {source} -- clone it and run the installer:")
         print(f'    git clone "{source}" acorn')
@@ -241,6 +243,8 @@ def _write_reinstall_script(source: str, repo_backup: Path | None) -> Path:
     marker = _reinstall_marker()
     dest = str(paths.REPO_DIR)
     is_url = "://" in source or source.startswith("git@")
+    if not is_url and (Path(source) / "acorn-planter" / "installers").is_dir():
+        source = str(Path(source) / "acorn-planter")
 
     if os.name == "nt":
         src = source.replace("'", "''")
@@ -258,7 +262,7 @@ def _write_reinstall_script(source: str, repo_backup: Path | None) -> Path:
                 'Write-Host "Cloning $Src ..."',
                 "git clone --depth 1 $Src (Join-Path $Tmp 'acorn')",
                 "$env:ACORN_REPO = $Src",
-                "& (Join-Path $Tmp 'acorn\\installers\\install.ps1')",
+                "& (Join-Path $Tmp 'acorn\\acorn-planter\\installers\\install.ps1')",
                 "Remove-Item -Recurse -Force $Tmp -ErrorAction SilentlyContinue",
             ]
         else:
@@ -296,7 +300,7 @@ def _write_reinstall_script(source: str, repo_backup: Path | None) -> Path:
                 'TMP=$(mktemp -d)',
                 'echo "Cloning $SRC ..."',
                 'git clone --depth 1 "$SRC" "$TMP/acorn"',
-                'ACORN_REPO="$SRC" sh "$TMP/acorn/installers/install.sh"',
+                'ACORN_REPO="$SRC" sh "$TMP/acorn/acorn-planter/installers/install.sh"',
                 'rm -rf "$TMP"',
             ]
         else:

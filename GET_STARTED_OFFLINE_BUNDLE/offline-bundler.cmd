@@ -5,18 +5,18 @@ rem   Windows:     run `.\offline-bundler.cmd` (double-clicking works too)
 rem   macOS/Linux: run `sh ./offline-bundler.cmd` (line 1 hands off to
 rem                offline-bundler.sh; cmd.exe reads it as a label)
 rem
-rem Everything it needs is in offline-bundle.toml next to this file -- there
+rem Everything it needs is in ../acorn-planter/offline-bundle.toml -- there
 rem are no arguments to remember. This is NOT a `acorn` command: it prepares
 rem the distribution before acorn is installed anywhere. Needs Python
 rem 3.12+ on THIS machine.
 where py >nul 2>nul
 if %errorlevel%==0 (
-    py -3 "%~dp0..\installers\build_offline.py" %*
+    py -3 "%~dp0..\acorn-planter\installers\build_offline.py" %*
     goto :acorn_done
 )
 where python >nul 2>nul
 if %errorlevel%==0 (
-    python "%~dp0..\installers\build_offline.py" %*
+    python "%~dp0..\acorn-planter\installers\build_offline.py" %*
     goto :acorn_done
 )
 echo.

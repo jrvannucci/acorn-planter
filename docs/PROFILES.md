@@ -97,14 +97,14 @@ environment variable — this is how an admin can email or publish a single
 
 **macOS / Linux:**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh \
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.sh \
   | ACORN_PROFILE=./team.toml sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
 $env:ACORN_PROFILE = "C:\Users\me\Downloads\team.toml"
-irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
+irm https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.ps1 | iex
 ```
 
 Relative paths resolve against the directory you ran the installer from.
@@ -175,7 +175,7 @@ for three people is checked as thoroughly as the default.
 ## Distributing it
 
 Put the file in the copy of acorn you distribute and name it in
-[`global.conf`](https://github.com/jrvannucci/acorn/blob/main/GET_STARTED/global.conf):
+[`global.conf`](https://github.com/jrvannucci/acorn-planter/blob/main/acorn-planter/global.conf):
 
 ```
 ACORN_PROFILE="installation-profile"
@@ -313,7 +313,7 @@ whole fleet: a typo should fail once for you, not quietly for each user.
 
 [`offline-bundle.toml`](OFFLINE.md#offline-bundletoml--what-the-share-contains)
 declares the superset on its own, and a profile is *validated* against it,
-never folded into it. Every profile in `installation-profile/` is checked when
+never folded into it. Every profile in `acorn-planter/installation-profile/` is checked when
 the bundle is built — before anything downloads, and again against what
 actually landed — and
 [`acorn profile-check`](commands/status.md#acorn-profile-check-profile---bundle-path)

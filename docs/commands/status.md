@@ -24,7 +24,7 @@ acorn -V
 ```
 
 The version lives in exactly one place, `src/acorn/__init__.py`.
-`src/pyproject.toml` reads it from there (`dynamic = ["version"]`), so a
+`acorn-planter/src/pyproject.toml` reads it from there (`dynamic = ["version"]`), so a
 release is a one-line edit and the built distribution, the CLI, and the
 grouped `acorn help` footer can never disagree.
 

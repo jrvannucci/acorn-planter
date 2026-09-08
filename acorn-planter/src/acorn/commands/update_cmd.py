@@ -122,7 +122,7 @@ def report_conf_drift(refreshed_src: Path) -> None:
     breaking. This closes the DISCOVERY gap without touching the
     auto-apply-vs-respect-local-customization tradeoff: it tells you
     exactly what changed and the command to apply it, and stops there."""
-    conf_path = refreshed_src / "GET_STARTED" / "global.conf"
+    conf_path = refreshed_src / "global.conf"
     if not conf_path.is_file():
         return
     try:
@@ -172,6 +172,8 @@ def _swap_in(src: Path, tmp: Path) -> bool:
 
 def _refresh_from_directory(src: Path, source_dir: Path) -> bool:
     """Replace ~/acorn/system/src with a copy of `source_dir`."""
+    if (source_dir / "acorn-planter").is_dir():
+        source_dir = source_dir / "acorn-planter"
     if not (source_dir / "src" / "pyproject.toml").exists():
         print(f"error: {source_dir} doesn't look like a acorn source tree "
               "(no src/pyproject.toml). Check the `update_source` config value.")
@@ -193,7 +195,8 @@ def _refresh_from_directory(src: Path, source_dir: Path) -> bool:
         source_dir, tmp,
         ignore=shutil.ignore_patterns(
             ".git", "vendor", ".venv", "__pycache__",
-            ".pytest_cache", ".ruff_cache"),
+            ".pytest_cache", ".ruff_cache", "wheels", "python-builds",
+            "conda-channel", "MANIFEST.json"),
     )
     return _swap_in(src, tmp)
 
@@ -223,6 +226,12 @@ def _refresh_from_url(src: Path, url: str, branch: str | None = None) -> bool:
         print("Download failed; reinstalling from the current local copy instead.")
         fsutil.robust_rmtree(tmp)
         return True
+    if (tmp / "acorn-planter" / "src" / "pyproject.toml").is_file():
+        incoming = src.parent / (src.name + ".planter")
+        fsutil.robust_rmtree(incoming)
+        shutil.move(str(tmp / "acorn-planter"), str(incoming))
+        fsutil.robust_rmtree(tmp)
+        shutil.move(str(incoming), str(tmp))
     if not (tmp / "src" / "pyproject.toml").exists():
         print(f"warning: what {url} serves doesn't look like a acorn source "
               "tree (no src/pyproject.toml); keeping the current copy.")

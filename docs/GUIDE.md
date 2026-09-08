@@ -55,22 +55,22 @@ users pass no flags of their own.
 ### One-line install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.sh | sh
 ```
 ```powershell
-irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
+irm https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.ps1 | iex
 ```
 
 By default the installers clone from
-`https://github.com/jrvannucci/acorn.git` (the `DEFAULT_ACORN_REPO` /
-`$DefaultACORNRepo` value near the top of `installers/install.sh` / `installers/install.ps1`).
+`https://github.com/jrvannucci/acorn-planter.git` (the `DEFAULT_ACORN_REPO` /
+`$DefaultACORNRepo` value near the top of `acorn-planter/installers/install.sh` / `acorn-planter/installers/install.ps1`).
 
 ### Local checkout install
 
 If you have a local copy of this project (e.g. an unzipped download), run
 the installer from inside it:
 
-- **macOS/Linux:** `sh ./GET_STARTED/install.cmd` (or `installers/install.sh` directly)
+- **macOS/Linux:** `sh ./GET_STARTED/install.cmd` (or `acorn-planter/installers/install.sh` directly)
 - **Windows:** `GET_STARTED\install.cmd` (double-clicking it also works)
 
 This records the checkout directory as `update_source`, so later
@@ -343,13 +343,13 @@ Two narrower / fallback options:
 
 If you have *neither* a working `acorn` *nor* the repo, you can pipe the
 uninstaller straight from GitHub — the same one-liner shape as the
-installer (pipe the underlying `installers/uninstall.*`, not `GET_STARTED/uninstall.cmd`):
+installer (pipe the underlying `acorn-planter/installers/uninstall.*`, not `GET_STARTED/uninstall.cmd`):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/uninstall.sh | sh
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/uninstall.sh | sh
 ```
 ```powershell
-irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/uninstall.ps1 | iex
 ```
 
 Piped like this there's no local `global.conf` to read, so it targets the

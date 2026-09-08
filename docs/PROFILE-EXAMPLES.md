@@ -4,7 +4,7 @@ Complete, working [deployment profiles](PROFILES.md) for real situations.
 Each one is a whole file — copy it, change the names, ship it. For what every
 key means, see the [profile reference](PROFILES.md#reference).
 
-Save any of these into `installation-profile/` in the copy you distribute.
+Save any of these into `acorn-planter/installation-profile/` in the copy you distribute.
 One marked `[distribution] default = true` reaches everyone; others reach the
 users they list.
 

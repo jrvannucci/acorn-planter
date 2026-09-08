@@ -227,7 +227,7 @@ def test_version_matches_the_packaged_metadata():
     """__init__.py is the single source of truth: pyproject must stay dynamic,
     or the two drift and `acorn --version` starts lying about what's installed."""
     import re
-    pyproject = (REPO_ROOT / "src" / "pyproject.toml").read_text(encoding="utf-8")
+    pyproject = (REPO_ROOT / "acorn-planter" / "src" / "pyproject.toml").read_text(encoding="utf-8")
     assert 'dynamic = ["version"]' in pyproject
     assert '[tool.hatch.version]' in pyproject
     assert 'path = "acorn/__init__.py"' in pyproject
@@ -506,7 +506,7 @@ def test_the_documented_install_overrides_are_the_real_ones():
     from conftest import REPO_ROOT
     page = (REPO_ROOT / "docs" / "commands" / "entry-points.md").read_text(
         encoding="utf-8")
-    installer = (REPO_ROOT / "installers" / "install.sh").read_text(
+    installer = (REPO_ROOT / "acorn-planter" / "installers" / "install.sh").read_text(
         encoding="utf-8")
     import re
     documented = set(re.findall(r"`(ACORN_[A-Z_]+)`", page))

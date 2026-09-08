@@ -151,7 +151,7 @@ It also takes a bundle's wheel folder directly, which is the
 line:
 
 ```
-acorn upload-whls S:\acorn\wheels
+acorn upload-whls S:\acorn\acorn-planter\wheels
 ```
 
 - Uploads every `.whl` **and** source archive in the directory, ignoring

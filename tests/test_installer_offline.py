@@ -58,7 +58,7 @@ def _settings(acorn_home):
 
 def _write_conf(copy, **overrides):
     """Rewrite global.conf values in the repo copy."""
-    conf = copy / "GET_STARTED" / "global.conf"
+    conf = copy / "acorn-planter" / "global.conf"
     text = conf.read_text()
     for key, value in overrides.items():
         import re
@@ -99,7 +99,7 @@ class TestDefaultInstall:
         # (bash `pwd` may render it MSYS-style /c/... on Windows -- compare by
         # trailing dir name, which survives that.)
         assert settings["update_source"] != PUBLIC_URL
-        assert settings["update_source"].replace("\\", "/").rstrip("/").endswith("/copy")
+        assert settings["update_source"].replace("\\", "/").rstrip("/").endswith("/copy/acorn-planter")
         # hook written and registered
         assert "acorn" in (fake_home / ".bashrc").read_text()
         assert (home / "system" / "shell" / "acorn.sh").exists()
@@ -184,7 +184,7 @@ class TestCustomCommandsAndStartup:
 
     def test_custom_commands_file_is_recorded(self, install_env):
         copy, fake_home, home, run_install = install_env
-        (copy / "custom-commands.toml").write_text(
+        (copy / "acorn-planter" / "custom-commands.toml").write_text(
             '[[command]]\nname = "lint"\nrun = ["x"]\n', encoding="utf-8")
         _write_conf(
             copy,
@@ -206,11 +206,11 @@ class TestCustomCommandsAndStartup:
         already makes, so a sibling script file rides along for free, with
         no separate directory setting to keep in sync."""
         copy, fake_home, home, run_install = install_env
-        (copy / "custom-commands.toml").write_text(
+        (copy / "acorn-planter" / "custom-commands.toml").write_text(
             '[[command]]\nname = "greet"\nscript = "scripts/greet.py"\n',
             encoding="utf-8")
-        (copy / "scripts").mkdir()
-        (copy / "scripts" / "greet.py").write_text("print('hi')\n")
+        (copy / "acorn-planter" / "scripts").mkdir()
+        (copy / "acorn-planter" / "scripts" / "greet.py").write_text("print('hi')\n")
         _write_conf(
             copy,
             ACORN_CUSTOM_COMMANDS="custom-commands.toml",
@@ -267,7 +267,7 @@ class TestVscodeConfigDir:
 
     def test_conf_sourced_dir_is_recorded(self, install_env):
         copy, fake_home, home, run_install = install_env
-        config_dir = copy / "vscode-config"
+        config_dir = copy / "acorn-planter" / "vscode-config"
         config_dir.mkdir()
         (config_dir / "settings.json").write_text('{"editor.fontSize": 14}\n')
         _write_conf(
@@ -310,7 +310,7 @@ class TestProfile:
     instead of the built-in single-'dev'-venv setup."""
 
     def _profile(self, copy, body: str):
-        (copy / "profile.toml").write_text(body, encoding="utf-8")
+        (copy / "acorn-planter" / "profile.toml").write_text(body, encoding="utf-8")
 
     def test_profile_is_recorded_and_applied(self, install_env):
         copy, fake_home, home, run_install = install_env
@@ -379,7 +379,7 @@ class TestProfile:
 
     def test_env_var_beats_the_conf(self, install_env, tmp_path):
         copy, fake_home, home, run_install = install_env
-        (copy / "profile.toml").write_text(
+        (copy / "acorn-planter" / "profile.toml").write_text(
             '[[venv]]\nname = "fromconf"\n', encoding="utf-8")
         _write_conf(copy, ACORN_PROFILE="profile.toml")
         mine = tmp_path / "mine.toml"
@@ -482,19 +482,19 @@ class TestVendorPayloads:
         # the vendored uv IS the stub -- proving the installer actually
         # executes the vendored binary rather than downloading
         from conftest import STUB_UV
-        (copy / "vendor" / "uv").mkdir(parents=True)
-        vendored_uv = copy / "vendor" / "uv" / "uv"
+        (copy / "acorn-planter" / "vendor" / "uv").mkdir(parents=True)
+        vendored_uv = copy / "acorn-planter" / "vendor" / "uv" / "uv"
         vendored_uv.write_text(STUB_UV)
         vendored_uv.chmod(0o755)
-        (copy / "vendor" / "uv" / "uvx").write_text("fake-uvx")
-        (copy / "vendor" / "git" / "cmd").mkdir(parents=True)
-        (copy / "vendor" / "git" / "cmd" / "git.exe").write_text("fake-git")
-        (copy / "vendor" / "vscode" / "app" / "bin").mkdir(parents=True)
-        (copy / "vendor" / "vscode" / "app" / "bin" / "code.cmd").write_text("fake")
-        (copy / "vendor" / "certs").mkdir(parents=True)
-        (copy / "vendor" / "certs" / "root.pem").write_text(
+        (copy / "acorn-planter" / "vendor" / "uv" / "uvx").write_text("fake-uvx")
+        (copy / "acorn-planter" / "vendor" / "git" / "cmd").mkdir(parents=True)
+        (copy / "acorn-planter" / "vendor" / "git" / "cmd" / "git.exe").write_text("fake-git")
+        (copy / "acorn-planter" / "vendor" / "vscode" / "app" / "bin").mkdir(parents=True)
+        (copy / "acorn-planter" / "vendor" / "vscode" / "app" / "bin" / "code.cmd").write_text("fake")
+        (copy / "acorn-planter" / "vendor" / "certs").mkdir(parents=True)
+        (copy / "acorn-planter" / "vendor" / "certs" / "root.pem").write_text(
             "-----BEGIN CERTIFICATE-----\nROOT\n-----END CERTIFICATE-----\n")
-        (copy / "vendor" / "certs" / "inter.crt").write_text(
+        (copy / "acorn-planter" / "vendor" / "certs" / "inter.crt").write_text(
             "-----BEGIN CERTIFICATE-----\nINTER\n-----END CERTIFICATE-----\n")
 
     def test_vendor_placed_and_excluded_from_src(self, install_env):
@@ -529,3 +529,23 @@ class TestVendorPayloads:
         run_install("ACORN_AUTO_SETUP=false")
         assert marker.read_text() == "user-modified", "binaries must not be clobbered"
         assert "BEGIN CERTIFICATE" in bundle.read_text(), "certs must rotate on reinstall"
+
+
+def test_planter_resources_stay_shared_and_external_paths_are_used(install_env):
+    copy, fake_home, home, run_install = install_env
+    for name in ("wheels", "python-builds", "conda-channel"):
+        (copy / "acorn-planter" / name).mkdir()
+        (copy / "acorn-planter" / name / "shared-payload").write_text("keep on share")
+    (copy / "acorn-planter" / "MANIFEST.json").write_text("{}")
+    _write_conf(copy, ACORN_PACKAGE_INDEX="https://packages.example/simple",
+                ACORN_PYTHON_MIRROR="https://python.example/builds",
+                ACORN_CONDA_CHANNEL="https://conda.example/channel")
+    result = run_install("ACORN_AUTO_SETUP=false")
+    assert result.returncode == 0, result.stdout + result.stderr
+    for name in ("wheels", "python-builds", "conda-channel", "MANIFEST.json"):
+        assert (copy / "acorn-planter" / name).exists()
+        assert not (home / "system" / "src" / name).exists()
+    settings = _settings(home)
+    assert settings["package_index"] == "https://packages.example/simple"
+    assert settings["python_mirror"] == "https://python.example/builds"
+    assert settings["conda_channel"] == "https://conda.example/channel"

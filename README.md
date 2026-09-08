@@ -1,6 +1,6 @@
-# ACORN
+# ACORN Planter
 
-[![CI](https://github.com/jrvannucci/acorn/actions/workflows/ci.yml/badge.svg)](https://github.com/jrvannucci/acorn/actions/workflows/ci.yml)
+[![CI](https://github.com/jrvannucci/acorn-planter/actions/workflows/ci.yml/badge.svg)](https://github.com/jrvannucci/acorn-planter/actions/workflows/ci.yml)
 
 **Global Python environments and development suites, ready when you are.**
 
@@ -9,6 +9,38 @@ virtual environments, packages, repositories, and development tools. Shared
 settings apply across your environments, while profiles assemble the suite
 that fits your work. Install online or bring a complete bundle to an offline
 network.
+
+**Build the planter. Distribute the planter. Use ACORN.**
+
+The offline builder bundles **`acorn-planter`** with its installers,
+configuration, profiles, and the resources needed for offline installation.
+The administrator transfers this prepared distribution to the target network.
+Users run its installer to create their own **`acorn`** development suite.
+
+`acorn-planter` is the distribution repository or folder. `acorn` is the
+installed Python package and CLI, with a default user directory of `~/acorn`.
+The bundle archive contains a self-contained `acorn-planter/`: its wheels,
+Python builds, conda channel, and manifest live inside that folder. Resource
+paths in `acorn-planter/global.conf` can point elsewhere when needed.
+
+The repository and extracted offline bundle use the same layout:
+
+```text
+GET_STARTED/                  user installation and removal launchers
+GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
+acorn-planter/                 master configuration, profiles and resources
+  global.conf
+  offline-bundle.toml
+  installation-profile/
+  src/acorn/
+  installers/
+  examples/
+```
+
+Run `GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd` to build the distribution.
+Transfer the complete output, including both launcher folders. Users run
+`GET_STARTED/install.cmd`; their personal suite is installed into `~/acorn`.
+The shared wheelhouse and interpreter archives remain in the planter.
 
 ![ACORN manages Python environments and development suites in one folder.](docs/diagrams/mission.svg)
 
@@ -38,12 +70,12 @@ Nothing needs to be pre-installed — not Python, not uv, nothing.
 
 **macOS / Linux:**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.sh | sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
+irm https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.ps1 | iex
 ```
 
 ![Run the online or offline installer, let ACORN prepare your configured suite, then open a new terminal.](docs/diagrams/install-flow.svg)
@@ -102,7 +134,7 @@ including on networks where the usual Python setup path doesn't work at all.
   network, `GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd` assembles the whole bundle — uv,
   interpreters, wheels, the editor — on a connected machine.
 - **Nothing for your users to configure.** Set the values once in
-  [`global.conf`](GET_STARTED/global.conf) in the copy you distribute; everyone who
+  [`global.conf`](acorn-planter/global.conf) in the copy you distribute; everyone who
   installs from it inherits them.
 - **One folder defines the environments.** Each profile in
   `installation-profile/` lists the interpreters, venvs, packages and repos a

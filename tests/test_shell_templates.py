@@ -11,8 +11,8 @@ import textwrap
 from conftest import (POWERSHELL, REPO_ROOT, needs_bash,
                       needs_powershell, run_bash)
 
-SH_TEMPLATE = REPO_ROOT / "src" / "acorn" / "shell" / "acorn.sh.template"
-PS_TEMPLATE = REPO_ROOT / "src" / "acorn" / "shell" / "acorn.ps1.template"
+SH_TEMPLATE = REPO_ROOT / "acorn-planter" / "src" / "acorn" / "shell" / "acorn.sh.template"
+PS_TEMPLATE = REPO_ROOT / "acorn-planter" / "src" / "acorn" / "shell" / "acorn.ps1.template"
 
 
 def _render_sh(tmp_path, home) -> str:

@@ -17,5 +17,5 @@ __version__ = "0.12.0"
 # same URL as their own baked-in default -- that's the true bootstrap, since
 # a piped `curl ... | sh` has no global.conf beside it to read. A test
 # asserts the three stay in agreement.
-PUBLIC_REPO = "https://github.com/jrvannucci/acorn.git"
-PUBLIC_RAW_BASE = "https://raw.githubusercontent.com/jrvannucci/acorn/main"
+PUBLIC_REPO = "https://github.com/jrvannucci/acorn-planter.git"
+PUBLIC_RAW_BASE = "https://raw.githubusercontent.com/jrvannucci/acorn-planter/main"

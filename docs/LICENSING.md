@@ -9,11 +9,11 @@ This page states acorn's position so it is on the record, and tells you
 which components carry restrictions worth checking before you distribute
 them internally.
 
-> **acorn's own code is [Apache-2.0](https://github.com/jrvannucci/acorn/blob/main/LICENSE)**
+> **acorn's own code is [Apache-2.0](https://github.com/jrvannucci/acorn-planter/blob/main/LICENSE)**
 > (patent grant included), with no third-party runtime dependencies. This
 > page is about the *other* software acorn downloads for you; for the
 > component inventory see
-> [THIRD-PARTY-NOTICES](https://github.com/jrvannucci/acorn/blob/main/THIRD-PARTY-NOTICES.md).
+> [THIRD-PARTY-NOTICES](https://github.com/jrvannucci/acorn-planter/blob/main/THIRD-PARTY-NOTICES.md).
 
 ---
 

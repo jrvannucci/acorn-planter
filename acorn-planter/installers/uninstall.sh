@@ -17,7 +17,7 @@ ACORN_HOME_FROM_ENV="${ACORN_HOME:-}"
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 ACORN_HOME_DIR=""
-[ -f "$REPO_ROOT/GET_STARTED/global.conf" ] && . "$REPO_ROOT/GET_STARTED/global.conf"
+[ -f "$REPO_ROOT/global.conf" ] && . "$REPO_ROOT/global.conf"
 
 # Home resolution: env override, else conf's ACORN_HOME_DIR (leading "~"
 # means $HOME), else the default -- identical to the installer.

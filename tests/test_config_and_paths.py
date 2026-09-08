@@ -123,9 +123,9 @@ def test_public_repo_matches_installer_defaults():
 
     repo_root = Path(__file__).resolve().parents[1]
     patterns = {
-        "installers/install.sh": r'DEFAULT_ACORN_REPO="([^"]+)"',
-        "installers/install.ps1": r'\$DefaultACORNRepo = "([^"]+)"',
-        "GET_STARTED/global.conf": r'ACORN_REPO_URL="([^"]+)"',
+        "acorn-planter/installers/install.sh": r'DEFAULT_ACORN_REPO="([^"]+)"',
+        "acorn-planter/installers/install.ps1": r'\$DefaultACORNRepo = "([^"]+)"',
+        "acorn-planter/global.conf": r'ACORN_REPO_URL="([^"]+)"',
     }
     for rel, pattern in patterns.items():
         text = (repo_root / rel).read_text(encoding="utf-8")

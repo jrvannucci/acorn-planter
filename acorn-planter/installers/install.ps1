@@ -6,7 +6,7 @@
 #   .\installers\install.ps1
 #
 # Usage (remote):
-#   irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.ps1 | iex
 #   $env:ACORN_REPO = "https://github.com/someone/fork.git"; irm .../installers/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
@@ -15,7 +15,7 @@ $ErrorActionPreference = "Stop"
 # out, so a conf that still matches them changes nothing -- only edited
 # values have any effect. The baked-in copies exist for the piped
 # one-liner install, where no local global.conf exists yet to consult.
-$DefaultACORNRepo = "https://github.com/jrvannucci/acorn.git"
+$DefaultACORNRepo = "https://github.com/jrvannucci/acorn-planter.git"
 $DefaultVenvPackages = "ipython,ruff,ipykernel"
 
 function Info($msg)  { Write-Host "==> $msg" -ForegroundColor Green }
@@ -32,7 +32,7 @@ function Die($msg)   {
     exit 1
 }
 
-# GET_STARTED\global.conf is the deployment config: organizations distributing
+# global.conf is the deployment config: organizations distributing
 # acorn from their own git host or a network drive set the source (and
 # any install-time settings) there ONCE, and their users install with no
 # flags or env vars. Standard internet installs ship a conf whose values
@@ -133,7 +133,7 @@ if ($RepoRoot) {
     }
 }
 
-$Conf = if ($RepoRoot) { Read-ACORNConf (Join-Path $RepoRoot "GET_STARTED\global.conf") } else { @{} }
+$Conf = if ($RepoRoot) { Read-ACORNConf (Join-Path $RepoRoot "global.conf") } else { @{} }
 
 # Source resolution: ACORN_REPO env var (one-run override) beats
 # global.conf, which beats the baked-in default.
@@ -187,7 +187,7 @@ $CloneMode = $false
 if ($HasLocalCheckout) {
     $OriginalSrc = $RepoRoot
     $CleanupOriginalSrc = $false
-} elseif ((Test-Path $ACORNRepo -PathType Container) -and (Test-Path (Join-Path $ACORNRepo "src\pyproject.toml"))) {
+} elseif ((Test-Path $ACORNRepo -PathType Container) -and ((Test-Path (Join-Path $ACORNRepo "src\pyproject.toml")) -or (Test-Path (Join-Path $ACORNRepo "acorn-planter\src\pyproject.toml")))) {
     # ACORN_REPO can be a plain directory instead of a git URL -- e.g. a
     # network drive holding a copy of this repo, on machines/networks with
     # no GitHub access at all.
@@ -204,6 +204,11 @@ if ($HasLocalCheckout) {
     $CloneMode = $true
     Info "Cloning $ACORNRepo ..."
     & $Git clone --depth 1 $ACORNRepo $OriginalSrc
+}
+
+$SourceRoot = $OriginalSrc
+if (Test-Path (Join-Path $OriginalSrc "acorn-planter\src\pyproject.toml")) {
+    $OriginalSrc = Join-Path $OriginalSrc "acorn-planter"
 }
 
 # ---------------------------------------------------------------------------
@@ -229,7 +234,11 @@ $null = New-Item -ItemType Directory -Force -Path `
 Info "Copying source into $ACORNHome\system\src ..."
 $SrcDir = Join-Path $ACORNHome "system\src"
 if (Test-Path $SrcDir) { Remove-Item -Recurse -Force $SrcDir }
-Copy-Item -Recurse -Force $OriginalSrc $SrcDir
+$null = New-Item -ItemType Directory -Force -Path $SrcDir
+# Shared resource collections stay at their configured source.
+Get-ChildItem -LiteralPath $OriginalSrc -Force | Where-Object {
+    $_.Name -notin @("wheels", "python-builds", "conda-channel", "MANIFEST.json", ".git", ".venv")
+} | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $SrcDir -Recurse -Force }
 # No git checkout lives inside ~\acorn: updates re-download from the
 # recorded update_source (see below) instead of `git pull`-ing, so the
 # .git folder would be dead weight (and its read-only object files used
@@ -407,7 +416,7 @@ if (Test-Path $VendorDir) {
 }
 
 if ($CleanupOriginalSrc) {
-    Remove-Item -Recurse -Force $OriginalSrc -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force $SourceRoot -ErrorAction SilentlyContinue
 }
 
 # ---------------------------------------------------------------------------
@@ -417,7 +426,7 @@ if ($CleanupOriginalSrc) {
 # ---------------------------------------------------------------------------
 # Piped installs have no local conf, but the clone we just copied does.
 if ($Conf.Count -eq 0) {
-    $Conf = Read-ACORNConf (Join-Path $SrcDir "GET_STARTED\global.conf")
+    $Conf = Read-ACORNConf (Join-Path $SrcDir "global.conf")
 }
 
 # Record where this install came from, so `acorn update-commands` knows

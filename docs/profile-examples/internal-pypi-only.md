@@ -65,10 +65,10 @@ The conf is where this shape becomes visible — **a URL and directory paths
 side by side**:
 
 ```sh
-# GET_STARTED/global.conf -- in the copy on the share.
+# acorn-planter/global.conf -- in the copy on the share.
 
 # Install acorn itself from the share: no git, no network.
-ACORN_REPO_URL="S:\acorn\acorn"
+ACORN_REPO_URL="S:\acorn\acorn-planter"
 
 # The one live service: a URL, so uv treats it as an index and resolves
 # against it normally. Spyder arrives through here.
@@ -76,8 +76,8 @@ ACORN_PACKAGE_INDEX="https://artifactory.corp.example/api/pypi/pypi/simple"
 
 # The two that aren't mirrored: directories in the bundle, so uv reads them
 # as local sources with the internet disabled.
-ACORN_PYTHON_MIRROR="S:\acorn\python-builds"
-ACORN_CONDA_CHANNEL="S:\acorn\conda-channel"
+ACORN_PYTHON_MIRROR="S:\acorn\acorn-planter\python-builds"
+ACORN_CONDA_CHANNEL="S:\acorn\acorn-planter\conda-channel"
 
 # The proxy re-signs HTTPS and IT has NOT pushed the root machine-wide, so
 # ship the PEM in vendor/certs/ and leave native_tls off.
@@ -90,7 +90,7 @@ ACORN_PROFILE="installation-profile"
 and on this network that list has a second job, below:
 
 ```toml
-# offline-bundle.toml -- in GET_STARTED_OFFLINE_BUNDLE/.
+# offline-bundle.toml -- in acorn-planter/.
 
 pythons = ["3.12"]
 
@@ -138,7 +138,7 @@ wheel set that *is* staged is reported per package:
 The GPL entry arrives with Spyder. On this network it matters twice over: once
 for the share, and again if you take the **publish** route below, since
 uploading wheels into your internal index is another act of redistribution.
-`acorn whl-licenses S:\acorn\wheels --fail-on copyleft,unknown` makes that
+`acorn whl-licenses S:\acorn\acorn-planter\wheels --fail-on copyleft,unknown` makes that
 a gate rather than a memory.
 
 **Two ways to feed the index.** The wheel step is the one that's optional
@@ -157,7 +157,7 @@ here, and which way you go decides what `package_index` points at:
    ```sh
    acorn config set package_upload_url https://artifactory.corp.example/api/pypi/pypi-local/
    acorn config set package_upload_token <a token with write access>
-   acorn upload-whls S:\acorn\wheels
+   acorn upload-whls S:\acorn\acorn-planter\wheels
    ```
 
    [`acorn upload-whls`](../commands/offline-utilities.md) runs `uvx twine
@@ -180,7 +180,7 @@ here, and which way you go decides what `package_index` points at:
 
 Either way, staging the wheels is harmless — it also gives you a fallback if
 the mirror goes down, though using it as the fallback means pointing
-`package_index` at `S:\acorn\wheels` instead of the URL, since only one of
+`package_index` at `S:\acorn\acorn-planter\wheels` instead of the URL, since only one of
 the two can be the package source at a time.
 
 **Why it's shaped this way**
@@ -217,39 +217,24 @@ present, and that the index is reachable.
 
 **What the bundle looks like**
 
-Note what is *absent*: no `wheels/`, because the internal PyPI serves those.
+The builder includes `wheels/` for upload to internal PyPI. After uploading and verifying the index, the administrator may omit that collection from the deployed share.
 
 ```
-offline-bundle/                    -> copied to S:\acorn
-├── MANIFEST.json
-├── acorn/                      users run GET_STARTED/install.cmd from here
-│   ├── GET_STARTED/global.conf              the mixed URL + directory conf above
-│   ├── installation-profile/profile.toml
-│   └── vendor/
-│       ├── uv/
-│       │   ├── uv.exe
-│       │   └── uvx.exe
-│       ├── vscode/                official VS Code -- the Marketplace is
-│       │   └── app/               unreachable, so it is pre-seeded
-│       │       ├── Code.exe
-│       │       ├── bin/code.cmd
-│       │       └── data/          settings + extensions
-│       ├── micromamba/
-│       │   └── micromamba.exe
-│       ├── git/                   MinGit, from --mingit
-│       │   └── cmd/git.exe
-│       └── certs/                 <- YOU fill this one
-│           └── corp-root-ca.pem
-├── python-builds/                 no PBS mirror internally, so bundled
-│   └── 20250115/
-│       └── cpython-3.12.8+2025...-x86_64-pc-windows-msvc-install_only.tar.gz
-├── conda-channel/                 no conda-forge mirror internally, so bundled
-│   ├── noarch/repodata.json
-│   └── win-64/
-│       ├── repodata.json
-│       ├── ripgrep-14.1.1-h.....conda
-│       └── pandoc-3.5-h.....conda
-└── (no wheels/ -- ACORN_PACKAGE_INDEX is the Artifactory URL)
+offline-bundle/                 -> copied to S:\acorn
+  GET_STARTED/                  user install/uninstall launchers
+  GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
+  acorn-planter/
+    global.conf                 deployment paths and shared settings
+    offline-bundle.toml          declared superset and build settings
+    installation-profile/       default and opt-in profiles
+    src/                        ACORN package
+    installers/                 installation and build engines
+    examples/                   supporting configuration examples
+    MANIFEST.json               inventory and license summaries
+    vendor/                     native tools and certificates
+    python-builds/              interpreter archives
+    wheels/                     downloaded versions and dependencies
+    conda-channel/              packages and repodata.json
 ```
 
 Spyder is the interesting absence too: it never appears in the bundle,

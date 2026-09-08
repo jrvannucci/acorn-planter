@@ -107,20 +107,20 @@ vscode_extensions = [
 exists — the share paths, TLS, and the multi-user layout:
 
 ```sh
-# GET_STARTED/global.conf -- shipped in the copy on the share.
+# acorn-planter/global.conf -- shipped in the copy on the share.
 
 # Install from the share itself: a directory, not a git URL, so neither git
 # nor a network is needed to install, or to `acorn update-commands` later.
-ACORN_REPO_URL="S:\acorn\acorn"
+ACORN_REPO_URL="S:\acorn\acorn-planter"
 
 # One root, a private folder per person. The {user} token is also what
 # enables the elevated admin-* commands for cross-user teardown.
 ACORN_HOME_DIR="S:\users\{user}\acorn"
 
 # The three offline sources the bundle provides.
-ACORN_PYTHON_MIRROR="S:\acorn\python-builds"
-ACORN_PACKAGE_INDEX="S:\acorn\wheels"
-ACORN_CONDA_CHANNEL="S:\acorn\conda-channel"
+ACORN_PYTHON_MIRROR="S:\acorn\acorn-planter\python-builds"
+ACORN_PACKAGE_INDEX="S:\acorn\acorn-planter\wheels"
+ACORN_CONDA_CHANNEL="S:\acorn\acorn-planter\conda-channel"
 
 # The editor build and extension set every INSTALLED machine gets -- decided
 # here, not in the profile. These must match [editor] in offline-bundle.toml,
@@ -143,7 +143,7 @@ ACORN_PROFILE="installation-profile"   # the FOLDER: each profile says who gets 
 This is the file `--check-profile` and `acorn profile-check` validate against:
 
 ```toml
-# offline-bundle.toml -- in GET_STARTED_OFFLINE_BUNDLE/ in the copy you distribute.
+# offline-bundle.toml -- in acorn-planter/ in the copy you distribute.
 
 schema = 1
 
@@ -215,7 +215,7 @@ someone asks. For internal use that is normally fine; it matters if the share
 crosses a legal-entity boundary. Check it yourself at any point with:
 
 ```
-acorn whl-licenses S:\acorn\wheels
+acorn whl-licenses S:\acorn\acorn-planter\wheels
 ```
 
 **What each piece buys**
@@ -256,7 +256,7 @@ acorn whl-licenses S:\acorn\wheels
   The file to hand a security review rather than reconstructing the answer.
 
 **What still needs the internet:** nothing, once the bundle is on the share.
-Users install from `S:\acorn\acorn`, `acorn apply` provisions entirely
+Users install from `S:\acorn\GET_STARTED\install.cmd`, `acorn apply` provisions entirely
 from the bundled sources, and `acorn update-commands` re-reads that same
 directory — so updating the fleet is copying a new bundle over the old one.
 
@@ -265,50 +265,21 @@ directory — so updating the fleet is copying a new bundle over the old one.
 Everything the builder can produce, plus the one folder it can't:
 
 ```
-offline-bundle/                       -> copied to S:\acorn
-├── MANIFEST.json                     components + every wheel's licence
-├── acorn/                         users run GET_STARTED/install.cmd from here
-│   ├── GET_STARTED/
-│   │   ├── install.cmd               what users actually run
-│   │   └── global.conf               the conf above, --deploy-root applied
-│   ├── installation-profile/         the profiles above, one per group
-│   ├── installers/                   install.ps1, install.sh
-│   ├── src/                          acorn's own source
-│   └── vendor/
-│       ├── uv/
-│       │   ├── uv.exe
-│       │   └── uvx.exe
-│       ├── vscode/
-│       │   └── app/                  official VS Code + extensions
-│       │       ├── Code.exe
-│       │       ├── bin/code.cmd
-│       │       └── data/             settings + installed extensions
-│       ├── micromamba/
-│       │   └── micromamba.exe
-│       ├── git/                      MinGit, from --mingit
-│       │   ├── cmd/git.exe
-│       │   └── mingw64/
-│       └── certs/                    <- YOU fill this one
-│           ├── corp-root-ca.pem
-│           └── corp-issuing-ca.pem
-├── python-builds/
-│   └── 20250115/                     the release tag uv asked for
-│       ├── cpython-3.12.8+2025...-x86_64-pc-windows-msvc-install_only.tar.gz
-│       └── cpython-3.11.11+2025...-x86_64-pc-windows-msvc-install_only.tar.gz
-├── wheels/                           flat, one folder, every interpreter
-│   ├── hatchling-1.27.0-py3-none-any.whl
-│   ├── spyder-6.1.5-py3-none-any.whl
-│   ├── PyQt5-5.15.11-cp38-abi3-win_amd64.whl
-│   ├── numpy-2.1.3-cp312-cp312-win_amd64.whl
-│   ├── numpy-2.1.3-cp311-cp311-win_amd64.whl      <- per-interpreter
-│   └── ... a few hundred more
-└── conda-channel/
-    ├── noarch/repodata.json
-    └── win-64/
-        ├── repodata.json             synthesized from the solve
-        ├── ripgrep-14.1.1-h.....conda
-        ├── pandoc-3.5-h.....conda
-        └── gh-2.63.2-h.....conda
+offline-bundle/                 -> copied to S:\acorn
+  GET_STARTED/                  user install/uninstall launchers
+  GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
+  acorn-planter/
+    global.conf                 deployment paths and shared settings
+    offline-bundle.toml          declared superset and build settings
+    installation-profile/       default and opt-in profiles
+    src/                        ACORN package
+    installers/                 installation and build engines
+    examples/                   supporting configuration examples
+    MANIFEST.json               inventory and license summaries
+    vendor/                     native tools and certificates
+    python-builds/              interpreter archives
+    wheels/                     downloaded versions and dependencies
+    conda-channel/              packages and repodata.json
 ```
 
 Where each lands on the target:

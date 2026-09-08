@@ -18,7 +18,7 @@ All three `.cmd` files use the same trick, and it's worth understanding once
 because it explains their odd first line:
 
 ```
-:; exec sh "$(dirname "$0")/../installers/install.sh" # POSIX shells take this line...
+:; exec sh "$(dirname "$0")/../acorn-planter/installers/install.sh" # POSIX shells take this line...
 ```
 
 A POSIX shell reads `:;` as a no-op and then `exec`s the real shell script.
@@ -44,10 +44,10 @@ sh ./GET_STARTED/install.cmd       # macOS / Linux
 `-ExecutionPolicy Bypass` scoped to that single run — a batch file isn't
 subject to PowerShell's execution policy, which is the whole reason this
 wrapper exists. Your system policy is not changed. On macOS and Linux line 1
-hands off to `installers/install.sh` instead.
+hands off to `acorn-planter/installers/install.sh` instead.
 
 Either way the real installer then reads
-[`GET_STARTED/global.conf`](../DEPLOYMENT.md#deployment-configuration-globalconf),
+[`acorn-planter/global.conf`](../DEPLOYMENT.md#deployment-configuration-globalconf),
 lays out `~/acorn`, installs uv, builds `acorn-cli` from a private copy of
 the source, writes the shell hook, and — unless told otherwise — installs
 Python and creates the auto-activating `dev` venv.
@@ -134,7 +134,7 @@ Flags remain available for one-off builds (`--dry-run`, `--verify-only`,
 [offline guide](../OFFLINE.md#the-easy-way-get_started_offline_bundleoffline-bundlercmd) lists them.
 
 The POSIX half lives in `offline-bundler.sh` next to it, which finds a usable
-Python 3.12+ and runs `installers/build_offline.py`.
+Python 3.12+ and runs `acorn-planter/installers/build_offline.py`.
 
 ---
 
@@ -145,12 +145,12 @@ from a URL. This is what the README's one-liners do:
 
 **macOS / Linux**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.sh | sh
 ```
 
 **Windows (PowerShell)**
 ```powershell
-irm https://raw.githubusercontent.com/jrvannucci/acorn/main/installers/install.ps1 | iex
+irm https://raw.githubusercontent.com/jrvannucci/acorn-planter/main/acorn-planter/installers/install.ps1 | iex
 ```
 
 They are the same scripts `install.cmd` runs locally — the `.cmd` file only
@@ -168,18 +168,22 @@ curl -fsSL .../install.sh | ACORN_PROFILE=./team.toml sh
 
 ```
 GET_STARTED/
-├── install.cmd                     -> installers/install.ps1  or  install.sh
-├── uninstall.cmd                   -> installers/uninstall.ps1 or uninstall.sh
-└── global.conf                        what all of them read
+  install.cmd                         user installation
+  uninstall.cmd                       user removal
 GET_STARTED_OFFLINE_BUNDLE/
-├── offline-bundler.cmd             -> offline-bundler.sh -> installers/build_offline.py
-├── offline-bundler.sh
-└── offline-bundle.toml                what the bundle will contain
-installers/
-├── install.sh / install.ps1           the real installers
-├── uninstall.sh / uninstall.ps1       the real uninstallers
-└── build_offline.py                   the real bundle builder
+  offline-bundler.cmd                  administrator entry point
+  offline-bundler.sh                   POSIX launcher
+acorn-planter/
+  global.conf                         shared installation settings
+  offline-bundle.toml                  bundle contents and build settings
+  installation-profile/               default and opt-in profiles
+  installers/
+    install.sh / install.ps1           installation engines
+    uninstall.sh / uninstall.ps1       removal engines
+    build_offline.py                  bundle builder
+  src/acorn/                           installed Python package
+  examples/                            supporting configuration examples
 ```
 
-The `.cmd` files are launchers; the files under `installers/` do the work and
+The `.cmd` files are launchers; the files under `acorn-planter/installers/` do the work and
 can be run directly if you prefer.

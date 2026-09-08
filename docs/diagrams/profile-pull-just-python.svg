@@ -102,8 +102,8 @@
 <rect x="40" y="504" width="470" height="92" rx="12" fill="#E9F5EC" stroke="#1B4332" stroke-width="1.3"/>
 <use href="#ic-cloud" x="56" y="516" width="20" height="20" color="#1B4332"/>
 <text x="84" y="531" class="body fg" font-size="15.0" font-weight="700">github.com</text>
-<text x="84" y="545" class="body fmute" font-size="11.0" font-style="italic">the public acorn repo</text>
-<rect x="54" y="550" width="442" height="32" rx="9" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.8"/><text x="66" y="571" class="body fg" font-size="13.0" font-weight="700">acorn itself</text>
+<text x="84" y="545" class="body fmute" font-size="11.0" font-style="italic">the acorn-planter repo</text>
+<rect x="54" y="550" width="442" height="32" rx="9" fill="#E9F5EC" stroke="#1B4332" stroke-width="1" opacity="0.8"/><text x="66" y="571" class="body fg" font-size="13.0" font-weight="700">acorn-planter</text>
 <line x1="510" y1="566" x2="636" y2="566" stroke="#1B4332" stroke-width="1.3" marker-end="url(#arrow)"/>
 <text x="575" y="560" text-anchor="middle" class="body fmute" font-size="10.5" font-style="italic">the install one-liner</text>
 <rect x="40" y="622" width="470" height="92" rx="12" fill="#E9F5EC" stroke="#1B4332" stroke-width="1.3"/>

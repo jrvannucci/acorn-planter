@@ -129,7 +129,7 @@ def _fake_bundle_dir(root, *, wheels=(), pythons=(), tools=(), vscode=False):
             "packages": {f"{t}-1.0-0.tar.bz2": {"name": t} for t in tools},
         }), encoding="utf-8")
     if vscode:
-        (root / "acorn" / "vendor" / "vscode").mkdir(parents=True)
+        (root / "vendor" / "vscode").mkdir(parents=True)
     return root
 
 
@@ -448,3 +448,13 @@ def test_linux_lists_several_manylinux_tags():
     projects publish only one of the spellings."""
     tags = bundle_mod.platform_tags("linux/x86_64")
     assert len(tags) >= 2 and all("x86_64" in t for t in tags)
+
+
+def test_inventory_accepts_outer_bundle_and_self_contained_planter(tmp_path):
+    planter = tmp_path / "acorn-planter"
+    _fake_bundle_dir(planter, wheels=["pandas-2.2.3-py3-none-any.whl"], pythons=["3.12"], vscode=True)
+    direct = bundle_mod.Inventory.discover(planter)
+    outer = bundle_mod.Inventory.discover(tmp_path)
+    assert outer.packages == direct.packages == {"pandas": {"2.2.3"}}
+    assert outer.pythons == direct.pythons == {"3.12"}
+    assert outer.vscode and direct.vscode

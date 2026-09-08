@@ -32,10 +32,10 @@ You edit one copy of acorn and hand it out. Everyone who installs from it
 inherits your settings — no flags, no environment variables, no instructions
 to get wrong.
 
-1. **Edit [`global.conf`](https://github.com/jrvannucci/acorn/blob/main/GET_STARTED/global.conf)**
+1. **Edit [`global.conf`](https://github.com/jrvannucci/acorn-planter/blob/main/acorn-planter/global.conf)**
    in the copy you distribute: where installs come from, where packages come
    from, which editor, which profiles.
-2. **Put your profiles in `installation-profile/`** — one marked
+2. **Put your profiles in `acorn-planter/installation-profile/`** — one marked
    `default = true` for everyone, others opt-in by name. See
    [deployment profiles](PROFILES.md).
 3. **Distribute the copy** — a network share, an internal git host, or (for a

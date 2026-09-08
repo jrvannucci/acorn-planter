@@ -48,7 +48,7 @@ them:
 
 ```toml
 # offline-bundle.toml -- what the share will hold. Lives in
-# GET_STARTED_OFFLINE_BUNDLE/, and the builder reads it with no arguments.
+# acorn-planter/, and the builder reads it with no arguments.
 
 pythons = ["3.12"]
 
@@ -78,7 +78,7 @@ choice for each installed machine, and the builder refuses to build if the two
 disagree:
 
 ```sh
-# GET_STARTED/global.conf, in the copy you distribute
+# acorn-planter/global.conf, in the copy you distribute
 ACORN_VSCODE_FLAVOR="vscodium"
 ACORN_VSCODE_EXTENSIONS="ms-python.python,ms-toolsai.jupyter,charliermarsh.ruff"
 ```
@@ -131,28 +131,31 @@ metadata:
 MPL is weak copyleft: it only asks something of you if you *modify* the
 library, which installing never does. Nothing here needs a decision — which is
 the answer a review wants, stated rather than assumed. Re-check any time with
-`acorn whl-licenses S:\acorn\wheels`.
+`acorn whl-licenses S:\acorn\acorn-planter\wheels`.
 
 **What the bundle looks like**
 
 ```
 offline-bundle/
-├── MANIFEST.json            what was staged, and under what licence
-├── acorn/                users run GET_STARTED/install.cmd from here
-│   ├── GET_STARTED/                 install.cmd, and global.conf written
-│   │                                with your --deploy-root paths
-│   ├── GET_STARTED_OFFLINE_BUNDLE/  offline-bundle.toml -- what the share
-│   │                                holds, read back by acorn profile-check
-│   ├── installation-profile/        the profile above
-│   └── vendor/
-│       ├── uv/                  uv.exe, uvx.exe
-│       ├── vscode/              app/  (portable VSCodium + Open VSX exts)
-│       ├── micromamba/          micromamba.exe
-│       ├── certs/               <- YOU fill this one
-│       └── git/                 only with --mingit
-├── python-builds/           ACORN_PYTHON_MIRROR
-├── wheels/                  ACORN_PACKAGE_INDEX
-└── conda-channel/           ACORN_CONDA_CHANNEL
+  GET_STARTED/                   install.cmd and uninstall.cmd
+  GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
+  acorn-planter/
+    global.conf                  generated deployment paths
+    offline-bundle.toml           bundle superset
+    installation-profile/        supplied profiles
+    src/                         ACORN package
+    installers/                  installation and build engines
+    examples/                    supporting configuration examples
+    MANIFEST.json                component and license records
+    python-builds/
+    wheels/
+    conda-channel/
+    vendor/
+      uv/
+      vscode/                    VSCodium + Open VSX extensions
+      micromamba/
+      certs/                     administrator-supplied certificates
+      git/                       when requested
 ```
 
 Where each lands on the target:

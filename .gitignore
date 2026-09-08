@@ -23,3 +23,9 @@ offline-bundle/
 # permission allowlist is per-user state and belongs to whoever's machine
 # it grew on.
 .claude/settings.local.json
+
+# Offline resources carried by acorn-planter, not repository source.
+/acorn-planter/wheels/
+/acorn-planter/python-builds/
+/acorn-planter/conda-channel/
+/acorn-planter/MANIFEST.json

@@ -4,17 +4,17 @@
 #
 # Run the build with NO arguments:
 #
-#     Windows:      .\offline-bundler.cmd          (double-clicking works)
-#     macOS/Linux:  sh ./offline-bundler.cmd
+#     Windows:      ..\GET_STARTED_OFFLINE_BUNDLE\offline-bundler.cmd          (double-clicking works)
+#     macOS/Linux:  sh ../GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd
 #
 # Two rules make this file work:
 #
 #   1. It knows nothing about profiles. The share declares what it holds, and
-#      every profile in ../installation-profile/ is validated against it --
+#      every profile in installation-profile/ is validated against it --
 #      before anything downloads, and again against what actually landed. A
 #      superset assembled FROM the profiles it ships could never refuse one.
 #
-#   2. It agrees with ../GET_STARTED/global.conf about the editor. The spec
+#   2. It agrees with global.conf about the editor. The spec
 #      says what gets
 #      STAGED; the conf says what each user's machine expects. A disagreement
 #      stops the build, because it isn't visible until someone opens the
@@ -108,14 +108,16 @@ mingit = false
 
 [build]
 # Where to assemble the bundle on THIS machine.
-output = "offline-bundle"
+# This contains acorn-planter/, including wheels/, python-builds/,
+# conda-channel/, MANIFEST.json, and all installer/configuration files.
+output = "../offline-bundle"
 
 # The folder of profiles to validate against this bundle. Every *.toml in it
 # is checked -- the folder is the list, so there is nothing to keep in sync.
 profiles = "installation-profile"
 
 # Pack the finished bundle into one file to carry across the gap -- ON by
-# default (zip on Windows, tar.gz elsewhere), because a bundle exists to be
+# default (tar.gz on every platform), because a bundle exists to be
 # carried somewhere and a folder of ~200k files is the wrong shape for a
 # share, a review, or a USB stick. The folder is left in place either way.
 #

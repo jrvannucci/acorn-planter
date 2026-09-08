@@ -115,7 +115,7 @@ def test_reports_drift_when_conf_changed_upstream(run_cli, home, src_installed, 
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text(
+    (upstream / "global.conf").write_text(
         'ACORN_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("venv_default_packages", ["ipython", "ruff"])  # the OLD value
@@ -134,7 +134,7 @@ def test_no_drift_report_when_conf_already_matches(run_cli, home, src_installed,
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text(
+    (upstream / "global.conf").write_text(
         'ACORN_VENV_DEFAULT_PACKAGES="ipython,ruff"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("venv_default_packages", ["ipython", "ruff"])
@@ -150,7 +150,7 @@ def test_drift_is_reported_from_the_conf(home, tmp_path, capsys):
     upstream = tmp_path / "share"
     upstream.mkdir()
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text(
+    (upstream / "global.conf").write_text(
         'ACORN_VENV_DEFAULT_PACKAGES="ipython,ruff,pandas"\n')
     config.set_value("venv_default_packages", ["ipython", "ruff"])
     update_cmd.report_conf_drift(upstream)
@@ -179,7 +179,7 @@ def test_drift_report_ignores_settings_a_fresh_install_wouldnt_seed(
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text(
+    (upstream / "global.conf").write_text(
         'ACORN_CONDA_CHANNEL="conda-forge"\nACORN_VSCODE_FLAVOR="microsoft"\n')
     config.set_value("update_source", str(upstream))
     code, out = run_cli("update-commands")
@@ -196,7 +196,7 @@ def test_reports_drift_for_native_tls(run_cli, home, src_installed, tmp_path):
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text('ACORN_NATIVE_TLS="true"\n')
+    (upstream / "global.conf").write_text('ACORN_NATIVE_TLS="true"\n')
     config.set_value("update_source", str(upstream))
     code, out = run_cli("update-commands")
     assert code == 0
@@ -213,7 +213,7 @@ def test_reports_drift_for_vscode_extensions(run_cli, home, src_installed, tmp_p
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text(
+    (upstream / "global.conf").write_text(
         'ACORN_VSCODE_EXTENSIONS="ms-python.python,charliermarsh.ruff"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("vscode_extensions", ["ms-python.python"])
@@ -230,7 +230,7 @@ def test_reports_drift_for_vscode_extensions_none(run_cli, home, src_installed, 
     upstream.mkdir()
     _make_source_tree(upstream, "v2")
     (upstream / "GET_STARTED").mkdir(exist_ok=True)
-    (upstream / "GET_STARTED" / "global.conf").write_text('ACORN_VSCODE_EXTENSIONS="none"\n')
+    (upstream / "global.conf").write_text('ACORN_VSCODE_EXTENSIONS="none"\n')
     config.set_value("update_source", str(upstream))
     config.set_value("vscode_extensions", ["ms-python.python"])
     code, out = run_cli("update-commands")
@@ -668,3 +668,30 @@ def test_extract_tar_does_not_warn_on_modern_pythons(tmp_path, recwarn):
     archive = _tar_with(tmp_path, {"uv": b"x"})
     download.extract_tar(archive, tmp_path / "out")
     assert not [w for w in recwarn if issubclass(w.category, DeprecationWarning)]
+
+
+@pytest.mark.parametrize("mode", ["directory", "url"])
+def test_update_reads_master_from_outer_distribution(src_installed, tmp_path, monkeypatch, mode):
+    import shutil
+    from pathlib import Path
+
+    src, _ = src_installed
+    outer = tmp_path / "distribution"
+    planter = outer / "acorn-planter"
+    _make_source_tree(planter, "nested")
+    (outer / "GET_STARTED").mkdir()
+    if mode == "directory":
+        assert update_cmd._refresh_from_directory(src, outer)
+    else:
+        monkeypatch.setattr(update_cmd.git_tool, "ensure_git", lambda: "git")
+
+        def clone(args):
+            shutil.copytree(outer, Path(args[-1]))
+            return 0
+
+        monkeypatch.setattr(update_cmd.git_tool, "run_streamed", clone)
+        assert update_cmd._refresh_from_url(src, "https://example.invalid/planter.git")
+    assert (src / "MARKER.txt").read_text() == "nested"
+    assert (src / "src" / "pyproject.toml").exists()
+    assert not (src / "GET_STARTED").exists()
+    assert not (src / "vendor").exists()

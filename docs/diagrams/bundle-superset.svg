@@ -77,8 +77,8 @@
   <text x="78" y="384" class="body fg" font-size="13" font-weight="700" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">vendor/uv/, vendor/git/</text>
   <text x="308" y="384" class="body fmute" font-size="12.5">uv, and MinGit when asked for</text>
   <rect x="64" y="404" width="652" height="34" rx="7" fill="#FFFFFF" stroke="#52796F" stroke-width="1.1"/>
-  <text x="78" y="426" class="body fg" font-size="13" font-weight="700" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">acorn/</text>
-  <text x="308" y="426" class="body fmute" font-size="12.5">the source users install from</text>
+  <text x="78" y="426" class="body fg" font-size="13" font-weight="700" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">src/ + global.conf</text>
+  <text x="308" y="426" class="body fmute" font-size="12.5">source, installer and configuration</text>
   <text x="64" y="468" class="body fg" font-size="13.5" font-weight="700">Deployment profiles, each a SUBSET of the above</text>
   <text x="64" y="488" class="body fmute" font-size="12" font-style="italic">installation-profile/*.toml, checked against the bundle before it is built</text>
   <rect x="64.0" y="506" width="206.66666666666666" height="118" rx="10" fill="#D8EEE0" stroke="#1B4332" stroke-width="1.6"/>
@@ -117,7 +117,7 @@
   <text x="818" y="682" class="body fg" font-size="11.2" font-weight="700" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">ACORN_CONDA_CHANNEL</text>
   <text x="830" y="699" class="body fmute" font-size="11.2" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">-&gt; conda-channel/</text>
   <text x="818" y="724" class="body fg" font-size="11.2" font-weight="700" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">ACORN_REPO_URL</text>
-  <text x="830" y="741" class="body fmute" font-size="11.2" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">-&gt; acorn/</text>
+  <text x="830" y="741" class="body fmute" font-size="11.2" font-family="Consolas, 'SF Mono', Monaco, 'Courier New', monospace">-&gt; acorn-planter/</text>
   <path d="M792 632 C730 632 810 542 748 542" stroke="#1B4332" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
   <text x="776" y="614" class="body fmute" font-size="11.5" text-anchor="end" font-style="italic">every user's machine</text>
   <text x="776" y="630" class="body fmute" font-size="11.5" text-anchor="end" font-style="italic">resolves to the share</text>

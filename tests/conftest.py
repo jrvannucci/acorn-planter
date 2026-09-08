@@ -30,7 +30,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SRC = REPO_ROOT / "src"
+SRC = REPO_ROOT / "acorn-planter" / "src"
 sys.path.insert(0, str(SRC))
 
 from acorn import git_tool as git_tool_mod  # noqa: E402
@@ -243,7 +243,8 @@ def make_repo_copy(dest: Path) -> Path:
         REPO_ROOT, dest,
         ignore=shutil.ignore_patterns(
             ".git", "__pycache__", "tests", ".claude",
-            ".venv", ".ruff_cache", ".pytest_cache"),
+            ".venv", ".ruff_cache", ".pytest_cache", "_build", "dist",
+            "wheels", "python-builds", "conda-channel", "MANIFEST.json"),
     )
     return dest
 
@@ -393,7 +394,7 @@ def run_powershell_install(copy: Path, acorn_home: Path, fake_profile: Path,
     env["ACORN_SKIP_PATH_REGISTER"] = "1"
     if env_extra:
         env.update(env_extra)
-    script = copy / "installers" / "install.ps1"
+    script = copy / "acorn-planter" / "installers" / "install.ps1"
     cmd = f"$PROFILE = '{fake_profile}'; & '{script}'"
     return subprocess.run(
         [exe or POWERSHELL, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", cmd],

@@ -12,6 +12,11 @@ what a release involves.
 
 ### Changed (breaking)
 
+- Distinguish `acorn-planter`, the administrator distribution, from the installed
+  `acorn` user tool. Bundle source folders now use `acorn-planter/`; the CLI,
+  Python imports, `ACORN_*` settings, and `~/acorn` user home retain their names.
+
+
 - Rename the entire project and Python package to **ACORN**: imports use
   `acorn`, configuration variables use `ACORN_*`, and the default home is
   `~/acorn`. The GitHub repository is now `jrvannucci/acorn`. No legacy
@@ -183,7 +188,7 @@ what a release involves.
   seedling's built-in defaults rather than that organization's settings.
 
   Everything that located those files by path moved with them: both
-  installers and both uninstallers (`GET_STARTED/global.conf`, and one level
+  installers and both uninstallers (`acorn-planter/global.conf`, and one level
   further up to reach `installers/`), `seed update-commands`' drift report,
   and the bundler -- which now finds its spec in
   `GET_STARTED_OFFLINE_BUNDLE/` and writes the bundle's conf into the copy's

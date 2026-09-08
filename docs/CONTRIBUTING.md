@@ -67,61 +67,32 @@ To point an install at a fork's URL in the first place, set it at install time
 
 ```
 README.md
-GET_STARTED/          the files a person actually runs
-  install.cmd           installer entry point: batch on Windows, `sh ./GET_STARTED/install.cmd` on macOS/Linux
-  uninstall.cmd         uninstaller entry point (same dual-platform trick)
-  global.conf           deployment config: install/update source URL (or directory) + install-time settings
-GET_STARTED_OFFLINE_BUNDLE/   everything for building an air-gapped bundle
-  offline-bundler.cmd   dual-platform launcher (NOT a acorn command)
-  offline-bundler.sh    the POSIX half of it (finds Python, runs build_offline.py)
-  offline-bundle.toml   what the share will hold, and every build setting
-installation-profile/   the profiles distributed to users; each says who gets it
-installers/
-  install.sh          the real POSIX installer (also what the curl one-liner runs)
-  install.ps1         the real Windows installer (also what the irm one-liner runs)
-  uninstall.sh / uninstall.ps1   full removal, including the shell hook (same end state as `acorn purge`)
-  build_offline.py    the offline bundle builder (downloads uv + interpreters + wheels, writes GET_STARTED/global.conf)
-docs/
-  DOCUMENTATION.md    the documentation map (routes to the two tracks below)
-  GUIDE.md            using acorn: install, layout, updates, troubleshooting
-  COMMANDS.md         every command and flag
-  DESIGN.md           why deletion is defensive, logging, download verification
-  DEPLOYMENT.md       deploying to others: global.conf, shared roots, admin teardown
-  OFFLINE.md          fully-offline / air-gapped deployment guide
-  LICENSING.md        redistribution posture; what is downloaded, under what terms
-  CONTRIBUTING.md     this guide
-tests/
-  conftest.py         sandbox fixtures (throwaway home, stub uv, env isolation)
-  test_*.py           unit + CLI + offline/installer/shell-template integration tests
-src/
-  pyproject.toml      the python package definition (`uv tool install` targets this folder)
-  acorn/
-    __init__.py       the ONE home for __version__, plus the public repo URL constants
-    __main__.py       `python -m acorn` entry point
-    cli.py            argparse dispatcher
-    paths.py          single source of truth for the ~/acorn folder layout
-    config.py         JSON config (default base, default venv, update source, etc.) + `acorn config`'s KNOWN_KEYS
-    confirm.py        shared -y / --preview / --non-interactive handling for destructive commands
-    profile.py        parses deployment profiles (`acorn apply`, PROFILES.md)
-    custom_commands.py  parses custom-commands.toml (`acorn custom`, CUSTOM-COMMANDS.md)
-    venv_target.py    shared venv resolution: explicit name -> VIRTUAL_ENV -> default_venv
-    runlog.py         tees stdout/stderr into ~/acorn/system/logs/, one file per day
-    download.py       SHA-256-verifying download helper (MinGit, VS Code, micromamba)
-    uv_tool.py        locates + invokes the sandboxed uv binary, tags its output `[uv]`
-    git_tool.py       locates git, bootstraps portable MinGit on Windows, tags streamed output `[git]`
-    conda_tool.py     locates + invokes micromamba for conda-forge tools, builds offline channels
-    fsutil.py         retrying, cwd-aware directory deletion (see "Why deletion is so defensive")
-    lock.py           per-venv cross-process lock, so concurrent `acorn` commands queue safely
-    pkgspec.py        parses `name[extras]` package/repo specs shared by install/repo-install
-    admin.py          best-effort elevated-privilege check, for the shared multi-user admin-* family
-    shell_integration.py  re-renders acorn.ps1/acorn.sh from their templates (`acorn update-commands`)
-    winlocks.py       Windows file-lock diagnostics for a deletion that's stuck
-    colors.py         minimal ANSI color helper (NO_COLOR/non-tty aware)
-    commands/         one module per `acorn` command (python, venv, activate, repo,
-                      vscode, kill, update, summary, health-check, config, remove, purge, ...)
-    shell/
-      acorn.sh.template   copied to ~/acorn/system/shell/acorn.sh at install time
-      acorn.ps1.template  copied to ~/acorn/system/shell/acorn.ps1 at install time
+GET_STARTED/                  user install/uninstall launchers
+GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
+acorn-planter/
+  global.conf                 shared install settings
+  offline-bundle.toml          superset and build settings
+  installation-profile/       default and opt-in profiles
+  installers/                 install, uninstall and bundle engines
+  examples/                   editor and custom-command examples
+  src/
+    pyproject.toml            Python package definition
+    acorn/
+      __init__.py             version and public repository constants
+      cli.py                  command dispatcher
+      paths.py                user directory layout
+      config.py               installed configuration
+      profile.py              profile parsing
+      bundle.py               bundle parsing and validation
+      commands/               CLI implementations
+      shell/                  PowerShell and POSIX templates
+  vendor/                     staged native tools (generated)
+  wheels/                     shared package downloads (generated)
+  python-builds/              interpreter archives (generated)
+  conda-channel/              conda artifacts (generated)
+  MANIFEST.json               inventory and licensing (generated)
+docs/                         Sphinx sources and diagram generators
+tests/                        unit and integration tests
 ```
 
 ---
@@ -129,7 +100,7 @@ src/
 ## Running the tests
 
 `uvx pytest` from the repo root runs the whole suite — uv supplies pytest, and
-`tests/conftest.py` puts `src/` on the import path, so nothing needs installing
+`tests/conftest.py` puts `acorn-planter/src/` on the import path, so nothing needs installing
 first. The suite is dominated by I/O-bound installer tests (real subprocess
 installs, real file copies) rather than CPU work, so it parallelizes well:
 `uvx --with pytest-xdist pytest -n auto` runs the same suite in a fraction of
@@ -150,20 +121,20 @@ the time (measured ~20x on a 6-core machine) — CI runs the equivalent
   tests skip cleanly on machines without them.
 
 `uvx ruff check .` must also pass — it runs in CI, config is in `ruff.toml` at
-the repo root (deliberately there, not in `src/pyproject.toml`, so it covers
-`tests/` and `installers/` too).
+the repo root (deliberately there, not in `acorn-planter/src/pyproject.toml`, so it covers
+`tests/` and `acorn-planter/installers/` too).
 
 ---
 
 ## Releasing
 
 The version lives in **one** place: `__version__` in
-`src/acorn/__init__.py`. `src/pyproject.toml` reads it from there
+`acorn-planter/src/acorn/__init__.py`. `acorn-planter/src/pyproject.toml` reads it from there
 (`dynamic = ["version"]`), so the built distribution, `acorn --version`, and the
 `acorn help` footer can never disagree. A test enforces that pyproject stays
 dynamic — don't add a literal `version =` back.
 
-Keep [`CHANGELOG.md`](https://github.com/jrvannucci/acorn/blob/main/CHANGELOG.md)
+Keep [`CHANGELOG.md`](https://github.com/jrvannucci/acorn-planter/blob/main/CHANGELOG.md)
 current as you go: add a line under
 `## [Unreleased]` in the same commit as the change, while you still remember
 why it mattered. Write for someone deploying acorn, not for someone reading
@@ -171,7 +142,7 @@ the diff.
 
 To cut a release:
 
-1. Bump `__version__` in `src/acorn/__init__.py`.
+1. Bump `__version__` in `acorn-planter/src/acorn/__init__.py`.
 2. Rename `## [Unreleased]` to the new version with today's date, and open a
    fresh empty `## [Unreleased]` above it.
 3. Commit, then tag: `git tag -a v0.2.0 -m "v0.2.0"`.
@@ -184,10 +155,10 @@ built from — the changelog is how a user finds out what an update changed.
 
 ## License
 
-acorn is [Apache-2.0](https://github.com/jrvannucci/acorn/blob/main/LICENSE).
+acorn is [Apache-2.0](https://github.com/jrvannucci/acorn-planter/blob/main/LICENSE).
 Contributions are accepted under the same license (inbound = outbound, per
 Apache-2.0 section 5) — by opening a pull request you agree your contribution
 is licensed under Apache-2.0. Please don't add third-party runtime
 dependencies: acorn deliberately ships on the standard library alone, which
 is what keeps its licensing and its "nothing pre-installed" promise simple
-(see [THIRD-PARTY-NOTICES](https://github.com/jrvannucci/acorn/blob/main/THIRD-PARTY-NOTICES.md)).
+(see [THIRD-PARTY-NOTICES](https://github.com/jrvannucci/acorn-planter/blob/main/THIRD-PARTY-NOTICES.md)).

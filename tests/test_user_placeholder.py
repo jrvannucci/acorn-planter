@@ -36,7 +36,7 @@ def test_installer_expands_user_token_per_user(tmp_path):
     separate, non-colliding folders."""
     copy = make_repo_copy(tmp_path / "copy")
     shared = tmp_path / "shared"
-    conf = copy / "GET_STARTED" / "global.conf"
+    conf = copy / "acorn-planter" / "global.conf"
     conf.write_text(conf.read_text().replace(
         'ACORN_HOME_DIR="~/acorn"',
         f'ACORN_HOME_DIR="{shared.as_posix()}/{{user}}"'))

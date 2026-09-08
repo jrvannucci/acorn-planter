@@ -13,7 +13,7 @@ docs/OFFLINE.md for the full deployment story; this tool automates its
 "Putting it together" section.
 
 Not a `acorn` subcommand on purpose: it prepares the distribution, so it runs
-straight from a repo checkout (`build-offline.cmd`) before acorn is installed
+straight from a repo checkout (`GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd`) before acorn is installed
 anywhere.
 """
 
@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # match, so relaxing one is a conscious decision rather than drift.
 MIN_PYTHON = (3, 12)
 
-# The floor is enforced HERE, not just in the launchers. build-offline.cmd runs
+# The floor is enforced HERE, not just in the launchers. offline-bundler.cmd runs
 # `py -3` with no version check at all, and this file can also be run directly
 # (`python installers/build_offline.py`), so a launcher-only probe left the
 # declared floor untrue on Windows -- acorn's primary platform. One check
@@ -1160,8 +1160,8 @@ def verify_bundle(output: Path, acorn_copy: Path, uv_exe: Path,
                   packages: list[str]) -> bool:
     """Install from the bundle, offline, on this machine. Returns True if a
     real air-gapped install would work."""
-    mirror_dir = output / "python-builds"
-    wheels_dir = output / "wheels"
+    mirror_dir = acorn_copy / "python-builds"
+    wheels_dir = acorn_copy / "wheels"
     failures: list[str] = []
 
     if not uv_exe.exists():
@@ -1243,7 +1243,7 @@ def verify_bundle(output: Path, acorn_copy: Path, uv_exe: Path,
 # staging + config
 # --------------------------------------------------------------------------
 def stage_repo(output: Path) -> Path:
-    """Copy the repo into <output>/acorn (the thing users install from),
+    """Copy the repo into <output>/acorn-planter (the thing users install from),
     excluding history/caches/tests. Returns the copy's path.
 
     Always REFRESHES an existing copy. The heavy steps (uv, interpreters,
@@ -1254,34 +1254,72 @@ def stage_repo(output: Path) -> Path:
     global.conf, and get a bundle that looked freshly built around stale
     code. The vendor/ payloads are preserved across the refresh, so this costs
     nothing but the copy."""
-    acorn_copy = output / "acorn"
-    ignore = shutil.ignore_patterns(
+    if REPO_ROOT.resolve().is_relative_to((output / "acorn-planter").resolve()):
+        raise ValueError("Bundle output would overwrite the source acorn-planter; choose another folder.")
+    # The offline distribution uses the same entry points as the source tree.
+    output.mkdir(parents=True, exist_ok=True)
+    for name in ("GET_STARTED", "GET_STARTED_OFFLINE_BUNDLE"):
+        launchers = REPO_ROOT.parent / name
+        if launchers.is_dir():
+            shutil.copytree(launchers, output / name, dirs_exist_ok=True)
+    for name in ("LICENSE", "THIRD-PARTY-NOTICES.md"):
+        notice = REPO_ROOT.parent / name
+        if notice.is_file():
+            shutil.copy2(notice, output / name)
+    acorn_copy = output / "acorn-planter"
+    source_ignore = shutil.ignore_patterns(
         ".git", "__pycache__", "*.pyc", "offline-bundle", ".pytest_cache",
-        ".claude")
+        ".claude", ".venv", ".ruff_cache", "_build", "dist",
+        "wheels", "python-builds", "conda-channel", "MANIFEST.json", "vendor")
+
+    def ignore(directory, names):
+        excluded = set(source_ignore(directory, names))
+        excluded.update(name for name in names
+                        if (Path(directory) / name).resolve() == output.resolve())
+        return excluded
 
     if not acorn_copy.exists():
         info(f"Copying the repo into {acorn_copy} ...")
         shutil.copytree(REPO_ROOT, acorn_copy, ignore=ignore)
         return acorn_copy
 
-    # Refresh in place: move vendor/ aside (it holds the expensive downloads,
-    # and is gitignored so it never came from REPO_ROOT anyway), replace the
-    # source, then put it back.
-    info(f"Refreshing the repo copy at {acorn_copy} "
-         "(vendor/ payloads are kept) ...")
-    vendor = acorn_copy / "vendor"
-    stash = output / ".vendor-stash"
-    shutil.rmtree(stash, ignore_errors=True)
-    if vendor.exists():
-        shutil.move(str(vendor), str(stash))
-    try:
-        shutil.rmtree(acorn_copy)
-        shutil.copytree(REPO_ROOT, acorn_copy, ignore=ignore)
-    finally:
-        if stash.exists():
-            shutil.rmtree(acorn_copy / "vendor", ignore_errors=True)
-            shutil.move(str(stash), str(acorn_copy / "vendor"))
+    # Preserve all staged payloads while refreshing only the distribution source.
+    payloads = ("vendor", "wheels", "python-builds", "conda-channel", "MANIFEST.json")
+    info(f"Refreshing {acorn_copy} (staged resources are kept) ...")
+    with tempfile.TemporaryDirectory(prefix=".planter-payloads-", dir=output) as td:
+        stash = Path(td)
+        for name in payloads:
+            source = acorn_copy / name
+            if source.exists():
+                shutil.move(str(source), str(stash / name))
+        try:
+            shutil.rmtree(acorn_copy)
+            shutil.copytree(REPO_ROOT, acorn_copy, ignore=ignore)
+        finally:
+            acorn_copy.mkdir(parents=True, exist_ok=True)
+            for name in payloads:
+                saved = stash / name
+                if saved.exists():
+                    shutil.move(str(saved), str(acorn_copy / name))
     return acorn_copy
+
+
+def deployment_config(deploy_root: str, system: str, *, conda: bool) -> dict[str, str]:
+    """Default resource endpoints within the deployed acorn-planter folder.
+
+    Admins can edit the generated global.conf to use external resource paths.
+    deploy_root remains the outer bundle location, as specified by the build.
+    """
+    sep = "\\" if system == "Windows" else "/"
+    planter = deploy_root.rstrip("/\\") + sep + "acorn-planter"
+    values = {
+        "ACORN_REPO_URL": planter,
+        "ACORN_PYTHON_MIRROR": planter + sep + "python-builds",
+        "ACORN_PACKAGE_INDEX": planter + sep + "wheels",
+    }
+    if conda:
+        values["ACORN_CONDA_CHANNEL"] = planter + sep + "conda-channel"
+    return values
 
 
 def write_conf(conf_path: Path, values: dict[str, str]) -> None:
@@ -1305,10 +1343,10 @@ def write_conf(conf_path: Path, values: dict[str, str]) -> None:
 # --------------------------------------------------------------------------
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
-        prog="build-offline",
+        prog="offline-bundler",
         description="Assemble a self-contained, offline acorn bundle.")
     parser.add_argument(
-        "-o", "--output", default=str(REPO_ROOT / "offline-bundle"),
+        "-o", "--output", default=str(REPO_ROOT.parent / "offline-bundle"),
         help="Where to assemble the bundle (default: ./offline-bundle).")
     parser.add_argument(
         "--python", dest="pythons", default="",
@@ -1400,11 +1438,10 @@ def main(argv=None) -> int:
     declared: bundle_mod.Bundle | None = None
     bundle_path = None
     if args.bundle is None:
-        # GET_STARTED_OFFLINE_BUNDLE/ is where the spec and its launcher live;
+        # The master acorn-planter folder contains the bundle specification;
         # the repo
         # root is still searched so a pre-folder layout keeps building.
-        bundle_path = (bundle_mod.find(REPO_ROOT / "GET_STARTED_OFFLINE_BUNDLE")
-                       or bundle_mod.find(REPO_ROOT))
+        bundle_path = bundle_mod.find(REPO_ROOT)
     elif args.bundle:
         bundle_path = Path(args.bundle).expanduser()
     if bundle_path is not None:
@@ -1481,7 +1518,10 @@ def main(argv=None) -> int:
         # [build]: every remaining flag, so the whole build is one file and
         # one double-click. A flag still wins for a one-off run.
         if declared.output and args.output == parser.get_default("output"):
-            output = Path(declared.output).expanduser().resolve()
+            output = Path(declared.output).expanduser()
+            if not output.is_absolute():
+                output = (declared.path.parent if declared.path else REPO_ROOT) / output
+            output = output.resolve()
         # An explicit --no-archive outranks the spec: a flag is this run,
         # the spec is every run.
         # The spec decides only when no archive flag was given: a flag is
@@ -1499,7 +1539,7 @@ def main(argv=None) -> int:
     # Checked before anything downloads, for the same reason the profiles are:
     # an editor mismatch isn't visible until someone opens it, air-gapped.
     if declared is not None:
-        conf_path = REPO_ROOT / "GET_STARTED" / "global.conf"
+        conf_path = REPO_ROOT / "global.conf"
         if conf_path.is_file():
             conflicts = bundle_mod.check_conf(declared,
                                               bundle_mod.read_conf(conf_path))
@@ -1524,9 +1564,9 @@ def main(argv=None) -> int:
     if args.verify_only:
         print(colors.bold("acorn offline bundle -- preflight check"))
         print(f"  Bundle: {output}")
-        acorn_copy = output / "acorn"
+        acorn_copy = output / "acorn-planter"
         if not acorn_copy.is_dir():
-            warn(f"No bundle found at {output} (expected a acorn/ folder).")
+            warn(f"No bundle found at {output} (expected an acorn-planter/ folder).")
             return 2
         exe_name = "uv.exe" if system == "Windows" else "uv"
         step(1, "Verify the bundle installs offline")
@@ -1645,8 +1685,6 @@ def main(argv=None) -> int:
         return 0
 
     output.mkdir(parents=True, exist_ok=True)
-    python_builds = output / "python-builds"
-    wheels = output / "wheels"
     # uv's download cache lives in the system temp dir, NOT inside the bundle --
     # otherwise it would be copied to the share. Reused across runs to speed
     # re-builds.
@@ -1655,9 +1693,11 @@ def main(argv=None) -> int:
     # 1. Stage the repo copy (everything else lands relative to it).
     step(1, "Stage the acorn source")
     info("A copy of this repo is what your users actually install from; the "
-         "downloads below fill in its vendor/ folder and its siblings.")
+         "downloads below stay inside this self-contained distribution.")
     acorn_copy = stage_repo(output)
     vendor = acorn_copy / "vendor"
+    python_builds = acorn_copy / "python-builds"
+    wheels = acorn_copy / "wheels"
 
     # 2. uv (required -- nothing else can be resolved without it).
     step(2, "uv binary (required)")
@@ -1703,7 +1743,7 @@ def main(argv=None) -> int:
     step(5, "conda-forge tools (ACORN_CONDA_CHANNEL, optional)")
     conda_ok = False
     conda_pkg_count = 0
-    conda_channel_dir = output / "conda-channel"
+    conda_channel_dir = acorn_copy / "conda-channel"
     if not conda_tools:
         info("No conda-forge tools requested (--tools, or a profile's [tools]). "
              "Skipped.")
@@ -1761,22 +1801,9 @@ def main(argv=None) -> int:
 
     # 9. global.conf.
     step(9, "Write global.conf")
-    conf_values = {
-        "ACORN_REPO_URL": f"{deploy_root}\\acorn" if system == "Windows"
-        else f"{deploy_root}/acorn",
-        "ACORN_PYTHON_MIRROR": f"{deploy_root}\\python-builds"
-        if system == "Windows" else f"{deploy_root}/python-builds",
-        "ACORN_PACKAGE_INDEX": f"{deploy_root}\\wheels" if system == "Windows"
-        else f"{deploy_root}/wheels",
-    }
-    if conda_ok:
-        # Point forge-install at the bundled channel; the local-channel path in
-        # conda_tool then installs from it offline.
-        conf_values["ACORN_CONDA_CHANNEL"] = (
-            f"{deploy_root}\\conda-channel" if system == "Windows"
-            else f"{deploy_root}/conda-channel")
-    write_conf(acorn_copy / "GET_STARTED" / "global.conf", conf_values)
-    ok(f"Wrote {acorn_copy / 'GET_STARTED' / 'global.conf'} pointing at "
+    conf_values = deployment_config(deploy_root, system, conda=conda_ok)
+    write_conf(acorn_copy / "global.conf", conf_values)
+    ok(f"Wrote {acorn_copy / 'global.conf'} pointing at "
        f"{deploy_root}.")
     for k, v in conf_values.items():
         info(f"  {k}={v}")
@@ -1835,7 +1862,7 @@ def main(argv=None) -> int:
         "conda-forge-tools:version": (", ".join(conda_tools)
                                       if conda_ok else None),
     }
-    manifest_path = write_manifest(output, components, staged=staged)
+    manifest_path = write_manifest(acorn_copy, components, staged=staged)
     ok(f"Wrote {manifest_path}")
     info("Hand this to whoever asks what the bundle contains -- it lists "
          "every component, its source, and its licence.")
@@ -1872,21 +1899,21 @@ def main(argv=None) -> int:
               + (f"  {state}" if state else ""))
 
     print("Layout:")
-    layout("MANIFEST.json", "what was staged, and under what licence")
-    layout(f"acorn{os.sep}", "users run install.cmd from here")
-    layout(f"python-builds{os.sep}", "ACORN_PYTHON_MIRROR",
+    layout(f"acorn-planter{os.sep}MANIFEST.json", "what was staged, and under what licence")
+    layout(f"acorn-planter{os.sep}", "master configuration, source and shared resources")
+    layout(f"acorn-planter{os.sep}python-builds{os.sep}", "ACORN_PYTHON_MIRROR",
            "(populated)" if mirror_ok else colors.warn("(empty -- redo step 3)"))
-    layout(f"wheels{os.sep}", "ACORN_PACKAGE_INDEX",
+    layout(f"acorn-planter{os.sep}wheels{os.sep}", "ACORN_PACKAGE_INDEX",
            # "incomplete", not "empty": with several interpreters mirrored, one
            # failed pass leaves real wheels behind but an unusable bundle.
            "(populated)" if wheels_ok
            else colors.warn("(incomplete -- redo step 4)"))
     if conda_tools:
-        layout(f"conda-channel{os.sep}", "ACORN_CONDA_CHANNEL",
+        layout(f"acorn-planter{os.sep}conda-channel{os.sep}", "ACORN_CONDA_CHANNEL",
                f"({conda_pkg_count} pkgs)" if conda_ok
                else colors.warn("(missing -- redo step 5)"))
     if vscode_wanted:
-        layout(f"acorn{os.sep}vendor{os.sep}vscode{os.sep}", "pre-seeded VS Code",
+        layout(f"acorn-planter{os.sep}vendor{os.sep}vscode{os.sep}", "pre-seeded VS Code",
                "(populated)" if vscode_ok
                else colors.warn("(missing -- redo step 6)"))
     print()
@@ -1898,13 +1925,13 @@ def main(argv=None) -> int:
         print(colors.warn(
             "Preflight FAILED (details above). Fix the steps it named and "
             "re-check with:"))
-        print(f"  build-offline{'.cmd' if system == 'Windows' else '.sh'} "
+        print("  GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd "
               f"--verify-only -o {output}")
     else:
         print(colors.warn(
             "Preflight was not run, so nothing has confirmed this bundle "
             "installs. Check it with:"))
-        print(f"  build-offline{'.cmd' if system == 'Windows' else '.sh'} "
+        print("  GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd "
               f"--verify-only -o {output}")
 
     print()
@@ -1915,7 +1942,7 @@ def main(argv=None) -> int:
         print(f"  2. Extract it there (it unpacks to one {output.name}{os.sep} "
               "folder, same layout as the build).")
         print("  3. On an offline machine, run install.cmd from the extracted "
-              "acorn/ folder.")
+              "GET_STARTED/ folder.")
         print("  4. It reads global.conf and installs entirely from the bundle.")
         print("     (After extracting on the share, you can re-run "
               "--verify-only against THAT copy to prove the transfer -- "
@@ -1924,7 +1951,7 @@ def main(argv=None) -> int:
         print(f"  1. Copy the whole {output.name}{os.sep} folder to {deploy_root} on "
               "your target/share.")
         print("  2. On an offline machine, run install.cmd from the copied "
-              "acorn/ folder.")
+              "GET_STARTED/ folder.")
         print("  3. It reads global.conf and installs entirely from the bundle.")
         print("     (After copying, you can re-run --verify-only against the copy "
               "to prove the transfer was complete.)")
@@ -1942,7 +1969,7 @@ def main(argv=None) -> int:
 
     if deploy_root == str(output):
         warn("Deploy path = the build path. If you move the folder, update the "
-             "three paths in acorn/global.conf (or re-run with "
+             "three paths in acorn-planter/global.conf (or re-run with "
              "--deploy-root).")
     # A bundle that can't satisfy its own profiles is a failed build, even
     # though every download succeeded: carrying it in would hand the failure

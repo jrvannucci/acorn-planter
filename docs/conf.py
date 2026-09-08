@@ -44,12 +44,12 @@ _REPO = _HERE.parent
 # fork or a repo rename doesn't leave the docs site linking at the old owner.
 # Imported straight from the source tree (no install needed), the same way
 # installers/build_offline.py borrows acorn's helpers.
-sys.path.insert(0, str(_REPO / "src"))
+sys.path.insert(0, str(_REPO / "acorn-planter" / "src"))
 from acorn import PUBLIC_REPO  # noqa: E402
 
 _GH_BLOB = PUBLIC_REPO.removesuffix(".git") + "/blob/main/"
 
-project = "ACORN"
+project = "ACORN Planter"
 author = "acorn contributors"
 copyright = "acorn contributors"
 
@@ -80,7 +80,7 @@ suppress_warnings = ["config.cache"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
-html_title = "ACORN"
+html_title = "ACORN Planter - ACORN user tool"
 
 # custom.css widens the content column and lets table cells wrap, so the
 # wide reference tables (the profile comparison matrix, the command

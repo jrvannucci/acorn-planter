@@ -48,7 +48,7 @@ default = true
 ```
 
 ```sh
-# GET_STARTED/global.conf, in the copy you distribute.
+# acorn-planter/global.conf, in the copy you distribute.
 # "microsoft" is the default, but state it explicitly here -- this file is
 # what a reviewer reads to see which build was staged.
 ACORN_VSCODE_FLAVOR="microsoft"
@@ -59,7 +59,7 @@ The share declares its own contents, and the profile is checked against them:
 
 ```toml
 # offline-bundle.toml -- what the share will hold, in
-# GET_STARTED_OFFLINE_BUNDLE/.
+# acorn-planter/.
 
 pythons = ["3.12"]
 
@@ -128,7 +128,7 @@ An empty `attention` list is a real answer, not a missing one: every wheel here
 resolved to a permissive licence. That is what `--accept-third-party-terms`
 does *not* cover — the acknowledgement is about VS Code and the Marketplace,
 and the wheels are reported separately so the two aren't confused for each
-other. Verify with `acorn whl-licenses S:\acorn\wheels`.
+other. Verify with `acorn whl-licenses S:\acorn\acorn-planter\wheels`.
 
 **What the bundle looks like**
 
@@ -139,24 +139,25 @@ and `MANIFEST.json` records those as `restricted` — which is exactly what
 
 ```
 offline-bundle/
-├── MANIFEST.json            lists VS Code + extensions as RESTRICTED
-├── acorn/
-│   ├── GET_STARTED/                 install.cmd + global.conf
-│   ├── GET_STARTED_OFFLINE_BUNDLE/  offline-bundle.toml
-│   ├── installation-profile/        the profile above
-│   └── vendor/
-│       ├── uv/                  uv.exe, uvx.exe
-│       ├── vscode/
-│       │   └── app/             official VS Code, portable
-│       │       ├── Code.exe
-│       │       ├── bin/code.cmd     the CLI entry point acorn drives
-│       │       └── data/            portable-mode settings AND extensions,
-│       │                            incl. ms-python.vscode-pylance-*
-│       ├── micromamba/          micromamba.exe
-│       └── certs/               <- YOU fill this one
-├── python-builds/
-├── wheels/
-└── conda-channel/
+  GET_STARTED/                   install.cmd and uninstall.cmd
+  GET_STARTED_OFFLINE_BUNDLE/    administrator build launchers
+  acorn-planter/
+    global.conf                  generated deployment paths
+    offline-bundle.toml           bundle superset
+    installation-profile/        supplied profiles
+    src/                         ACORN package
+    installers/                  installation and build engines
+    examples/                    supporting configuration examples
+    MANIFEST.json                component and license records
+    python-builds/
+    wheels/
+    conda-channel/
+    vendor/
+      uv/
+      vscode/                    official VS Code + Marketplace extensions
+      micromamba/
+      certs/                     administrator-supplied certificates
+      git/                       when requested
 ```
 
 Extensions live under `app/data/` rather than `~/.vscode` — that is portable

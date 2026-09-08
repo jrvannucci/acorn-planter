@@ -60,7 +60,7 @@ def _settings(home):
 
 
 def _write_conf(copy, **overrides):
-    conf = copy / "GET_STARTED" / "global.conf"
+    conf = copy / "acorn-planter" / "global.conf"
     text = conf.read_text(encoding="utf-8")
     import re
     for key, value in overrides.items():
@@ -221,7 +221,7 @@ def test_startup_commands_absent_when_unset(ps_install_env):
 
 def test_custom_commands_file_is_recorded(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
-    (copy / "custom-commands.toml").write_text(
+    (copy / "acorn-planter" / "custom-commands.toml").write_text(
         '[[command]]\nname = "lint"\nrun = ["x"]\n', encoding="utf-8")
     _write_conf(copy,
                 ACORN_CUSTOM_COMMANDS="custom-commands.toml",
@@ -239,11 +239,11 @@ def test_conf_sourced_script_sibling_survives_the_copy(ps_install_env):
     inside the whole-repo copy install.ps1 already makes, so a sibling
     script file rides along for free."""
     copy, home, fake_profile, run = ps_install_env
-    (copy / "custom-commands.toml").write_text(
+    (copy / "acorn-planter" / "custom-commands.toml").write_text(
         '[[command]]\nname = "greet"\nscript = "scripts/greet.py"\n',
         encoding="utf-8")
-    (copy / "scripts").mkdir()
-    (copy / "scripts" / "greet.py").write_text("print('hi')\n")
+    (copy / "acorn-planter" / "scripts").mkdir()
+    (copy / "acorn-planter" / "scripts" / "greet.py").write_text("print('hi')\n")
     _write_conf(copy,
                 ACORN_CUSTOM_COMMANDS="custom-commands.toml",
                 ACORN_AUTO_SETUP="false")
@@ -277,7 +277,7 @@ def test_env_var_sourced_script_sibling_survives_the_copy(ps_install_env, tmp_pa
 
 def test_vscode_config_conf_sourced_dir_is_recorded(ps_install_env):
     copy, home, fake_profile, run = ps_install_env
-    config_dir = copy / "vscode-config"
+    config_dir = copy / "acorn-planter" / "vscode-config"
     config_dir.mkdir()
     (config_dir / "settings.json").write_text('{"editor.fontSize": 14}\n')
     _write_conf(copy,
@@ -316,7 +316,7 @@ def test_vscode_config_dir_absent_when_unset(ps_install_env):
 # --- deployment profiles (the freshest, most intricate PS logic) -----------
 
 def _profile(copy, body):
-    (copy / "profile.toml").write_text(body, encoding="utf-8")
+    (copy / "acorn-planter" / "profile.toml").write_text(body, encoding="utf-8")
 
 
 def test_conf_profile_is_applied_and_replaces_dev_venv(ps_install_env):
@@ -348,7 +348,7 @@ def test_env_var_lets_a_user_supply_their_own_profile(ps_install_env, tmp_path):
 
 def test_env_var_beats_the_conf(ps_install_env, tmp_path):
     copy, home, fake_profile, run = ps_install_env
-    (copy / "profile.toml").write_text(
+    (copy / "acorn-planter" / "profile.toml").write_text(
         '[[venv]]\nname = "fromconf"\n', encoding="utf-8")
     _write_conf(copy, ACORN_PROFILE="profile.toml")
     mine = tmp_path / "mine.toml"

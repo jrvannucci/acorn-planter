@@ -20,7 +20,7 @@ One person prepares a bundle on a connected machine; everyone else runs
 **Three files, then one command.** In the copy of acorn you distribute:
 
 ```
-GET_STARTED_OFFLINE_BUNDLE/offline-bundle.toml    what the share will HOLD
+acorn-planter/offline-bundle.toml    what the share will HOLD
 installation-profile/*.toml            what each user ends up WITH, and who gets it
 global.conf                            where every machine LOOKS for it
 ```
@@ -44,7 +44,7 @@ Then **copy the folder to the share** and re-check the copy that arrived:
 GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd --verify-only -o "S:\tools"
 ```
 
-Users run `GET_STARTED/install.cmd` from `S:\tools\acorn\`. Same command for
+Users run `GET_STARTED/install.cmd` from the extracted distribution. Same command for
 everyone; each person gets the profiles distributed to them.
 
 Afterwards: edit a profile on the share, users run `acorn update-commands`
@@ -57,9 +57,9 @@ before anyone applies it.
 ### `offline-bundle.toml` — what the share contains
 
 The bundle's own config file: a standalone declaration of everything the
-share will hold. It lives in `GET_STARTED_OFFLINE_BUNDLE/` beside the
-launcher; the bundler reads it by
-default.
+share will hold. It lives in `acorn-planter/`, alongside `global.conf`.
+The administrator launcher reads it by default. Relative `[build] output`
+paths are resolved from the folder containing this TOML file.
 
 **It knows nothing about profiles, on purpose.** The dependency runs one way
 — profiles conform to the bundle, never the reverse. A superset assembled
@@ -162,7 +162,7 @@ build, and `--bundle=` (empty) ignores it entirely.
 > **There is no way for a profile to grow the bundle.** A superset assembled
 > from the profile it judges could never refuse one, so profiles are only ever
 > checked. `--check-profile` validates one that lives outside
-> `installation-profile/`; everything inside that folder is checked without
+> `acorn-planter/installation-profile/`; everything inside that folder is checked without
 > being named.
 
 ### Checking a profile from inside the air gap
@@ -199,18 +199,47 @@ destination):
 
 ```
 offline-bundle/
-  MANIFEST.json      <- every component staged, its source and licence,
-                        and every wheel's licence grouped by obligation
-  acorn/          <- repo copy, with vendor/uv + vendor/micromamba + vendor/vscode
-                        filled in and global.conf written
-  python-builds/     <- the exact interpreter archive your shipped uv wants
-  wheels/            <- hatchling + the default venv packages, plus offline-bundle.toml's
-                        `packages` (or --packages / a profile, when there's no spec),
-                        resolved once per mirrored interpreter
-  conda-channel/     <- only when tools are asked for -- offline-bundle.toml's `tools`,
-                        --tools, or a profile's [tools] when there's no spec: a conda
-                        channel of conda-forge CLI tools, for `acorn forge-install`
+  GET_STARTED/
+    install.cmd          <- users run this
+    uninstall.cmd
+  GET_STARTED_OFFLINE_BUNDLE/
+    offline-bundler.cmd  <- administrators run this
+    offline-bundler.sh
+  acorn-planter/          <- master configuration, source and shared resources
+    global.conf          <- configurable source and resource endpoints
+    offline-bundle.toml  <- superset and build settings
+    installation-profile/
+    src/acorn/
+    installers/
+    examples/
+    vendor/              <- uv, micromamba, optional Git and editor
+    python-builds/       <- mirrored interpreter archives
+    wheels/              <- requested package versions and dependencies
+    conda-channel/       <- requested conda tools and dependencies
+    MANIFEST.json        <- component records and license summaries
 ```
+
+The resource collections live inside `acorn-planter` by default. The generated
+configuration uses the deployment location selected by `deploy_root`, with
+`acorn-planter/` appended. If resources are hosted elsewhere, edit the distributed
+`acorn-planter/global.conf` before installation, for example:
+
+```text
+ACORN_REPO_URL="S:/offline-bundle/acorn-planter"
+ACORN_PACKAGE_INDEX="T:/python-resources/wheels"
+ACORN_PYTHON_MIRROR="T:/python-resources/python-builds"
+ACORN_CONDA_CHANNEL="T:/python-resources/conda-channel"
+```
+
+The package index can also be an internal index URL. These are resource
+locations, not the user's installation directory. For an existing installation,
+use `acorn config set package_index`, `python_mirror`, or `conda_channel` with
+the new location. Rebuilding regenerates the default paths in the output copy
+of `global.conf`; reapply deployment-specific overrides after rebuilding.
+
+Users receive the tool and their installed packages, not a private copy of the
+entire resource collection. `acorn profile-check --bundle <path>` accepts either
+the outer bundle directory or `acorn-planter` itself.
 
 Declare `tools = [...]` in `offline-bundle.toml` (or pass `--tools
 ripgrep,pandoc`, or — with no bundle spec — declare them in your profile) and
@@ -240,7 +269,7 @@ the three paths. Useful flags:
 | `--tools ripgrep,pandoc` | conda-forge command-line tools to bundle (see [#5](#component-reference)) — a profile's `[tools]` are included automatically, this is for anything beyond that |
 | `--no-vscode` | Skip the VS Code + extensions download (the ~300MB step) |
 | `--mingit` | Also bundle portable MinGit (Windows). Normally set as `[git] mingit = true` in the spec |
-| `--bundle PATH` | The `offline-bundle.toml` declaring what the share contains. Defaults to the one in `GET_STARTED_OFFLINE_BUNDLE/`; `--bundle=` (empty) ignores it |
+| `--bundle PATH` | The `offline-bundle.toml` declaring what the share contains. Defaults to the one in `acorn-planter/`; `--bundle=` (empty) ignores it |
 | `--check-profile PATH` | Validate a profile against the bundle, before and after building, without adding anything to it. Repeatable — one bundle commonly serves several teams |
 | `--verify-only` | Don't build — just run the preflight check against the bundle at `-o` and exit (0 = it installs). Use it on the copy that reached your share |
 | `--no-verify` | Skip the preflight check at the end of a build |
@@ -345,7 +374,7 @@ ACORN_PYTHON_MIRROR="S:\tools\python-builds"
 ACORN_PACKAGE_INDEX="S:\tools\wheels"
 ```
 
-Then a user runs `S:\tools\acorn\GET_STARTED\install.cmd` and gets the full
+Then a user runs `S:\tools\offline-bundle\GET_STARTED\install.cmd` and gets the full
 experience — newest mirrored Python, `dev` venv with your default
 packages auto-activated, and `acorn update-commands` flowing from the share
 — without their machine ever attempting to reach the internet, and without
@@ -365,7 +394,7 @@ setting a single environment variable.
 > this page explains what it's doing and covers the cases it leaves to you
 > (self-hosted indexes, corporate CAs).
 
-Everything is driven by **editing [`global.conf`](../GET_STARTED/global.conf)** in the
+Everything is driven by **editing [`global.conf`](../acorn-planter/global.conf)** in the
 copy of the repo you distribute (plus dropping a few binaries in `vendor/`) —
 your users never set environment variables or change anything on their
 machines. Find the scenario that matches your network and set only what it
