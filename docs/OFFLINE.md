@@ -61,6 +61,14 @@ share will hold. It lives in `acorn-planter/`, alongside `global.conf`.
 The administrator launcher reads it by default. Relative `[build] output`
 paths are resolved from the folder containing this TOML file.
 
+> **Rather not hand-edit TOML?** Open
+> [`offline-builder.html`](offline-builder.html) in a browser — it's a
+> self-contained page (no network; works straight off a USB stick on the
+> air-gapped side) that writes this file from a form, explains every field,
+> and optionally lets you add the deployment profiles and check each one fits
+> the bundle. It runs the same checks `acorn` does; the build itself is still
+> `offline-bundler.cmd`. The file is `docs/offline-builder.html` in the repo.
+
 **It knows nothing about profiles, on purpose.** The dependency runs one way
 — profiles conform to the bundle, never the reverse. A superset assembled
 from the profiles it ships could never refuse one: it would grow to fit

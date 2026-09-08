@@ -89,6 +89,13 @@ html_title = "ACORN Planter - ACORN user tool"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
+# docs/offline-builder.html is a standalone, self-contained page (no Sphinx
+# chrome, no network) meant to be opened straight off a USB stick on the
+# air-gapped side. OFFLINE.md links to it with a plain relative link, which
+# MyST copies into the built site as a downloadable file -- it opens in the
+# browser like any other page. tests/test_offline_builder.py keeps its
+# embedded schema honest against bundle.py / profile.py.
+
 
 def _generate_home(*_args) -> None:
     """Write ``docs/index.md`` from the repo README, rewriting its
