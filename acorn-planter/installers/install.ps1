@@ -2,7 +2,7 @@
 # Requires nothing pre-installed; works on a stock Windows PowerShell / pwsh.
 #
 # Usage (from a local checkout of this repo, either works):
-#   .\install.cmd            (also handles the execution policy for you)
+#   .\GET_STARTED\install.cmd  (permits this installer to run; checks profile policy separately)
 #   .\installers\install.ps1
 #
 # Usage (remote):
@@ -836,6 +836,51 @@ Set-Content -Path $seedPs1 -Value $content -Encoding UTF8
 
 $hookLine = ". `"$seedPs1`""
 
+function Enable-ACORNProfilePolicy {
+    param([bool]$CanPrompt = (-not [Console]::IsInputRedirected))
+    # Ignore Process: install.cmd uses Bypass only for this installer process.
+    try {
+        $policy = "Restricted"
+        $policyScope = "Default"
+        foreach ($scope in @("MachinePolicy", "UserPolicy", "CurrentUser", "LocalMachine")) {
+            $value = [string](Get-ExecutionPolicy -Scope $scope -ErrorAction Stop)
+            if ($value -ne "Undefined") {
+                $policy = $value
+                $policyScope = $scope
+                break
+            }
+        }
+        if ($policy -in @("RemoteSigned", "Unrestricted", "Bypass")) { return $true }
+        Warn "New PowerShell windows use $policy ($policyScope); the ACORN profile may not load."
+        if ($policyScope -in @("MachinePolicy", "UserPolicy") -or $policy -eq "AllSigned") {
+            Warn "Ask your administrator about allowing or signing the PowerShell profile and ACORN shell script."
+            return $false
+        }
+        Warn "RemoteSigned lets locally created scripts run for your account; downloaded scripts need a trusted signature."
+        Write-Host "To enable the profile: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned"
+        if ($env:ACORN_NONINTERACTIVE -or -not $CanPrompt) { return $false }
+        $answer = Read-Host "Set RemoteSigned for your account? This affects all your PowerShell scripts [y/N]"
+        if ($answer -notmatch '^(?i:y|yes)$') { return $false }
+        try {
+            Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force -ErrorAction Stop
+        } catch {
+            # Process Bypass can report an override even after the persistent
+            # setting was saved. Check the value new terminals will inherit.
+            if ((Get-ExecutionPolicy -Scope CurrentUser) -ne "RemoteSigned") { throw }
+        }
+        if ((Get-ExecutionPolicy -Scope CurrentUser) -ne "RemoteSigned") {
+            Warn "The policy change did not take effect. Check Get-ExecutionPolicy -List."
+            return $false
+        }
+        Info "PowerShell profile loading enabled for your account."
+        return $true
+    } catch {
+        Warn "Could not enable PowerShell profile loading: $_"
+        Warn "Check Get-ExecutionPolicy -List before opening a new terminal."
+        return $false
+    }
+}
+
 function Add-ACORNHook($ProfilePath) {
     if (-not (Test-Path $ProfilePath)) {
         New-Item -ItemType File -Force -Path $ProfilePath | Out-Null
@@ -882,7 +927,11 @@ if ($PSVersionTable.PSEdition -eq "Core" -and $PROFILE -match "\\PowerShell\\") 
     Add-ACORNHook $siblingProfile
 }
 
+$ProfilePolicyReady = Enable-ACORNProfilePolicy
 Info "acorn is installed."
+if (-not $ProfilePolicyReady) {
+    Warn "Installation is complete, but the acorn shell command requires the profile policy issue above to be resolved."
+}
 Write-Host ""
 if ($DevReady) {
     Write-Host "Open a new terminal (or run: . `"$seedPs1`") --"

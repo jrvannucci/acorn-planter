@@ -423,3 +423,26 @@ into.
 - The installers assume `curl`/`wget` (POSIX) or PowerShell's
   `Invoke-RestMethod` are available, which is true by default on
   effectively every macOS/Linux/Windows 10+ machine.
+
+
+## PowerShell says running scripts is disabled
+
+The installer can run with a temporary execution-policy bypass while a new
+PowerShell window still blocks your profile. Without that profile, the `acorn`
+shell command cannot load.
+
+The Windows installer checks persistent policy separately and offers to set
+`RemoteSigned` for the current user. It asks before changing this setting,
+which affects all PowerShell scripts for that account. In noninteractive
+installations it prints the command instead. It does not change Group Policy
+or an `AllSigned` requirement.
+
+For an existing installation, run this in PowerShell and reopen the terminal:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+If the error remains, run `Get-ExecutionPolicy -List`. Ask your administrator
+about a `MachinePolicy`, `UserPolicy`, or signing requirement; these may prevent
+the profile from loading. See Microsoft's [execution-policy documentation](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies).
