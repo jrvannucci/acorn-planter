@@ -64,6 +64,14 @@ they distribute (self-hosted git host, or a folder on a network drive),
 and everyone installing from that copy picks the values up with no flags
 or environment variables:
 
+> **Rather not hand-edit it?**
+> <a href="global-conf-builder.html"><code>global-conf-builder.html</code></a>
+> fills this file in from a form, documents every key, flags the common
+> mistakes (a write token left in the distributed copy, a gallery on the
+> `microsoft` flavor), and cross-checks against an offline bundle. It's one of
+> a set of three — see
+> <a href="config-builder.html"><code>config-builder.html</code></a>.
+
 - `ACORN_REPO_URL` (default: the public GitHub repo) — the source used
   when the installer isn't run from inside a checkout, and where
   `acorn update-commands` fetches updates. A git URL or a plain directory path.

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACORN offline bundle builder</title>
+<!--
+  Standalone authoring aid for acorn-planter/offline-bundle.toml -- the
+  declaration of everything an air-gapped share will hold.
+
+  Self-contained: no network, opens off a USB stick with file://. It writes
+  text and mirrors acorn/bundle.py (parsing, the conf cross-check, and the
+  profile fit-check). It builds nothing -- that stays
+  GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd.
+  tests/test_config_builders.py keeps the schema and shared prelude honest.
+-->
+<style>
+/* ==== SHARED PRELUDE (byte-identical across the *-builder.html tools; tests/test_config_builders.py asserts this) ==== */
+:root {
+  --ink:#14261c; --soft:#52796f; --line:#d4e6da; --accent:#1b4332;
+  --raised:#e9f5ec; --raised-2:#f4faf6; --danger:#9c4a3c; --danger-tint:#f7ece9;
+  --ok:#2f6b4f; --page:#fbfdfb; --card:#ffffff;
+  --mono:Consolas,"SF Mono",Monaco,"Courier New",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink:#e7f0ea; --soft:#9db8ae; --line:#2b4038; --accent:#95d5b2;
+    --raised:#16261e; --raised-2:#13201a; --danger:#e59a8c; --danger-tint:#2c1c18;
+    --ok:#7fc9a4; --page:#0e1712; --card:#121d17;
+  }
+}
+* { box-sizing:border-box; }
+html { color-scheme:light dark; }
+body { margin:0; font-family:var(--sans); font-size:15px; line-height:1.55; color:var(--ink); background:var(--page); }
+.wrap { max-width:1180px; margin:0 auto; padding:2rem 1.25rem 6rem; }
+header.masthead { margin-bottom:1.5rem; }
+header.masthead h1 { margin:0 0 .3rem; font-family:Georgia,"Times New Roman",serif; font-size:1.7rem; color:var(--accent); }
+header.masthead p { margin:.2rem 0; color:var(--soft); max-width:64ch; }
+a { color:var(--accent); }
+.nav { font-size:.85rem; margin-bottom:1.2rem; }
+.nav a { margin-right:.9rem; }
+.cols { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
+@media (max-width:900px) { .cols { grid-template-columns:1fr; } }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:1.1rem 1.2rem; margin-bottom:1.1rem; }
+.panel > h2 { margin:0 0 .2rem; font-size:1.15rem; font-family:Georgia,"Times New Roman",serif; color:var(--accent); }
+.panel > .lede { margin:0 0 1rem; color:var(--soft); font-size:.92rem; }
+.step-tag { display:inline-block; font-size:.7rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--soft); margin-bottom:.35rem; }
+.field { margin:0 0 1.15rem; }
+.field:last-child { margin-bottom:0; }
+.field > label.head, .field > .head { display:block; font-weight:700; font-size:.9rem; margin-bottom:.15rem; }
+.field .help { font-size:.84rem; color:var(--soft); margin:.1rem 0 .45rem; }
+code { font-family:var(--mono); font-size:.88em; background:var(--raised); border:1px solid var(--line); border-radius:3px; padding:.04em .32em; }
+input[type=text], textarea, select { width:100%; font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:5px; padding:.42rem .55rem; }
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline:3px solid var(--accent); outline-offset:1px; }
+textarea { resize:vertical; font-family:var(--mono); font-size:.86rem; line-height:1.5; }
+.checks { display:flex; flex-wrap:wrap; gap:.3rem .9rem; }
+.checks.stack { flex-direction:column; gap:.35rem; }
+.checks label { display:flex; align-items:flex-start; gap:.4rem; font-size:.9rem; font-weight:400; }
+.checks label input { margin-top:.2rem; }
+.checks label .sub { display:block; color:var(--soft); font-size:.82rem; }
+.radio-row { display:flex; flex-wrap:wrap; gap:.5rem; }
+.radio-row label { flex:1 1 12rem; border:1px solid var(--line); border-radius:6px; padding:.5rem .6rem; font-size:.88rem; cursor:pointer; }
+.radio-row label.sel { border-color:var(--accent); background:var(--raised); }
+.radio-row label .sub { display:block; color:var(--soft); font-size:.8rem; margin-top:.1rem; }
+.taglist { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.45rem; }
+.taglist:empty { display:none; }
+.tag { display:inline-flex; align-items:center; gap:.3rem; background:var(--raised); border:1px solid var(--line); border-radius:999px; padding:.12rem .3rem .12rem .6rem; font-family:var(--mono); font-size:.82rem; }
+.tag button { border:none; background:none; color:var(--soft); cursor:pointer; font-size:1rem; line-height:1; padding:0 .15rem; }
+.tag button:hover { color:var(--danger); }
+.add-row { display:flex; gap:.4rem; }
+.add-row input { flex:1; }
+button { font:inherit; border-radius:5px; border:1px solid var(--line); background:var(--raised); color:var(--accent); padding:.4rem .8rem; cursor:pointer; }
+button:hover { background:var(--raised-2); }
+button.primary { background:var(--accent); color:var(--page); border-color:var(--accent); }
+button.ghost { background:none; }
+button.tiny { padding:.2rem .5rem; font-size:.82rem; }
+.out-head { display:flex; align-items:baseline; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+.out-head h3 { margin:0; font-size:.95rem; font-family:var(--mono); color:var(--accent); }
+.out-actions { display:flex; gap:.4rem; }
+pre.out { margin:.5rem 0 0; padding:.8rem .9rem; background:var(--raised-2); border:1px solid var(--line); border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:.83rem; line-height:1.5; white-space:pre; tab-size:2; }
+.sticky { position:sticky; top:1rem; }
+.verdict { margin-top:.6rem; font-size:.88rem; }
+.verdict ul { margin:.3rem 0 0; padding-left:1.1rem; }
+.verdict li { margin:.15rem 0; }
+.verdict .bad { color:var(--danger); }
+.verdict .good { color:var(--ok); }
+.pill { display:inline-block; font-size:.72rem; font-weight:700; padding:.08rem .5rem; border-radius:999px; letter-spacing:.04em; }
+.pill.good { background:var(--raised); color:var(--ok); border:1px solid var(--line); }
+.pill.bad { background:var(--danger-tint); color:var(--danger); border:1px solid var(--danger); }
+details.ref { margin-top:1rem; border-top:1px solid var(--line); padding-top:.8rem; }
+details.ref summary { cursor:pointer; font-weight:700; color:var(--accent); }
+details.ref table { border-collapse:collapse; font-size:.85rem; margin-top:.7rem; width:100%; }
+details.ref th, details.ref td { border:1px solid var(--line); padding:.35rem .55rem; text-align:left; vertical-align:top; }
+details.ref th { background:var(--raised); }
+.group { border:1px solid var(--line); border-radius:7px; padding:.9rem; margin-bottom:.9rem; background:var(--raised-2); }
+.group > h3 { margin:0 0 .6rem; font-size:.9rem; font-family:var(--mono); color:var(--accent); }
+.subcard { border:1px dashed var(--line); border-radius:6px; padding:.7rem; margin:.5rem 0; background:var(--card); }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+@media (max-width:560px) { .grid2 { grid-template-columns:1fr; } }
+.hidden { display:none !important; }
+.banner { background:var(--raised); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:4px; padding:.55rem .75rem; font-size:.86rem; color:var(--soft); margin-bottom:1rem; }
+.continue-bar { text-align:center; margin:1.2rem 0; }
+footer.foot { margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--line); font-size:.84rem; color:var(--soft); }
+/* ==== END SHARED PRELUDE ==== */
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <h1>Offline bundle builder</h1>
+  <p><code>offline-bundle.toml</code> declares everything an air-gapped share
+  will hold &mdash; the platforms, the interpreters, the wheelhouse, the
+  conda-forge tools, the editor, the build settings. It knows nothing about
+  profiles, on purpose: profiles conform to the bundle, never the reverse.</p>
+  <p>This fills it in from a form and runs the checks the builder runs. It
+  downloads and builds nothing &mdash; that stays
+  <code>GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd</code>.</p>
+</header>
+
+<nav class="nav">
+  <a href="config-builder.html">&larr; all three builders</a>
+  <a href="global-conf-builder.html">global.conf</a>
+  <a href="profile-builder.html">profiles</a>
+  <a href="offline-bundle-builder.html"><strong>offline bundle</strong></a>
+</nav>
+
+<div class="banner">
+  The bundle is a <em>superset</em>: everything that crosses the air gap is
+  inside it, and nothing reaches the closed network any other way. Every field
+  is optional &mdash; an empty file builds the default bundle. Build the
+  profiles that install from it in the
+  <a href="profile-builder.html">profile builder</a>.
+</div>
+
+<div class="cols">
+  <div>
+    <div class="panel">
+      <h2>The bundle</h2>
+      <p class="lede">Everything the share contains, plus the settings the build
+      itself needs.</p>
+
+      <div class="field">
+        <span class="head">Import an existing <code>offline-bundle.toml</code></span>
+        <p class="help">Paste one to load it into the form. Skip to start fresh.</p>
+        <textarea id="import-src" rows="3" placeholder="# paste offline-bundle.toml here (optional)"></textarea>
+        <div class="add-row" style="margin-top:.4rem">
+          <button type="button" id="import-btn">Load it</button>
+          <span id="import-msg" class="help" style="margin:0; align-self:center"></span>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--line); margin:1.1rem 0">
+
+      <div class="field">
+        <span class="head">Target platforms</span>
+        <p class="help">The machines this share serves. The wheelhouse covers all
+        of them at once, but uv, the interpreters and the editor are native
+        binaries &mdash; run the build once <em>per platform</em> into the same
+        output folder to stage those. Building on a platform not listed here is
+        an error. Leave all unchecked to accept whatever machine runs the build.</p>
+        <div class="checks stack" id="platforms"></div>
+      </div>
+
+      <div class="field">
+        <label class="head" for="deploy_root">Deploy root <span style="font-weight:400;color:var(--soft)">(optional)</span></label>
+        <p class="help">Where the bundle will live on the target machines. Baked
+        into the <code>global.conf</code> the build writes, so users'
+        <code>package_index</code> points at the share, not the folder you built in.</p>
+        <input type="text" id="deploy_root" placeholder="S:\tools\acorn">
+      </div>
+
+      <div class="field">
+        <span class="head">Python interpreters to mirror</span>
+        <p class="help">Every venv any profile builds comes from one of these.
+        Use <code>major.minor</code>.</p>
+        <div class="taglist" id="pythons-tags"></div>
+        <div class="add-row">
+          <input type="text" id="pythons-in" placeholder="3.12" aria-label="Python version">
+          <button type="button">Add</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="head">Packages (the wheelhouse)</span>
+        <p class="help">Every distribution any profile may name, plus whatever
+        users should be able to <code>acorn install</code> later. <code>hatchling</code>,
+        <code>ipython</code>, <code>ruff</code>, <code>ipykernel</code> and
+        <code>pip</code> are always bundled &mdash; don't list them. PyPI
+        <em>applications</em> like <code>spyder</code> or <code>jupyterlab</code>
+        <em>do</em> belong here. Pin with <code>==</code>; several pinned versions
+        of one package are allowed.</p>
+        <div class="taglist" id="packages-tags"></div>
+        <div class="add-row">
+          <input type="text" id="packages-in" placeholder="pandas  or  pandas==2.2.3" aria-label="Package">
+          <button type="button">Add</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="head">conda-forge command-line tools <span style="font-weight:400;color:var(--soft)">(optional)</span></span>
+        <p class="help">Non-Python tools &mdash; <code>ripgrep</code>,
+        <code>pandoc</code>, <code>ffmpeg</code>, <code>gh</code>. Vendors
+        micromamba and builds a channel so <code>acorn forge-install</code>
+        works offline. Pin conda-style: <code>pandoc=3.2</code>.</p>
+        <div class="taglist" id="tools-tags"></div>
+        <div class="add-row">
+          <input type="text" id="tools-in" placeholder="ripgrep" aria-label="conda-forge tool">
+          <button type="button">Add</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>[editor]</h3>
+        <div class="checks stack">
+          <label><input type="checkbox" id="editor_stage" checked>
+            <span>Stage an editor in the bundle
+              <span class="sub">Uncheck for a bundle with no editor at all.</span></span></label>
+        </div>
+        <div id="editor_opts">
+          <p class="help" style="margin-top:.6rem">Flavor &mdash; a licensing
+          choice. Staging the official build onto a share is redistribution
+          under Microsoft's terms; VSCodium is MIT + Open VSX. Must match
+          <code>ACORN_VSCODE_FLAVOR</code> in <code>global.conf</code>.</p>
+          <div class="radio-row" id="flavor-row">
+            <label data-flavor="microsoft"><input type="radio" name="flavor" value="microsoft" checked> microsoft
+              <span class="sub">Official VS Code + Marketplace. Restricted redistribution.</span></label>
+            <label data-flavor="vscodium"><input type="radio" name="flavor" value="vscodium"> vscodium
+              <span class="sub">MIT build + Open VSX. Freely redistributable.</span></label>
+          </div>
+          <div class="field" style="margin-top:.9rem">
+            <span class="head">Extensions to stage</span>
+            <p class="help">Offline, an extension that wasn't staged can't be
+            fetched &mdash; so every extension <code>global.conf</code> tells
+            users to install has to appear here too.</p>
+            <div class="taglist" id="extensions-tags"></div>
+            <div class="add-row">
+              <input type="text" id="extensions-in" placeholder="publisher.extension" aria-label="Extension">
+              <button type="button">Add</button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="head" for="gallery">Internal Open VSX mirror <span style="font-weight:400;color:var(--soft)">(optional)</span></label>
+            <p class="help">Must match <code>ACORN_EXTENSION_GALLERY</code> in <code>global.conf</code>.</p>
+            <input type="text" id="gallery" placeholder="https://openvsx.example/vscode">
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>[git]</h3>
+        <div class="checks stack">
+          <label><input type="checkbox" id="mingit">
+            <span>Bundle MinGit
+              <span class="sub">Windows only. For target machines with no system
+              git (needed to clone a profile's <code>[[repo]]</code> entries).</span></span></label>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>[build]</h3>
+        <div class="grid2">
+          <div>
+            <label class="head" for="b_output" style="font-size:.82rem">output</label>
+            <input type="text" id="b_output" placeholder="../offline-bundle">
+          </div>
+          <div>
+            <label class="head" for="b_profiles" style="font-size:.82rem">profiles</label>
+            <input type="text" id="b_profiles" placeholder="installation-profile">
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:.6rem">
+          <div>
+            <label class="head" for="b_archive" style="font-size:.82rem">archive</label>
+            <select id="b_archive">
+              <option value="">auto (tar.gz) &mdash; default</option>
+              <option value="zip">zip</option>
+              <option value="tar">tar</option>
+              <option value="tar.gz">tar.gz</option>
+              <option value="false">false &mdash; leave it a folder</option>
+            </select>
+          </div>
+          <div>
+            <span class="head" style="font-size:.82rem">flags</span>
+            <div class="checks stack" style="margin-top:.2rem">
+              <label><input type="checkbox" id="b_verify" checked> <span>verify <span class="sub">preflight install &mdash; leave on</span></span></label>
+              <label><input type="checkbox" id="b_unattended"> <span>unattended</span></label>
+              <label><input type="checkbox" id="b_accept"> <span>accept_third_party_terms <span class="sub">you hold redistribution rights</span></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="head"><input type="checkbox" id="opt_comments" checked style="margin-right:.4rem">Include explanatory comments in the output</label>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel sticky">
+      <div class="out-head">
+        <h3>offline-bundle.toml</h3>
+        <div class="out-actions">
+          <button type="button" class="tiny" id="copy-out">Copy</button>
+          <button type="button" class="tiny" id="dl-out">Download</button>
+        </div>
+      </div>
+      <pre class="out" id="bundle-out"></pre>
+      <div class="verdict" id="verdict"></div>
+
+      <div class="field" style="margin-top:1rem">
+        <label class="head" for="conf-src" style="font-size:.82rem">Cross-check against <code>global.conf</code> <span style="font-weight:400;color:var(--soft)">(optional)</span></label>
+        <p class="help">Paste it to catch the editor mismatch that only shows up
+        when someone opens VS Code on the far side.</p>
+        <textarea id="conf-src" rows="3" placeholder='ACORN_VSCODE_FLAVOR="microsoft"'></textarea>
+        <div id="conf-verdict" class="verdict"></div>
+      </div>
+
+      <div class="field">
+        <label class="head" for="profiles-src" style="font-size:.82rem">Check profiles fit <span style="font-weight:400;color:var(--soft)">(optional)</span></label>
+        <p class="help">Paste one or more profile <code>.toml</code> (separated by
+        a line of <code>---</code>) to check each the way
+        <code>acorn profile-check</code> does. Build them in the
+        <a href="profile-builder.html">profile builder</a>.</p>
+        <textarea id="profiles-src" rows="4" placeholder="# paste profile .toml(s), separated by a line of ---"></textarea>
+        <div id="fit-verdict"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<details class="ref">
+  <summary>Reference &mdash; what physically crosses the air gap</summary>
+  <table>
+    <tr><th>In the bundle</th><th>Holds</th><th>Fed by</th></tr>
+    <tr><td><code>wheels/</code></td><td>Every distribution any profile may name</td><td><code>packages</code> + the always-present set</td></tr>
+    <tr><td><code>python-builds/</code></td><td>Interpreter archives</td><td><code>pythons</code></td></tr>
+    <tr><td><code>conda-channel/</code></td><td>conda-forge CLI tools + micromamba</td><td><code>tools</code></td></tr>
+    <tr><td><code>vendor/vscode/</code></td><td>The editor, pre-seeded with its extensions</td><td><code>[editor]</code></td></tr>
+    <tr><td><code>vendor/uv/</code>, <code>vendor/git/</code></td><td>uv, and MinGit when asked for</td><td>the build machine + <code>[git] mingit</code></td></tr>
+    <tr><td><code>src/</code> + <code>global.conf</code></td><td>The ACORN source, installers and configuration</td><td>the distribution repo</td></tr>
+  </table>
+  <p class="help" style="margin-top:.6rem"><strong>Not in the bundle:</strong> a
+  profile's <code>[[repo]]</code> entries &mdash; the connected build machine
+  can't reach the closed network's git host. Whatever a repo needs from the
+  wheelhouse goes in <code>packages</code>, by hand.</p>
+</details>
+
+<footer class="foot">
+  Mirrors <code>acorn/bundle.py</code> and <code>acorn/profile.py</code>. When
+  they disagree, the tools are right and this page is stale &mdash; see
+  <code>docs/OFFLINE.md</code> and <code>tests/test_config_builders.py</code>.
+</footer>
+
+</div>
+
+<script>
+"use strict";
+/* ==== SHARED PRELUDE (byte-identical across the *-builder.html tools; tests/test_config_builders.py asserts this) ==== */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function tomlStr(s){ return '"' + String(s).replace(/\\/g,"\\\\").replace(/"/g,'\\"') + '"'; }
+function tomlArray(items){
+  if(!items.length) return "[]";
+  if(items.length <= 3 && items.join(", ").length < 50) return "[" + items.map(tomlStr).join(", ") + "]";
+  return "[\n" + items.map(function(i){ return "    " + tomlStr(i) + ","; }).join("\n") + "\n]";
+}
+function canonical(name){ return String(name).trim().toLowerCase().replace(/[-_.]+/g,"-"); }
+function requirementName(spec){
+  var s = String(spec);
+  ["[","=",">","<","!","~",";"," "].forEach(function(sep){ s = s.split(sep)[0]; });
+  return canonical(s);
+}
+function pinnedVersion(spec){
+  var m = String(spec).trim().match(/^[^=<>!~\[; ]+\s*==\s*([^,;\s]+)$/);
+  return m ? m[1] : null;
+}
+function copyText(text, btn){
+  var done = function(){ if(btn){ var t = btn.textContent; btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = t; }, 1200); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ legacyCopy(text); done(); });
+  } else { legacyCopy(text); done(); }
+}
+function legacyCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch(e){}
+  document.body.removeChild(ta);
+}
+function download(name, text){
+  var blob = new Blob([text], { type: "text/plain" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function tagWidget(inputId, getArr, onChange){
+  var input = $(inputId), btn = input.nextElementSibling;
+  function add(){
+    var v = input.value.trim();
+    if(v && getArr().indexOf(v) === -1) getArr().push(v);
+    input.value = ""; input.focus(); onChange();
+  }
+  btn.onclick = add;
+  input.onkeydown = function(e){ if(e.key === "Enter"){ e.preventDefault(); add(); } };
+}
+function renderTags(boxId, arr, onChange){
+  var box = $(boxId); box.innerHTML = "";
+  arr.forEach(function(val, i){
+    var span = document.createElement("span"); span.className = "tag";
+    span.appendChild(document.createTextNode(val));
+    var b = document.createElement("button"); b.type = "button"; b.textContent = "×";
+    b.setAttribute("aria-label", "Remove " + val);
+    b.onclick = function(){ arr.splice(i, 1); onChange(); };
+    span.appendChild(b); box.appendChild(span);
+  });
+}
+function parseConf(text){
+  var out = {};
+  String(text || "").split(/\r?\n/).forEach(function(line){
+    var m = line.match(/^\s*([A-Z_]+)\s*=\s*"([^"]*)"\s*$/);
+    if(m) out[m[1]] = m[2];
+  });
+  return out;
+}
+function miniToml(text){
+  var root = {}, cur = root, lines = String(text).split(/\r?\n/), i = 0;
+  function stripComment(s){
+    var o = "", q = false;
+    for(var k = 0; k < s.length; k++){
+      var ch = s[k];
+      if(ch === '"') q = !q;
+      if(ch === "#" && !q) break;
+      o += ch;
+    }
+    return o;
+  }
+  function parseVal(raw){
+    raw = raw.trim();
+    if(raw === "true") return true;
+    if(raw === "false") return false;
+    if(/^-?\d+$/.test(raw)) return parseInt(raw, 10);
+    if(raw[0] === '"') return raw.slice(1, raw.lastIndexOf('"')).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+    if(raw[0] === "["){
+      var inner = raw.slice(1, raw.lastIndexOf("]"));
+      if(!inner.trim()) return [];
+      return inner.split(",").map(function(x){ return x.trim(); }).filter(Boolean).map(function(x){
+        return x[0] === '"' ? x.slice(1, x.lastIndexOf('"')) : x;
+      });
+    }
+    return raw;
+  }
+  for(; i < lines.length; i++){
+    var line = stripComment(lines[i]).trim();
+    if(!line) continue;
+    var th = line.match(/^\[\[?([A-Za-z0-9_.]+)\]\]?$/);
+    if(th){
+      var dbl = line.indexOf("[[") === 0;
+      if(dbl){
+        root[th[1]] = root[th[1]] || [];
+        cur = {}; root[th[1]].push(cur);
+      } else {
+        cur = root[th[1]] = root[th[1]] || {};
+      }
+      continue;
+    }
+    var eq = line.indexOf("=");
+    if(eq === -1) continue;
+    var key = line.slice(0, eq).trim(), val = line.slice(eq + 1).trim();
+    if(val[0] === "[" && val.lastIndexOf("]") === -1){
+      while(i + 1 < lines.length && val.lastIndexOf("]") === -1){ i++; val += " " + stripComment(lines[i]).trim(); }
+    }
+    cur[key] = parseVal(val);
+  }
+  return root;
+}
+/* ==== END SHARED PRELUDE ==== */
+
+/* ---- schema (mirrors acorn/bundle.py) ----------------------------------- */
+var PLATFORMS = [
+  ["Windows/x86_64", "the common Windows target"],
+  ["Windows/aarch64", "Windows on ARM"],
+  ["Linux/x86_64", "most Linux servers and desktops"],
+  ["Linux/aarch64", "ARM Linux"],
+  ["Darwin/x86_64", "Intel macOS"],
+  ["Darwin/aarch64", "Apple-silicon macOS"]
+];
+var PLATFORM_KEYS = PLATFORMS.map(function(p){ return p[0]; });
+var ALWAYS_PRESENT = ["hatchling", "ipython", "ruff", "ipykernel", "pip"];
+var FLAVORS = ["microsoft", "vscodium"];
+var ARCHIVE_VALUES = ["auto", "zip", "tar", "tar.gz"];
+var DEFAULT_EXTENSIONS = ["ms-python.python", "ms-python.vscode-pylance", "ms-toolsai.jupyter", "charliermarsh.ruff"];
+var BUNDLE_TOP_KEYS = ["schema", "platforms", "deploy_root", "pythons", "packages", "tools", "editor", "git", "build"];
+var BUNDLE_EDITOR_KEYS = ["flavor", "extensions", "gallery", "stage"];
+var BUNDLE_BUILD_KEYS = ["output", "profiles", "archive", "verify", "unattended", "accept_third_party_terms"];
+
+var state = {
+  platforms: [], deploy_root: "", pythons: [],
+  packages: ["pandas", "numpy", "requests", "pytest"], tools: [],
+  editor_stage: true, flavor: "microsoft", extensions: DEFAULT_EXTENSIONS.slice(),
+  gallery: "", mingit: false,
+  b_output: "", b_profiles: "", b_archive: "", b_verify: true, b_unattended: false, b_accept: false,
+  comments: true
+};
+
+/* ---- widgets ------------------------------------------------------------- */
+(function(){
+  var box = $("platforms");
+  PLATFORMS.forEach(function(p){
+    var label = document.createElement("label");
+    var cb = document.createElement("input"); cb.type = "checkbox"; cb.value = p[0];
+    cb.onchange = function(){
+      if(cb.checked){ if(state.platforms.indexOf(p[0]) === -1) state.platforms.push(p[0]); }
+      else state.platforms = state.platforms.filter(function(x){ return x !== p[0]; });
+      regen();
+    };
+    label.appendChild(cb);
+    var s = document.createElement("span");
+    s.innerHTML = "<code>" + p[0] + "</code> <span class='sub'>" + p[1] + "</span>";
+    label.appendChild(s); box.appendChild(label);
+  });
+})();
+
+["pythons", "packages", "tools", "extensions"].forEach(function(key){
+  tagWidget(key + "-in", function(){ return state[key]; }, sync);
+});
+function sync(){ ["pythons", "packages", "tools", "extensions"].forEach(function(k){ renderTags(k + "-tags", state[k], sync); }); regen(); }
+
+function bindText(id, key){ var el = $(id); el.value = state[key] || ""; el.oninput = function(){ state[key] = el.value.trim(); regen(); }; }
+function bindCheck(id, key, after){ var el = $(id); el.checked = !!state[key]; el.onchange = function(){ state[key] = el.checked; if(after) after(); regen(); }; }
+bindText("deploy_root", "deploy_root");
+bindText("gallery", "gallery");
+bindText("b_output", "b_output");
+bindText("b_profiles", "b_profiles");
+bindCheck("mingit", "mingit");
+bindCheck("b_verify", "b_verify");
+bindCheck("b_unattended", "b_unattended");
+bindCheck("b_accept", "b_accept");
+bindCheck("opt_comments", "comments");
+bindCheck("editor_stage", "editor_stage", function(){ $("editor_opts").classList.toggle("hidden", !state.editor_stage); });
+$("b_archive").onchange = function(){ state.b_archive = this.value; regen(); };
+document.querySelectorAll("input[name=flavor]").forEach(function(r){
+  r.onchange = function(){
+    state.flavor = r.value;
+    document.querySelectorAll("#flavor-row label").forEach(function(l){ l.classList.toggle("sel", l.getAttribute("data-flavor") === state.flavor); });
+    regen();
+  };
+});
+
+/* ---- emit (matches acorn-planter/offline-bundle.toml's style) ----------- */
+function c(line){ return state.comments ? line : null; }
+function buildToml(){
+  var L = [];
+  function push(){ for(var i = 0; i < arguments.length; i++){ if(arguments[i] !== null) L.push(arguments[i]); } }
+  push(c("# offline-bundle.toml -- everything the air-gapped share will contain."));
+  push(c("# Written by docs/offline-bundle-builder.html. Build with:"));
+  push(c("#   GET_STARTED_OFFLINE_BUNDLE/offline-bundler.cmd"));
+  push(c(""));
+  push("schema = 1");
+  push("");
+  if(state.platforms.length){
+    push(c("# Run the build once per platform into the same output folder."));
+    push("platforms = " + tomlArray(state.platforms));
+  } else {
+    push(c('# platforms = ["Windows/x86_64"]   # defaults to the build machine'));
+  }
+  if(state.deploy_root){ push(c("# Baked into the global.conf the build writes.")); push("deploy_root = " + tomlStr(state.deploy_root)); }
+  push("");
+  push(c("# Interpreters to mirror -- every venv any profile builds comes from one."));
+  push("pythons = " + tomlArray(state.pythons));
+  push("");
+  push(c("# THE package set. hatchling, ipython, ruff, ipykernel and pip are always"));
+  push(c("# bundled and never need listing."));
+  push("packages = " + tomlArray(state.packages));
+  push("");
+  push(c("# conda-forge command-line tools -- vendors micromamba and builds a channel."));
+  push("tools = " + tomlArray(state.tools));
+  push("");
+  push("[editor]");
+  if(!state.editor_stage){
+    push("stage = false" + (state.comments ? "          # a bundle with no editor at all" : ""));
+  } else {
+    push(c('# "microsoft" or "vscodium". Must match ACORN_VSCODE_FLAVOR in global.conf.'));
+    push("flavor = " + tomlStr(state.flavor));
+    push("");
+    push(c("# Every extension global.conf tells users to install must appear here too."));
+    push("extensions = " + tomlArray(state.extensions));
+    if(state.gallery){ push(""); push(c("# Must match ACORN_EXTENSION_GALLERY in global.conf.")); push("gallery = " + tomlStr(state.gallery)); }
+  }
+  push("");
+  push("[git]");
+  push("mingit = " + (state.mingit ? "true" : "false") + (state.comments ? "   # bundle portable MinGit (Windows only)" : ""));
+  push("");
+  push("[build]");
+  if(state.b_output) push("output = " + tomlStr(state.b_output)); else push(c('# output = "../offline-bundle"'));
+  if(state.b_profiles) push("profiles = " + tomlStr(state.b_profiles)); else push(c('# profiles = "installation-profile"'));
+  if(state.b_archive === "false") push("archive = false" + (state.comments ? "        # leave the output as a folder" : ""));
+  else if(state.b_archive) push("archive = " + tomlStr(state.b_archive));
+  else push(c('# archive = "zip"        # default: auto (tar.gz)'));
+  push("verify = " + (state.b_verify ? "true" : "false"));
+  if(state.b_unattended) push("unattended = true");
+  if(state.b_accept) push("accept_third_party_terms = true");
+  else push(c("# accept_third_party_terms = true   # you hold redistribution rights"));
+  return L.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "") + "\n";
+}
+
+/* ---- validate (mirror bundle.parse) ------------------------------------- */
+function validate(){
+  var errs = [], warns = [];
+  state.platforms.forEach(function(p){ if(PLATFORM_KEYS.indexOf(p) === -1) errs.push("platform " + JSON.stringify(p) + " is not one acorn knows"); });
+  if(FLAVORS.indexOf(state.flavor) === -1) errs.push("editor flavor must be microsoft or vscodium");
+  var names = {};
+  state.packages.forEach(function(spec){ var n = requirementName(spec); (names[n] = names[n] || []).push(spec); });
+  ALWAYS_PRESENT.forEach(function(n){ if(names[n]) warns.push("package " + JSON.stringify(names[n][0]) + " is always bundled -- drop it from the list"); });
+  state.pythons.forEach(function(v){ if(!/^\d+\.\d+(\.\d+)?$/.test(v)) warns.push("python " + JSON.stringify(v) + " isn't major.minor"); });
+  if(state.editor_stage && state.flavor === "microsoft" && !state.b_accept) warns.push("staging the official VS Code build is redistribution under Microsoft's terms -- set accept_third_party_terms once you hold those rights");
+  if(state.editor_stage && state.gallery && state.flavor === "microsoft") warns.push("a gallery on the \"microsoft\" flavor rewrites product.json in a proprietary binary -- prefer flavor = \"vscodium\"");
+  if(!state.pythons.length) warns.push("no interpreters listed -- no profile will be able to build a venv");
+  if(state.mingit && state.platforms.length && state.platforms.every(function(p){ return p.indexOf("Windows") !== 0; })) warns.push("[git] mingit is Windows-only, but no Windows platform is listed");
+  return { errs: errs, warns: warns };
+}
+function renderVerdict(el, res, okMsg){
+  if(!res.errs.length && !res.warns.length){ el.innerHTML = '<span class="pill good">looks valid</span> ' + (okMsg || ""); return; }
+  var h = res.errs.length ? '<span class="pill bad">' + res.errs.length + (res.errs.length > 1 ? " problems" : " problem") + '</span>' : '<span class="pill good">valid</span>';
+  h += "<ul>";
+  res.errs.forEach(function(m){ h += '<li class="bad">&#10007; ' + esc(m) + '</li>'; });
+  res.warns.forEach(function(m){ h += '<li>&#9888; ' + esc(m) + '</li>'; });
+  el.innerHTML = h + "</ul>";
+}
+
+/* ---- conf cross-check (mirror bundle.check_conf) ------------------------ */
+function checkConf(){
+  var el = $("conf-verdict");
+  var raw = $("conf-src").value.trim();
+  if(!raw){ el.innerHTML = ""; return; }
+  var conf = parseConf(raw);
+  var problems = [];
+  var flavor = (conf.ACORN_VSCODE_FLAVOR || "").trim().toLowerCase();
+  if(flavor && state.editor_stage && flavor !== state.flavor) problems.push("the bundle stages " + JSON.stringify(state.flavor) + " but global.conf sets ACORN_VSCODE_FLAVOR=" + JSON.stringify(flavor));
+  var gallery = (conf.ACORN_EXTENSION_GALLERY || "").trim();
+  if(gallery && (state.gallery || "").trim() !== gallery) problems.push("global.conf points users at gallery " + gallery + ", which the bundle's [editor] gallery doesn't match (" + (state.gallery || "unset") + ")");
+  var declared = (conf.ACORN_VSCODE_EXTENSIONS || "").trim();
+  if(declared && declared.toLowerCase() !== "none" && state.extensions.length){
+    var wanted = declared.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+    var missing = wanted.filter(function(w){ return state.extensions.indexOf(w) === -1; });
+    if(missing.length) problems.push("global.conf asks every machine to install " + missing.join(", ") + ", which the bundle doesn't stage");
+  }
+  renderVerdict(el, { errs: problems, warns: [] }, "global.conf agrees with the bundle.");
+}
+$("conf-src").oninput = checkConf;
+
+/* ---- profile fit check (mirror bundle.Inventory + check_profile) -------- */
+function inventory(){
+  var inv = { packages: {}, pythons: {}, tools: {}, vscode: state.editor_stage };
+  ALWAYS_PRESENT.concat(state.packages).forEach(function(spec){
+    var n = requirementName(spec);
+    if(!inv.packages[n]) inv.packages[n] = {};
+    var pin = pinnedVersion(spec);
+    if(pin) inv.packages[n][pin] = true;
+  });
+  state.pythons.forEach(function(v){ inv.pythons[v.trim()] = true; });
+  state.tools.forEach(function(t){ inv.tools[canonical(t.split("=")[0])] = true; });
+  return inv;
+}
+function profileFromToml(d){
+  var p = { pythons: arr(d.python), venvs: [], tools: arr(d.tools), editors: arr(d.editor).map(function(x){ return x.toLowerCase(); }), repos: (d.repo || []) };
+  (d.venv || []).forEach(function(v){ p.venvs.push({ packages: arr(v.packages) }); });
+  return p;
+}
+function checkProfile(p, inv){
+  var problems = [];
+  p.pythons.forEach(function(v){
+    if(Object.keys(inv.pythons).length && !inv.pythons[String(v).trim()]) problems.push("Python " + v + ": not mirrored (bundle has: " + (Object.keys(inv.pythons).join(", ") || "none") + ")");
+  });
+  var specs = {};
+  p.venvs.forEach(function(v){ v.packages.forEach(function(s){ specs[s] = true; }); });
+  Object.keys(specs).forEach(function(spec){
+    var n = requirementName(spec);
+    if(!inv.packages[n]){ problems.push("package " + JSON.stringify(spec) + ": no distribution in the bundle"); return; }
+    var pin = pinnedVersion(spec);
+    if(pin && !inv.packages[n][pin]) problems.push("package " + JSON.stringify(spec) + ": that exact version isn't in the bundle (it has: " + (Object.keys(inv.packages[n]).join(", ") || "unpinned only") + ")");
+  });
+  p.tools.forEach(function(t){ if(!inv.tools[canonical(String(t).split("=")[0])]) problems.push("conda-forge tool " + JSON.stringify(t) + ": not in the bundle's channel"); });
+  p.editors.forEach(function(ed){
+    if(ed === "vscode" && !inv.vscode) problems.push('editor "vscode": the bundle stages no editor');
+    if(ed === "spyder" && !inv.packages["spyder"]) problems.push('editor "spyder": no spyder distribution in the bundle');
+  });
+  return problems;
+}
+function fitCheck(){
+  var el = $("fit-verdict");
+  var raw = $("profiles-src").value.trim();
+  if(!raw){ el.innerHTML = ""; return; }
+  var inv = inventory();
+  var blocks = raw.split(/^\s*---\s*$/m).map(function(b){ return b.trim(); }).filter(Boolean);
+  el.innerHTML = "";
+  blocks.forEach(function(block, i){
+    var d;
+    try { d = miniToml(block); } catch(e){ el.innerHTML += '<p class="bad">block ' + (i + 1) + ": couldn't parse</p>"; return; }
+    var probs = checkProfile(profileFromToml(d), inv);
+    var g = document.createElement("div"); g.className = "group";
+    g.innerHTML = '<div class="out-head"><h3>profile ' + (i + 1) + '</h3>' +
+      (probs.length ? '<span class="pill bad">' + probs.length + " won't resolve</span>" : '<span class="pill good">fits</span>') + '</div>' +
+      '<ul style="margin:.3rem 0 0;padding-left:1.1rem">' +
+      (probs.length ? probs.map(function(m){ return '<li class="bad">&#10007; ' + esc(m) + '</li>'; }).join("") : '<li class="good">&#10003; every name resolves inside the bundle</li>') +
+      '</ul>';
+    el.appendChild(g);
+  });
+}
+$("profiles-src").oninput = fitCheck;
+
+/* ---- import ------------------------------------------------------------- */
+$("import-btn").onclick = function(){
+  var raw = $("import-src").value.trim();
+  var msg = $("import-msg");
+  if(!raw){ msg.textContent = "Paste a file first."; return; }
+  var data;
+  try { data = miniToml(raw); } catch(e){ msg.innerHTML = '<span style="color:var(--danger)">Could not parse that.</span>'; return; }
+  var unknown = [];
+  Object.keys(data).forEach(function(k){ if(BUNDLE_TOP_KEYS.indexOf(k) === -1) unknown.push(k); });
+  Object.keys(data.editor || {}).forEach(function(k){ if(BUNDLE_EDITOR_KEYS.indexOf(k) === -1) unknown.push("[editor] " + k); });
+  Object.keys(data.git || {}).forEach(function(k){ if(k !== "mingit") unknown.push("[git] " + k); });
+  Object.keys(data.build || {}).forEach(function(k){ if(BUNDLE_BUILD_KEYS.indexOf(k) === -1) unknown.push("[build] " + k); });
+  state.platforms = arr(data.platforms).filter(function(p){ return PLATFORM_KEYS.indexOf(p) > -1; });
+  state.deploy_root = str(data.deploy_root);
+  state.pythons = arr(data.pythons);
+  state.packages = arr(data.packages);
+  state.tools = arr(data.tools);
+  var ed = data.editor || {};
+  state.editor_stage = ed.stage !== false;
+  state.flavor = (FLAVORS.indexOf(str(ed.flavor).toLowerCase()) > -1) ? str(ed.flavor).toLowerCase() : "microsoft";
+  state.extensions = arr(ed.extensions);
+  state.gallery = str(ed.gallery);
+  var git = data.git || {};
+  state.mingit = git.mingit === true;
+  var b = data.build || {};
+  state.b_output = str(b.output);
+  state.b_profiles = str(b.profiles);
+  state.b_archive = (b.archive === false) ? "false" : (ARCHIVE_VALUES.indexOf(str(b.archive)) > -1 && b.archive !== "auto" ? str(b.archive) : "");
+  state.b_verify = b.verify !== false;
+  state.b_unattended = b.unattended === true;
+  state.b_accept = b.accept_third_party_terms === true;
+  syncForm();
+  msg.innerHTML = unknown.length
+    ? '<span style="color:var(--danger)">Loaded. Unknown key(s) ignored: ' + esc(unknown.join(", ")) + '</span>'
+    : '<span style="color:var(--ok)">Loaded into the form.</span>';
+};
+function arr(v){ return Array.isArray(v) ? v.map(String) : (typeof v === "string" && v ? [v] : []); }
+function str(v){ return (v === undefined || v === null) ? "" : String(v); }
+function syncForm(){
+  $("platforms").querySelectorAll("input").forEach(function(cb){ cb.checked = state.platforms.indexOf(cb.value) > -1; });
+  $("deploy_root").value = state.deploy_root;
+  $("gallery").value = state.gallery;
+  $("b_output").value = state.b_output;
+  $("b_profiles").value = state.b_profiles;
+  $("mingit").checked = state.mingit;
+  $("b_verify").checked = state.b_verify;
+  $("b_unattended").checked = state.b_unattended;
+  $("b_accept").checked = state.b_accept;
+  $("editor_stage").checked = state.editor_stage;
+  $("editor_opts").classList.toggle("hidden", !state.editor_stage);
+  $("b_archive").value = state.b_archive;
+  document.querySelectorAll("input[name=flavor]").forEach(function(r){
+    r.checked = r.value === state.flavor;
+    r.closest("label").classList.toggle("sel", r.value === state.flavor);
+  });
+  sync();
+}
+
+$("copy-out").onclick = function(){ copyText(buildToml(), this); };
+$("dl-out").onclick = function(){ download("offline-bundle.toml", buildToml()); };
+
+function regen(){
+  $("bundle-out").textContent = buildToml();
+  renderVerdict($("verdict"), validate(), "Ready to build.");
+  checkConf();
+  fitCheck();
+}
+
+["pythons", "packages", "tools", "extensions"].forEach(function(k){ renderTags(k + "-tags", state[k], sync); });
+document.querySelectorAll("#flavor-row label").forEach(function(l){ l.classList.toggle("sel", l.getAttribute("data-flavor") === state.flavor); });
+regen();
+</script>
+</body>
+</html>

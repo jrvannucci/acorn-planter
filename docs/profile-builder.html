@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACORN profile builder</title>
+<!--
+  Standalone authoring aid for installation-profile/*.toml -- the deployment
+  profiles `acorn apply` reads. A folder of them: one marked default reaches
+  everyone, the rest reach the users they list.
+
+  Self-contained: no network, opens off a USB stick with file://. It writes
+  text and mirrors acorn/profile.py's validation plus the fit-check
+  bundle.check_profile runs on the air-gapped side. It applies nothing.
+  tests/test_config_builders.py keeps the schema and shared prelude honest.
+-->
+<style>
+/* ==== SHARED PRELUDE (byte-identical across the *-builder.html tools; tests/test_config_builders.py asserts this) ==== */
+:root {
+  --ink:#14261c; --soft:#52796f; --line:#d4e6da; --accent:#1b4332;
+  --raised:#e9f5ec; --raised-2:#f4faf6; --danger:#9c4a3c; --danger-tint:#f7ece9;
+  --ok:#2f6b4f; --page:#fbfdfb; --card:#ffffff;
+  --mono:Consolas,"SF Mono",Monaco,"Courier New",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink:#e7f0ea; --soft:#9db8ae; --line:#2b4038; --accent:#95d5b2;
+    --raised:#16261e; --raised-2:#13201a; --danger:#e59a8c; --danger-tint:#2c1c18;
+    --ok:#7fc9a4; --page:#0e1712; --card:#121d17;
+  }
+}
+* { box-sizing:border-box; }
+html { color-scheme:light dark; }
+body { margin:0; font-family:var(--sans); font-size:15px; line-height:1.55; color:var(--ink); background:var(--page); }
+.wrap { max-width:1180px; margin:0 auto; padding:2rem 1.25rem 6rem; }
+header.masthead { margin-bottom:1.5rem; }
+header.masthead h1 { margin:0 0 .3rem; font-family:Georgia,"Times New Roman",serif; font-size:1.7rem; color:var(--accent); }
+header.masthead p { margin:.2rem 0; color:var(--soft); max-width:64ch; }
+a { color:var(--accent); }
+.nav { font-size:.85rem; margin-bottom:1.2rem; }
+.nav a { margin-right:.9rem; }
+.cols { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
+@media (max-width:900px) { .cols { grid-template-columns:1fr; } }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:1.1rem 1.2rem; margin-bottom:1.1rem; }
+.panel > h2 { margin:0 0 .2rem; font-size:1.15rem; font-family:Georgia,"Times New Roman",serif; color:var(--accent); }
+.panel > .lede { margin:0 0 1rem; color:var(--soft); font-size:.92rem; }
+.step-tag { display:inline-block; font-size:.7rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--soft); margin-bottom:.35rem; }
+.field { margin:0 0 1.15rem; }
+.field:last-child { margin-bottom:0; }
+.field > label.head, .field > .head { display:block; font-weight:700; font-size:.9rem; margin-bottom:.15rem; }
+.field .help { font-size:.84rem; color:var(--soft); margin:.1rem 0 .45rem; }
+code { font-family:var(--mono); font-size:.88em; background:var(--raised); border:1px solid var(--line); border-radius:3px; padding:.04em .32em; }
+input[type=text], textarea, select { width:100%; font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:5px; padding:.42rem .55rem; }
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline:3px solid var(--accent); outline-offset:1px; }
+textarea { resize:vertical; font-family:var(--mono); font-size:.86rem; line-height:1.5; }
+.checks { display:flex; flex-wrap:wrap; gap:.3rem .9rem; }
+.checks.stack { flex-direction:column; gap:.35rem; }
+.checks label { display:flex; align-items:flex-start; gap:.4rem; font-size:.9rem; font-weight:400; }
+.checks label input { margin-top:.2rem; }
+.checks label .sub { display:block; color:var(--soft); font-size:.82rem; }
+.radio-row { display:flex; flex-wrap:wrap; gap:.5rem; }
+.radio-row label { flex:1 1 12rem; border:1px solid var(--line); border-radius:6px; padding:.5rem .6rem; font-size:.88rem; cursor:pointer; }
+.radio-row label.sel { border-color:var(--accent); background:var(--raised); }
+.radio-row label .sub { display:block; color:var(--soft); font-size:.8rem; margin-top:.1rem; }
+.taglist { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.45rem; }
+.taglist:empty { display:none; }
+.tag { display:inline-flex; align-items:center; gap:.3rem; background:var(--raised); border:1px solid var(--line); border-radius:999px; padding:.12rem .3rem .12rem .6rem; font-family:var(--mono); font-size:.82rem; }
+.tag button { border:none; background:none; color:var(--soft); cursor:pointer; font-size:1rem; line-height:1; padding:0 .15rem; }
+.tag button:hover { color:var(--danger); }
+.add-row { display:flex; gap:.4rem; }
+.add-row input { flex:1; }
+button { font:inherit; border-radius:5px; border:1px solid var(--line); background:var(--raised); color:var(--accent); padding:.4rem .8rem; cursor:pointer; }
+button:hover { background:var(--raised-2); }
+button.primary { background:var(--accent); color:var(--page); border-color:var(--accent); }
+button.ghost { background:none; }
+button.tiny { padding:.2rem .5rem; font-size:.82rem; }
+.out-head { display:flex; align-items:baseline; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+.out-head h3 { margin:0; font-size:.95rem; font-family:var(--mono); color:var(--accent); }
+.out-actions { display:flex; gap:.4rem; }
+pre.out { margin:.5rem 0 0; padding:.8rem .9rem; background:var(--raised-2); border:1px solid var(--line); border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:.83rem; line-height:1.5; white-space:pre; tab-size:2; }
+.sticky { position:sticky; top:1rem; }
+.verdict { margin-top:.6rem; font-size:.88rem; }
+.verdict ul { margin:.3rem 0 0; padding-left:1.1rem; }
+.verdict li { margin:.15rem 0; }
+.verdict .bad { color:var(--danger); }
+.verdict .good { color:var(--ok); }
+.pill { display:inline-block; font-size:.72rem; font-weight:700; padding:.08rem .5rem; border-radius:999px; letter-spacing:.04em; }
+.pill.good { background:var(--raised); color:var(--ok); border:1px solid var(--line); }
+.pill.bad { background:var(--danger-tint); color:var(--danger); border:1px solid var(--danger); }
+details.ref { margin-top:1rem; border-top:1px solid var(--line); padding-top:.8rem; }
+details.ref summary { cursor:pointer; font-weight:700; color:var(--accent); }
+details.ref table { border-collapse:collapse; font-size:.85rem; margin-top:.7rem; width:100%; }
+details.ref th, details.ref td { border:1px solid var(--line); padding:.35rem .55rem; text-align:left; vertical-align:top; }
+details.ref th { background:var(--raised); }
+.group { border:1px solid var(--line); border-radius:7px; padding:.9rem; margin-bottom:.9rem; background:var(--raised-2); }
+.group > h3 { margin:0 0 .6rem; font-size:.9rem; font-family:var(--mono); color:var(--accent); }
+.subcard { border:1px dashed var(--line); border-radius:6px; padding:.7rem; margin:.5rem 0; background:var(--card); }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+@media (max-width:560px) { .grid2 { grid-template-columns:1fr; } }
+.hidden { display:none !important; }
+.banner { background:var(--raised); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:4px; padding:.55rem .75rem; font-size:.86rem; color:var(--soft); margin-bottom:1rem; }
+.continue-bar { text-align:center; margin:1.2rem 0; }
+footer.foot { margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--line); font-size:.84rem; color:var(--soft); }
+/* ==== END SHARED PRELUDE ==== */
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <h1>Profile builder</h1>
+  <p>A deployment profile says what a group of users should end up with &mdash;
+  interpreters, named venvs and their packages, repos to clone, an editor,
+  settings &mdash; and who gets it. <code>acorn apply</code> reads them;
+  they're idempotent, so the same file is both first provisioning and later
+  drift repair.</p>
+  <p>Build a folder of them here. One marked <code>default = true</code> reaches
+  everyone; the rest reach exactly the users they list, layered on top.</p>
+</header>
+
+<nav class="nav">
+  <a href="config-builder.html">&larr; all three builders</a>
+  <a href="global-conf-builder.html">global.conf</a>
+  <a href="profile-builder.html"><strong>profiles</strong></a>
+  <a href="offline-bundle-builder.html">offline bundle</a>
+</nav>
+
+<div class="banner">
+  Point <code>ACORN_PROFILE</code> in <a href="global-conf-builder.html">global.conf</a>
+  at the folder these live in (<code>installation-profile</code>). Every name a
+  profile uses must resolve &mdash; and, for an air-gapped fleet, must be inside
+  the <a href="offline-bundle-builder.html">offline bundle</a>. Paste a bundle
+  below to check.
+</div>
+
+<div class="panel">
+  <div class="field">
+    <span class="head">Import an existing profile</span>
+    <p class="help">Paste one <code>*.toml</code> to load it as a new card.
+    Repeat for each file in your folder.</p>
+    <textarea id="import-src" rows="3" placeholder="# paste one profile .toml here (optional)"></textarea>
+    <div class="add-row" style="margin-top:.4rem">
+      <input type="text" id="import-name" placeholder="file name, e.g. analysis" style="max-width:14rem">
+      <button type="button" id="import-btn">Load it</button>
+      <span id="import-msg" class="help" style="margin:0; align-self:center"></span>
+    </div>
+  </div>
+</div>
+
+<div id="profiles-list"></div>
+<button type="button" id="add-profile" class="primary">+ Add a profile</button>
+
+<div class="panel" style="margin-top:1.5rem">
+  <h2>Who gets what</h2>
+  <p class="lede">The rule the folder encodes, resolved for one login name &mdash;
+  the same as <code>acorn apply</code> pointed at the folder
+  (<code>profile.distributed_to</code>): the default first, then any opt-in
+  profile that lists this user.</p>
+  <div class="add-row" style="max-width:22rem">
+    <input type="text" id="who-user" placeholder="alice">
+    <button type="button" id="who-btn">Resolve</button>
+  </div>
+  <div id="who-result" class="verdict"></div>
+</div>
+
+<div class="panel">
+  <h2>Fit check against an offline bundle <span style="font-weight:400;color:var(--soft);font-size:.9rem">(optional)</span></h2>
+  <p class="lede">For an air-gapped deployment. Paste the
+  <code>offline-bundle.toml</code>; each profile is checked the way
+  <code>acorn profile-check</code> checks it on the closed network.</p>
+  <textarea id="bundle-src" rows="4" placeholder="# paste offline-bundle.toml here"></textarea>
+  <div id="fit-results" style="margin-top:.8rem"></div>
+</div>
+
+<details class="ref">
+  <summary>Reference &mdash; the keys a profile accepts</summary>
+  <table>
+    <tr><th>Key</th><th>Meaning</th></tr>
+    <tr><td><code>python</code></td><td>Interpreters to install (list). Every venv is built from one of these.</td></tr>
+    <tr><td><code>[[venv]]</code></td><td><code>name</code>, optional <code>python</code> (base tag like <code>312</code>), <code>packages</code>, <code>default = true</code> (one max), <code>default_packages = false</code> for a bare venv.</td></tr>
+    <tr><td><code>[[repo]]</code></td><td><code>url</code>, and <code>install</code> = a venv name or list (<code>"dev"</code>, <code>["dev[gui]", "ml"]</code>). Omit <code>install</code> to clone only.</td></tr>
+    <tr><td><code>editor</code></td><td><code>"vscode"</code> / <code>"spyder"</code>, or a list. The bundled editor this deployment installs.</td></tr>
+    <tr><td><code>tools</code></td><td>conda-forge command-line tools (list).</td></tr>
+    <tr><td><code>[config]</code></td><td>Settings <code>apply</code> may write: <code>default_base</code>, <code>default_venv</code>, <code>venv_default_packages</code>, <code>vscode_flavor</code>, <code>extension_gallery</code>, <code>vscode_extensions</code>. Install-time settings stay in <code>global.conf</code>.</td></tr>
+    <tr><td><code>[distribution]</code></td><td><code>default = true</code> (everyone) <em>or</em> <code>users = [...]</code> (opt-in) &mdash; not both. Neither = applied only by explicit path.</td></tr>
+  </table>
+  <p class="help" style="margin-top:.6rem"><code>apply</code> never destroys: an
+  existing venv or repo is left as-is. A profile's <code>[[repo]]</code>
+  dependencies are <em>not</em> auto-derived for an offline bundle &mdash; list
+  them in the bundle's <code>packages</code> by hand.</p>
+</details>
+
+<footer class="foot">
+  Mirrors <code>acorn/profile.py</code> and <code>acorn/bundle.py</code>. When
+  they disagree, the tools are right and this page is stale &mdash; see
+  <code>docs/PROFILES.md</code> and <code>tests/test_config_builders.py</code>.
+</footer>
+
+</div>
+
+<script>
+"use strict";
+/* ==== SHARED PRELUDE (byte-identical across the *-builder.html tools; tests/test_config_builders.py asserts this) ==== */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function tomlStr(s){ return '"' + String(s).replace(/\\/g,"\\\\").replace(/"/g,'\\"') + '"'; }
+function tomlArray(items){
+  if(!items.length) return "[]";
+  if(items.length <= 3 && items.join(", ").length < 50) return "[" + items.map(tomlStr).join(", ") + "]";
+  return "[\n" + items.map(function(i){ return "    " + tomlStr(i) + ","; }).join("\n") + "\n]";
+}
+function canonical(name){ return String(name).trim().toLowerCase().replace(/[-_.]+/g,"-"); }
+function requirementName(spec){
+  var s = String(spec);
+  ["[","=",">","<","!","~",";"," "].forEach(function(sep){ s = s.split(sep)[0]; });
+  return canonical(s);
+}
+function pinnedVersion(spec){
+  var m = String(spec).trim().match(/^[^=<>!~\[; ]+\s*==\s*([^,;\s]+)$/);
+  return m ? m[1] : null;
+}
+function copyText(text, btn){
+  var done = function(){ if(btn){ var t = btn.textContent; btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = t; }, 1200); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ legacyCopy(text); done(); });
+  } else { legacyCopy(text); done(); }
+}
+function legacyCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch(e){}
+  document.body.removeChild(ta);
+}
+function download(name, text){
+  var blob = new Blob([text], { type: "text/plain" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function tagWidget(inputId, getArr, onChange){
+  var input = $(inputId), btn = input.nextElementSibling;
+  function add(){
+    var v = input.value.trim();
+    if(v && getArr().indexOf(v) === -1) getArr().push(v);
+    input.value = ""; input.focus(); onChange();
+  }
+  btn.onclick = add;
+  input.onkeydown = function(e){ if(e.key === "Enter"){ e.preventDefault(); add(); } };
+}
+function renderTags(boxId, arr, onChange){
+  var box = $(boxId); box.innerHTML = "";
+  arr.forEach(function(val, i){
+    var span = document.createElement("span"); span.className = "tag";
+    span.appendChild(document.createTextNode(val));
+    var b = document.createElement("button"); b.type = "button"; b.textContent = "×";
+    b.setAttribute("aria-label", "Remove " + val);
+    b.onclick = function(){ arr.splice(i, 1); onChange(); };
+    span.appendChild(b); box.appendChild(span);
+  });
+}
+function parseConf(text){
+  var out = {};
+  String(text || "").split(/\r?\n/).forEach(function(line){
+    var m = line.match(/^\s*([A-Z_]+)\s*=\s*"([^"]*)"\s*$/);
+    if(m) out[m[1]] = m[2];
+  });
+  return out;
+}
+function miniToml(text){
+  var root = {}, cur = root, lines = String(text).split(/\r?\n/), i = 0;
+  function stripComment(s){
+    var o = "", q = false;
+    for(var k = 0; k < s.length; k++){
+      var ch = s[k];
+      if(ch === '"') q = !q;
+      if(ch === "#" && !q) break;
+      o += ch;
+    }
+    return o;
+  }
+  function parseVal(raw){
+    raw = raw.trim();
+    if(raw === "true") return true;
+    if(raw === "false") return false;
+    if(/^-?\d+$/.test(raw)) return parseInt(raw, 10);
+    if(raw[0] === '"') return raw.slice(1, raw.lastIndexOf('"')).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+    if(raw[0] === "["){
+      var inner = raw.slice(1, raw.lastIndexOf("]"));
+      if(!inner.trim()) return [];
+      return inner.split(",").map(function(x){ return x.trim(); }).filter(Boolean).map(function(x){
+        return x[0] === '"' ? x.slice(1, x.lastIndexOf('"')) : x;
+      });
+    }
+    return raw;
+  }
+  for(; i < lines.length; i++){
+    var line = stripComment(lines[i]).trim();
+    if(!line) continue;
+    var th = line.match(/^\[\[?([A-Za-z0-9_.]+)\]\]?$/);
+    if(th){
+      var dbl = line.indexOf("[[") === 0;
+      if(dbl){
+        root[th[1]] = root[th[1]] || [];
+        cur = {}; root[th[1]].push(cur);
+      } else {
+        cur = root[th[1]] = root[th[1]] || {};
+      }
+      continue;
+    }
+    var eq = line.indexOf("=");
+    if(eq === -1) continue;
+    var key = line.slice(0, eq).trim(), val = line.slice(eq + 1).trim();
+    if(val[0] === "[" && val.lastIndexOf("]") === -1){
+      while(i + 1 < lines.length && val.lastIndexOf("]") === -1){ i++; val += " " + stripComment(lines[i]).trim(); }
+    }
+    cur[key] = parseVal(val);
+  }
+  return root;
+}
+/* ==== END SHARED PRELUDE ==== */
+
+/* ---- schema (mirrors acorn/profile.py + acorn/bundle.py) ----------------- */
+var SETTABLE_KEYS = ["default_base", "default_venv", "venv_default_packages",
+  "vscode_flavor", "extension_gallery", "vscode_extensions"];
+var EDITORS = ["vscode", "spyder"];
+var ALWAYS_PRESENT = ["hatchling", "ipython", "ruff", "ipykernel", "pip"];
+var DEFAULT_VENV_PACKAGES = ["ipython", "ruff", "ipykernel"];
+
+var profiles = [];
+
+function newProfile(name){
+  return {
+    name: name || "profile",
+    dist: "default",
+    users: [],
+    pythons: [],
+    venvs: [{ name: "dev", python: "", packages: [], isdefault: true, defpkgs: "inherit" }],
+    editors: [],
+    tools: [],
+    repos: [],
+    config: {}
+  };
+}
+
+/* ---- render -------------------------------------------------------------- */
+function render(){
+  var wrap = $("profiles-list");
+  wrap.innerHTML = "";
+  if(!profiles.length){
+    wrap.innerHTML = '<p class="help">No profiles yet. Add one, or import.</p>';
+  }
+  profiles.forEach(function(p, pi){
+    var card = document.createElement("div");
+    card.className = "panel";
+    card.innerHTML = cardHtml(p, pi);
+    wrap.appendChild(card);
+    wire(card, p, pi);
+    var out = document.createElement("div");
+    out.style.marginTop = ".8rem";
+    var toml = buildToml(p); p._toml = toml;
+    var v = validate(p);
+    out.innerHTML =
+      '<div class="out-head"><h3>' + esc(p.name) + '.toml</h3><div class="out-actions">' +
+      '<button type="button" class="tiny" data-copy>Copy</button>' +
+      '<button type="button" class="tiny" data-dl>Download</button></div></div>' +
+      '<pre class="out">' + esc(toml) + '</pre><div class="verdict" data-verdict></div>';
+    card.appendChild(out);
+    renderVerdict(out.querySelector("[data-verdict]"), v, "Valid profile.");
+    out.querySelector("[data-copy]").onclick = function(){ copyText(toml, this); };
+    out.querySelector("[data-dl]").onclick = function(){ download(p.name + ".toml", toml); };
+  });
+  resolveWho();
+  fitCheck();
+}
+
+function tagsHtml(arr, ns){
+  return arr.map(function(v, i){
+    return '<span class="tag">' + esc(v) + '<button type="button" data-rm="' + ns + '" data-i="' + i + '" aria-label="remove">×</button></span>';
+  }).join("");
+}
+
+function cardHtml(p, pi){
+  return [
+    '<div class="out-head" style="margin-bottom:.6rem">',
+    '  <h3>installation-profile/<input type="text" data-f="name" value="' + esc(p.name) + '" style="width:9rem;display:inline-block">.toml</h3>',
+    '  <button type="button" class="tiny ghost" data-act="del">Remove profile</button>',
+    '</div>',
+
+    '<div class="field"><span class="head">Who gets it &mdash; <code>[distribution]</code></span>',
+    '  <div class="radio-row">',
+    '    <label><input type="radio" name="d' + pi + '" value="default"' + (p.dist === "default" ? " checked" : "") + '> everyone <span class="sub">default = true</span></label>',
+    '    <label><input type="radio" name="d' + pi + '" value="users"' + (p.dist === "users" ? " checked" : "") + '> named users <span class="sub">opt-in, on top of the default</span></label>',
+    '  </div>',
+    p.dist === "users"
+      ? '<div class="add-row" style="margin-top:.5rem"><input type="text" data-f="user-in" placeholder="alice"><button type="button">Add user</button></div><div class="taglist">' + tagsHtml(p.users, "users") + '</div>'
+      : '',
+    '</div>',
+
+    '<div class="field"><span class="head">Python interpreters &mdash; <code>python</code></span>',
+    '  <p class="help">Checked against the bundle\'s <code>pythons</code> for an air-gapped fleet. Venvs can also pin their own base.</p>',
+    '  <div class="add-row"><input type="text" data-f="py-in" placeholder="3.12"><button type="button">Add</button></div>',
+    '  <div class="taglist">' + tagsHtml(p.pythons, "pythons") + '</div>',
+    '</div>',
+
+    '<div class="group"><h3>[[venv]]</h3>',
+    '  <div data-venvs>' + p.venvs.map(function(v, vi){ return venvHtml(v, vi); }).join("") + '</div>',
+    '  <button type="button" class="tiny" data-act="add-venv">+ venv</button>',
+    '</div>',
+
+    '<div class="grid2">',
+    '  <div class="field"><span class="head">Editor &mdash; <code>editor</code></span>',
+    '    <div class="checks">' + EDITORS.map(function(e){
+        return '<label><input type="checkbox" data-ed="' + e + '"' + (p.editors.indexOf(e) > -1 ? " checked" : "") + '> ' + e + '</label>';
+      }).join("") + '</div></div>',
+    '  <div class="field"><span class="head">conda-forge tools &mdash; <code>tools</code></span>',
+    '    <div class="add-row"><input type="text" data-f="tool-in" placeholder="ripgrep"><button type="button">Add</button></div>',
+    '    <div class="taglist">' + tagsHtml(p.tools, "tools") + '</div></div>',
+    '</div>',
+
+    '<div class="group"><h3>[[repo]]</h3>',
+    '  <p class="help">Cloned from a git host on your network. Dependencies must be in the bundle\'s <code>packages</code> &mdash; nothing checks that for you.</p>',
+    '  <div data-repos>' + p.repos.map(function(r, ri){ return repoHtml(r, ri, p); }).join("") + '</div>',
+    '  <button type="button" class="tiny" data-act="add-repo">+ repo</button>',
+    '</div>',
+
+    '<details class="ref" style="margin:0;border:none;padding:0"><summary style="font-size:.85rem">[config] &mdash; settings apply may write</summary>',
+    '  <div class="grid2" style="margin-top:.6rem">' + SETTABLE_KEYS.map(function(k){
+        var val = p.config[k] || "";
+        return '<div><label class="head" style="font-size:.78rem">' + k + '</label><input type="text" data-cfg="' + k + '" value="' + esc(Array.isArray(val) ? val.join(",") : val) + '"></div>';
+      }).join("") + '</div>',
+    '  <p class="help" style="margin-top:.4rem"><code>venv_default_packages</code> and <code>vscode_extensions</code> take a comma-separated list.</p>',
+    '</details>'
+  ].join("\n");
+}
+
+function venvHtml(v, vi){
+  return [
+    '<div class="subcard" data-venv="' + vi + '">',
+    '  <div class="grid2">',
+    '    <div><label class="head" style="font-size:.78rem">name</label><input type="text" data-vf="name" value="' + esc(v.name) + '"></div>',
+    '    <div><label class="head" style="font-size:.78rem">base python (optional)</label><input type="text" data-vf="python" value="' + esc(v.python) + '" placeholder="312"></div>',
+    '  </div>',
+    '  <div class="field" style="margin:.5rem 0 0"><label class="head" style="font-size:.78rem">packages</label>',
+    '    <div class="add-row"><input type="text" data-vf="pkg-in" placeholder="pandas==2.2.3"><button type="button">Add</button></div>',
+    '    <div class="taglist">' + tagsHtml(v.packages, "vpkg" + vi) + '</div></div>',
+    '  <div class="checks" style="margin-top:.4rem">',
+    '    <label><input type="checkbox" data-vf="isdefault"' + (v.isdefault ? " checked" : "") + '> default venv</label>',
+    '    <label>default_packages:<select data-vf="defpkgs" style="width:auto;display:inline-block;margin-left:.3rem">',
+    '      <option value="inherit"' + (v.defpkgs === "inherit" ? " selected" : "") + '>inherit</option>',
+    '      <option value="true"' + (v.defpkgs === "true" ? " selected" : "") + '>true</option>',
+    '      <option value="false"' + (v.defpkgs === "false" ? " selected" : "") + '>false (bare)</option>',
+    '    </select></label>',
+    '    <button type="button" class="tiny ghost" data-vact="del">remove</button>',
+    '  </div>',
+    '</div>'
+  ].join("\n");
+}
+
+function repoHtml(r, ri, p){
+  var venvNames = p.venvs.map(function(v){ return v.name; });
+  return [
+    '<div class="subcard" data-repo="' + ri + '">',
+    '  <label class="head" style="font-size:.78rem">url</label>',
+    '  <input type="text" data-rf="url" value="' + esc(r.url) + '" placeholder="https://git.example/team/app.git">',
+    '  <label class="head" style="font-size:.78rem;margin-top:.4rem">install into</label>',
+    '  <div class="checks">' + (venvNames.length
+        ? venvNames.map(function(n){ return '<label><input type="checkbox" data-rv="' + esc(n) + '"' + (r.install.indexOf(n) > -1 ? " checked" : "") + '> ' + esc(n) + '</label>'; }).join("")
+        : '<span class="help" style="margin:0">add a venv first</span>') + '</div>',
+    '  <button type="button" class="tiny ghost" data-ract="del" style="margin-top:.3rem">remove repo</button>',
+    '</div>'
+  ].join("\n");
+}
+
+/* ---- wire -------------------------------------------------------------- */
+function wire(card, p, pi){
+  card.querySelector('[data-f="name"]').oninput = function(){ p.name = this.value.trim() || "profile"; scheduleRegen(); };
+  card.querySelector('[data-act="del"]').onclick = function(){ profiles.splice(pi, 1); render(); };
+  card.querySelectorAll('input[name="d' + pi + '"]').forEach(function(r){ r.onchange = function(){ p.dist = r.value; render(); }; });
+
+  function adder(sel, arr){
+    var input = card.querySelector(sel);
+    if(!input) return;
+    var go = function(){ var v = input.value.trim(); if(v && arr.indexOf(v) === -1) arr.push(v); input.value = ""; render(); };
+    input.nextElementSibling.onclick = go;
+    input.onkeydown = function(e){ if(e.key === "Enter"){ e.preventDefault(); go(); } };
+  }
+  adder('[data-f="user-in"]', p.users);
+  adder('[data-f="py-in"]', p.pythons);
+  adder('[data-f="tool-in"]', p.tools);
+
+  card.querySelectorAll("[data-rm]").forEach(function(b){
+    b.onclick = function(){
+      var ns = b.getAttribute("data-rm"), i = +b.getAttribute("data-i");
+      if(ns === "users") p.users.splice(i, 1);
+      else if(ns === "pythons") p.pythons.splice(i, 1);
+      else if(ns === "tools") p.tools.splice(i, 1);
+      else if(ns.indexOf("vpkg") === 0) p.venvs[+ns.slice(4)].packages.splice(i, 1);
+      render();
+    };
+  });
+
+  card.querySelector('[data-act="add-venv"]').onclick = function(){
+    p.venvs.push({ name: "venv" + (p.venvs.length + 1), python: "", packages: [], isdefault: false, defpkgs: "inherit" });
+    render();
+  };
+  card.querySelectorAll("[data-venv]").forEach(function(vc){
+    var vi = +vc.getAttribute("data-venv"), v = p.venvs[vi];
+    vc.querySelectorAll("[data-vf]").forEach(function(el){
+      var f = el.getAttribute("data-vf");
+      if(f === "pkg-in") return;
+      var ev = (el.type === "checkbox" || el.tagName === "SELECT") ? "onchange" : "oninput";
+      el[ev] = function(){
+        if(f === "name") v.name = el.value.trim() || "venv";
+        else if(f === "python") v.python = el.value.trim();
+        else if(f === "isdefault"){ v.isdefault = el.checked; if(el.checked) p.venvs.forEach(function(o){ if(o !== v) o.isdefault = false; }); }
+        else if(f === "defpkgs") v.defpkgs = el.value;
+        if(f === "name" || f === "isdefault") render(); else scheduleRegen();
+      };
+    });
+    var pin = vc.querySelector('[data-vf="pkg-in"]');
+    var addPkg = function(){ var val = pin.value.trim(); if(val && v.packages.indexOf(val) === -1) v.packages.push(val); pin.value = ""; render(); };
+    pin.nextElementSibling.onclick = addPkg;
+    pin.onkeydown = function(e){ if(e.key === "Enter"){ e.preventDefault(); addPkg(); } };
+    vc.querySelector('[data-vact="del"]').onclick = function(){
+      p.venvs.splice(vi, 1);
+      if(!p.venvs.some(function(x){ return x.isdefault; }) && p.venvs[0]) p.venvs[0].isdefault = true;
+      render();
+    };
+  });
+
+  card.querySelectorAll("[data-ed]").forEach(function(cb){
+    cb.onchange = function(){
+      var n = cb.getAttribute("data-ed");
+      if(cb.checked){ if(p.editors.indexOf(n) === -1) p.editors.push(n); }
+      else p.editors = p.editors.filter(function(x){ return x !== n; });
+      scheduleRegen();
+    };
+  });
+
+  card.querySelector('[data-act="add-repo"]').onclick = function(){ p.repos.push({ url: "", install: [] }); render(); };
+  card.querySelectorAll("[data-repo]").forEach(function(rc){
+    var ri = +rc.getAttribute("data-repo"), r = p.repos[ri];
+    rc.querySelector('[data-rf="url"]').oninput = function(){ r.url = this.value.trim(); scheduleRegen(); };
+    rc.querySelectorAll("[data-rv]").forEach(function(cb){
+      cb.onchange = function(){
+        var n = cb.getAttribute("data-rv");
+        if(cb.checked){ if(r.install.indexOf(n) === -1) r.install.push(n); }
+        else r.install = r.install.filter(function(x){ return x !== n; });
+        scheduleRegen();
+      };
+    });
+    rc.querySelector('[data-ract="del"]').onclick = function(){ p.repos.splice(ri, 1); render(); };
+  });
+
+  card.querySelectorAll("[data-cfg]").forEach(function(el){
+    el.oninput = function(){
+      var k = el.getAttribute("data-cfg"), val = el.value.trim();
+      if(!val){ delete p.config[k]; }
+      else if(k === "venv_default_packages" || k === "vscode_extensions"){ p.config[k] = val.split(",").map(function(s){ return s.trim(); }).filter(Boolean); }
+      else p.config[k] = val;
+      scheduleRegen();
+    };
+  });
+}
+
+/* Re-render just the outputs on a fast-typing field, without rebuilding the
+   whole form (which would drop focus). */
+var _t = null;
+function scheduleRegen(){ clearTimeout(_t); _t = setTimeout(regenOutputs, 120); }
+function regenOutputs(){
+  var cards = $("profiles-list").children;
+  profiles.forEach(function(p, i){
+    var card = cards[i]; if(!card) return;
+    var pre = card.querySelector("pre.out"), vd = card.querySelector("[data-verdict]");
+    var toml = buildToml(p); p._toml = toml;
+    if(pre) pre.textContent = toml;
+    if(vd) renderVerdict(vd, validate(p), "Valid profile.");
+  });
+  resolveWho();
+  fitCheck();
+}
+
+/* ---- emit ------------------------------------------------------------------ */
+function buildToml(p){
+  var L = ["# " + p.name + ".toml -- generated by docs/profile-builder.html", "schema = 1"];
+  if(p.pythons.length){ L.push(""); L.push("python = " + tomlArray(p.pythons)); }
+  if(p.editors.length){ L.push(""); L.push(p.editors.length === 1 ? "editor = " + tomlStr(p.editors[0]) : "editor = " + tomlArray(p.editors)); }
+  if(p.tools.length){ L.push(""); L.push("tools = " + tomlArray(p.tools)); }
+  L.push(""); L.push("[distribution]");
+  if(p.dist === "default") L.push("default = true");
+  else L.push("users = " + tomlArray(p.users));
+  var cfgKeys = Object.keys(p.config);
+  if(cfgKeys.length){
+    L.push(""); L.push("[config]");
+    SETTABLE_KEYS.forEach(function(k){
+      if(p.config[k] === undefined) return;
+      var v = p.config[k];
+      L.push(k + " = " + (Array.isArray(v) ? tomlArray(v) : tomlStr(v)));
+    });
+  }
+  p.venvs.forEach(function(v){
+    L.push(""); L.push("[[venv]]");
+    L.push("name = " + tomlStr(v.name));
+    if(v.python) L.push("python = " + tomlStr(v.python));
+    if(v.packages.length) L.push("packages = " + tomlArray(v.packages));
+    if(v.isdefault) L.push("default = true");
+    if(v.defpkgs === "true") L.push("default_packages = true");
+    if(v.defpkgs === "false") L.push("default_packages = false");
+  });
+  p.repos.forEach(function(r){
+    if(!r.url) return;
+    L.push(""); L.push("[[repo]]");
+    L.push("url = " + tomlStr(r.url));
+    if(r.install.length === 1) L.push("install = " + tomlStr(r.install[0]));
+    else if(r.install.length > 1) L.push("install = " + tomlArray(r.install));
+  });
+  return L.join("\n").replace(/\n{3,}/g, "\n\n") + "\n";
+}
+
+/* ---- validate (mirror profile.parse) ------------------------------------- */
+function validate(p){
+  var errs = [], warns = [];
+  if(!/^[A-Za-z0-9._-]+$/.test(p.name)) errs.push("file name has characters that won't glob as *.toml");
+  if(p.dist === "default" && p.users.length) errs.push("[distribution]: a profile is the default OR opt-in for listed users, not both");
+  if(p.dist === "users" && !p.users.length) warns.push("[distribution] users is empty -- this profile reaches nobody automatically");
+  var names = {}, defaults = 0;
+  p.venvs.forEach(function(v){
+    if(!v.name) errs.push("every [[venv]] needs a name");
+    if(names[v.name]) errs.push("duplicate venv name " + JSON.stringify(v.name));
+    names[v.name] = true;
+    if(v.isdefault) defaults++;
+    if(v.python && !/^\d/.test(v.python)) warns.push("venv " + JSON.stringify(v.name) + ": python should be a base tag like \"312\"");
+  });
+  if(defaults > 1) errs.push("only one venv may be default");
+  if(!p.venvs.length) warns.push("no [[venv]] -- the profile installs no environment");
+  p.repos.forEach(function(r){
+    r.install.forEach(function(v){
+      var name = r.install && r.install.length ? String(v).split("[")[0] : v;
+      if(!names[name]) errs.push("repo " + JSON.stringify(r.url || "?") + ": install names venv " + JSON.stringify(name) + ", which this profile doesn't declare");
+    });
+  });
+  Object.keys(p.config).forEach(function(k){
+    if(SETTABLE_KEYS.indexOf(k) === -1) errs.push("[config] " + JSON.stringify(k) + " cannot be set from a profile");
+  });
+  if(p.config.default_venv !== undefined && !names[p.config.default_venv]){
+    errs.push("[config] default_venv = " + JSON.stringify(p.config.default_venv) + " names no venv in this profile");
+  }
+  if(p.config.vscode_flavor !== undefined && ["microsoft", "vscodium"].indexOf(String(p.config.vscode_flavor).toLowerCase()) === -1){
+    errs.push("[config] vscode_flavor must be microsoft or vscodium");
+  }
+  return { errs: errs, warns: warns };
+}
+
+function renderVerdict(el, res, okMsg){
+  if(!res.errs.length && !res.warns.length){ el.innerHTML = '<span class="pill good">looks valid</span> ' + (okMsg || ""); return; }
+  var h = res.errs.length ? '<span class="pill bad">' + res.errs.length + (res.errs.length > 1 ? " problems" : " problem") + '</span>' : '<span class="pill good">valid</span>';
+  h += "<ul>";
+  res.errs.forEach(function(m){ h += '<li class="bad">&#10007; ' + esc(m) + '</li>'; });
+  res.warns.forEach(function(m){ h += '<li>&#9888; ' + esc(m) + '</li>'; });
+  el.innerHTML = h + "</ul>";
+}
+
+/* ---- who gets what (mirror profile.distributed_to) ---------------------- */
+function resolveWho(){
+  var el = $("who-result");
+  var user = ($("who-user").value || "").trim().toLowerCase();
+  if(!user){ el.innerHTML = ""; return; }
+  var got = [];
+  profiles.forEach(function(p){ if(p.dist === "default") got.push(p.name + "  (default)"); });
+  profiles.forEach(function(p){
+    if(p.dist === "users" && p.users.map(function(u){ return u.toLowerCase(); }).indexOf(user) > -1) got.push(p.name + "  (opt-in)");
+  });
+  var defaults = profiles.filter(function(p){ return p.dist === "default"; });
+  var warn = defaults.length > 1 ? ['<li>&#9888; ' + defaults.length + ' profiles are marked default -- exactly one should be</li>'] : [];
+  el.innerHTML = (got.length
+    ? '<span class="pill good">' + got.length + (got.length > 1 ? " profiles" : " profile") + '</span><ul>' + got.map(function(n){ return '<li class="good">&#10003; ' + esc(n) + '</li>'; }).join("")
+    : '<span class="pill bad">nothing</span><ul><li class="bad">no default profile, and none lists ' + esc(user) + '</li>') + warn.join("") + '</ul>';
+}
+$("who-btn").onclick = resolveWho;
+$("who-user").onkeydown = function(e){ if(e.key === "Enter") resolveWho(); };
+
+/* ---- fit check (mirror bundle.Inventory.from_bundle + check_profile) ----- */
+function bundleInventory(b){
+  var inv = { packages: {}, pythons: {}, tools: {}, vscode: true };
+  var editor = b.editor || {};
+  inv.vscode = editor.stage !== false;
+  var pkgs = Array.isArray(b.packages) ? b.packages : (b.packages ? [b.packages] : []);
+  ALWAYS_PRESENT.concat(pkgs).forEach(function(spec){
+    var n = requirementName(spec);
+    if(!inv.packages[n]) inv.packages[n] = {};
+    var pin = pinnedVersion(spec);
+    if(pin) inv.packages[n][pin] = true;
+  });
+  (Array.isArray(b.pythons) ? b.pythons : (b.pythons ? [b.pythons] : [])).forEach(function(v){ inv.pythons[String(v).trim()] = true; });
+  (Array.isArray(b.tools) ? b.tools : (b.tools ? [b.tools] : [])).forEach(function(t){ inv.tools[canonical(String(t).split("=")[0])] = true; });
+  return inv;
+}
+function checkProfile(p, inv){
+  var problems = [];
+  p.pythons.forEach(function(v){
+    if(Object.keys(inv.pythons).length && !inv.pythons[String(v).trim()]){
+      problems.push("Python " + v + ": not mirrored (bundle has: " + (Object.keys(inv.pythons).join(", ") || "none") + ")");
+    }
+  });
+  var specs = {};
+  p.venvs.forEach(function(v){ v.packages.forEach(function(s){ specs[s] = true; }); });
+  Object.keys(specs).forEach(function(spec){
+    var n = requirementName(spec);
+    if(!inv.packages[n]){ problems.push("package " + JSON.stringify(spec) + ": no distribution in the bundle"); return; }
+    var pin = pinnedVersion(spec);
+    if(pin && !inv.packages[n][pin]) problems.push("package " + JSON.stringify(spec) + ": that exact version isn't in the bundle (it has: " + (Object.keys(inv.packages[n]).join(", ") || "unpinned only") + ")");
+  });
+  p.tools.forEach(function(t){
+    if(!inv.tools[canonical(String(t).split("=")[0])]) problems.push("conda-forge tool " + JSON.stringify(t) + ": not in the bundle's channel");
+  });
+  p.editors.forEach(function(ed){
+    if(ed === "vscode" && !inv.vscode) problems.push('editor "vscode": the bundle stages no editor');
+    if(ed === "spyder" && !inv.packages["spyder"]) problems.push('editor "spyder": no spyder distribution in the bundle');
+  });
+  if(p.repos.length) problems.push("NOTE: " + p.repos.length + " repo(s) -- dependencies can't be checked here; make sure the bundle's packages cover them");
+  return problems;
+}
+function fitCheck(){
+  var box = $("fit-results");
+  var raw = $("bundle-src").value.trim();
+  if(!raw){ box.innerHTML = '<p class="help">Paste a bundle above to check every profile against it.</p>'; return; }
+  var b;
+  try { b = miniToml(raw); } catch(e){ box.innerHTML = '<span class="bad">Could not parse that bundle.</span>'; return; }
+  var inv = bundleInventory(b);
+  if(!profiles.length){ box.innerHTML = '<p class="help">No profiles to check.</p>'; return; }
+  box.innerHTML = "";
+  profiles.forEach(function(p){
+    var probs = checkProfile(p, inv);
+    var hard = probs.filter(function(m){ return m.indexOf("NOTE:") !== 0; });
+    var card = document.createElement("div");
+    card.className = "group";
+    card.innerHTML = '<div class="out-head"><h3>' + esc(p.name) + '.toml</h3>' +
+      (hard.length ? '<span class="pill bad">' + hard.length + " won't resolve</span>" : '<span class="pill good">fits</span>') + '</div>' +
+      '<ul style="margin:.3rem 0 0;padding-left:1.1rem">' +
+      (probs.length ? "" : '<li class="good">&#10003; every name resolves inside the bundle</li>') +
+      probs.map(function(m){ var note = m.indexOf("NOTE:") === 0; return '<li class="' + (note ? "" : "bad") + '">' + (note ? "&#9888; " : "&#10007; ") + esc(m) + '</li>'; }).join("") +
+      '</ul>';
+    box.appendChild(card);
+  });
+}
+$("bundle-src").oninput = fitCheck;
+
+/* ---- import ------------------------------------------------------------- */
+$("import-btn").onclick = function(){
+  var raw = $("import-src").value.trim();
+  var msg = $("import-msg");
+  if(!raw){ msg.textContent = "Paste a profile first."; return; }
+  var d;
+  try { d = miniToml(raw); } catch(e){ msg.innerHTML = '<span style="color:var(--danger)">Could not parse that.</span>'; return; }
+  var p = newProfile(($("import-name").value || "profile").trim());
+  p.venvs = [];
+  p.pythons = arr(d.python);
+  p.tools = arr(d.tools);
+  p.editors = arr(d.editor).map(function(x){ return x.toLowerCase(); });
+  var dist = d.distribution || {};
+  if(dist.users){ p.dist = "users"; p.users = arr(dist.users); }
+  else { p.dist = "default"; }
+  (d.venv || []).forEach(function(v){
+    p.venvs.push({
+      name: String(v.name || "venv"), python: v.python ? String(v.python) : "",
+      packages: arr(v.packages), isdefault: v["default"] === true,
+      defpkgs: v.default_packages === true ? "true" : (v.default_packages === false ? "false" : "inherit")
+    });
+  });
+  if(!p.venvs.length) p.venvs = [{ name: "dev", python: "", packages: [], isdefault: true, defpkgs: "inherit" }];
+  (d.repo || []).forEach(function(r){
+    p.repos.push({ url: String(r.url || ""), install: arr(r.install).map(String) });
+  });
+  var cfg = d.config || {};
+  Object.keys(cfg).forEach(function(k){ p.config[k] = cfg[k]; });
+  profiles.push(p);
+  $("import-src").value = ""; $("import-name").value = "";
+  msg.innerHTML = '<span style="color:var(--ok)">Loaded as a card.</span>';
+  render();
+};
+function arr(v){ return Array.isArray(v) ? v.map(String) : (typeof v === "string" && v ? [v] : []); }
+
+$("add-profile").onclick = function(){ profiles.push(newProfile("profile" + (profiles.length + 1))); render(); };
+
+/* ---- init ------------------------------------------------------------------ */
+function regen(){ render(); }
+profiles.push(newProfile("default"));
+profiles[0].venvs[0].packages = ["pandas", "numpy", "requests", "pytest"];
+render();
+</script>
+</body>
+</html>

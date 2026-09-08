@@ -21,6 +21,13 @@ you add your own verbs to `acorn` itself (`acorn lint`, `acorn reset`, ...).
 See it in use in the [software team](profile-examples/software-team.md) and
 [classroom](profile-examples/classroom.md) examples.
 
+> **Rather not hand-edit TOML?**
+> <a href="profile-builder.html"><code>profile-builder.html</code></a>
+> builds a folder of profiles from a form — distribution rules, venvs,
+> packages, repos, `[config]` — with a "who gets what" resolver and an
+> optional fit-check against an offline bundle. One of a set of three; see
+> <a href="config-builder.html"><code>config-builder.html</code></a>.
+
 ---
 
 ## Contents

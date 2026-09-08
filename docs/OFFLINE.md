@@ -62,12 +62,15 @@ The administrator launcher reads it by default. Relative `[build] output`
 paths are resolved from the folder containing this TOML file.
 
 > **Rather not hand-edit TOML?** Open
-> [`offline-builder.html`](offline-builder.html) in a browser — it's a
-> self-contained page (no network; works straight off a USB stick on the
-> air-gapped side) that writes this file from a form, explains every field,
-> and optionally lets you add the deployment profiles and check each one fits
-> the bundle. It runs the same checks `acorn` does; the build itself is still
-> `offline-bundler.cmd`. The file is `docs/offline-builder.html` in the repo.
+> <a href="offline-bundle-builder.html"><code>offline-bundle-builder.html</code></a>
+> in a browser — a self-contained page (no network; works straight off a USB
+> stick on the air-gapped side) that writes this file from a form, explains
+> every field, cross-checks it against a `global.conf`, and checks whether
+> pasted profiles fit. It runs the same checks `acorn` does; the build itself
+> is still `offline-bundler.cmd`. It's one of a set of three —
+> <a href="config-builder.html"><code>config-builder.html</code></a> links the
+> <a href="global-conf-builder.html">global.conf</a> and
+> <a href="profile-builder.html">profile</a> builders too.
 
 **It knows nothing about profiles, on purpose.** The dependency runs one way
 — profiles conform to the bundle, never the reverse. A superset assembled

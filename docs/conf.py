@@ -89,12 +89,21 @@ html_title = "ACORN Planter - ACORN user tool"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
-# docs/offline-builder.html is a standalone, self-contained page (no Sphinx
+# The four config builders are standalone, self-contained pages (no Sphinx
 # chrome, no network) meant to be opened straight off a USB stick on the
-# air-gapped side. OFFLINE.md links to it with a plain relative link, which
-# MyST copies into the built site as a downloadable file -- it opens in the
-# browser like any other page. tests/test_offline_builder.py keeps its
-# embedded schema honest against bundle.py / profile.py.
+# air-gapped side -- and they cross-link to each other by bare filename, so
+# they have to land as siblings at the site root, not in per-file _downloads/
+# hash folders. html_extra_path copies them verbatim; the docs link to them
+# with plain relative links that resolve there.
+# tests/test_config_builders.py keeps their embedded schema honest against
+# config.py / profile.py / bundle.py and asserts the three builders share one
+# byte-identical prelude.
+html_extra_path = [
+    "config-builder.html",
+    "global-conf-builder.html",
+    "profile-builder.html",
+    "offline-bundle-builder.html",
+]
 
 
 def _generate_home(*_args) -> None:

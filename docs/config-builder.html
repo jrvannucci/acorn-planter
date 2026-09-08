@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACORN config builders</title>
+<!--
+  Landing page for the three standalone config authoring aids. Self-contained,
+  no network. See docs/DEPLOYMENT.md and docs/OFFLINE.md.
+-->
+<style>
+  :root {
+    --ink:#14261c; --soft:#52796f; --line:#d4e6da; --accent:#1b4332;
+    --raised:#e9f5ec; --raised-2:#f4faf6; --page:#fbfdfb; --card:#ffffff;
+    --mono:Consolas,"SF Mono",Monaco,"Courier New",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink:#e7f0ea; --soft:#9db8ae; --line:#2b4038; --accent:#95d5b2;
+      --raised:#16261e; --raised-2:#13201a; --page:#0e1712; --card:#121d17;
+    }
+  }
+  * { box-sizing:border-box; }
+  html { color-scheme:light dark; }
+  body { margin:0; font-family:var(--sans); font-size:15px; line-height:1.6; color:var(--ink); background:var(--page); }
+  .wrap { max-width:820px; margin:0 auto; padding:2.5rem 1.25rem 6rem; }
+  h1 { font-family:Georgia,"Times New Roman",serif; font-size:1.8rem; color:var(--accent); margin:0 0 .4rem; }
+  .lede { color:var(--soft); max-width:60ch; }
+  code { font-family:var(--mono); font-size:.88em; background:var(--raised); border:1px solid var(--line); border-radius:3px; padding:.04em .32em; }
+  a { color:var(--accent); }
+  .card { display:block; border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:8px; padding:1.1rem 1.2rem; margin:1rem 0; background:var(--card); text-decoration:none; color:inherit; }
+  .card:hover { background:var(--raised-2); }
+  .card h2 { margin:0 0 .2rem; font-size:1.1rem; color:var(--accent); font-family:var(--mono); }
+  .card p { margin:.3rem 0 0; color:var(--soft); font-size:.9rem; }
+  .model { border:1px solid var(--line); border-radius:8px; padding:1rem 1.2rem; background:var(--raised-2); margin:1.5rem 0; font-size:.92rem; }
+  .model b { color:var(--accent); }
+  footer { margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--line); font-size:.84rem; color:var(--soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ACORN config builders</h1>
+  <p class="lede">Three standalone pages that fill in ACORN's three
+  configuration files from a form, explain every field, and run the same checks
+  <code>acorn</code> does. Each is self-contained &mdash; no network, opens
+  straight off a USB stick with <code>file://</code>. None of them install,
+  build, or change anything; they produce text you commit into your distributed
+  copy of the repo.</p>
+
+  <div class="model">
+    <p style="margin-top:0"><b>Three files, then one command.</b></p>
+    <p><b>global.conf</b> &mdash; where every machine <em>looks</em>: the source
+    repo, the package index, the Python mirror, the editor build. Read by both
+    installers at install time.</p>
+    <p><b>installation-profile/*.toml</b> &mdash; what each group of users
+    <em>ends up with</em>, and who gets it: interpreters, venvs, packages,
+    repos. Read by <code>acorn apply</code>.</p>
+    <p><b>offline-bundle.toml</b> &mdash; what an air-gapped share <em>holds</em>:
+    the superset every profile must be a subset of. Read by the offline bundler.</p>
+    <p style="margin-bottom:0">A standard internet install needs none of them.
+    You add them to deploy ACORN to a team, an internal network, or a fully
+    disconnected one.</p>
+  </div>
+
+  <a class="card" href="global-conf-builder.html">
+    <h2>global.conf builder</h2>
+    <p>The 19 <code>ACORN_*</code> keys, grouped and documented. Import an
+    existing file, edit, re-export. Optional cross-check against an offline
+    bundle's editor settings.</p>
+  </a>
+
+  <a class="card" href="profile-builder.html">
+    <h2>profile builder</h2>
+    <p>A folder of deployment profiles: distribution rules, venvs, packages,
+    repos, <code>[config]</code>. "Who gets what" resolver. Optional fit-check
+    of every profile against a pasted <code>offline-bundle.toml</code>.</p>
+  </a>
+
+  <a class="card" href="offline-bundle-builder.html">
+    <h2>offline bundle builder</h2>
+    <p>Platforms, interpreters, the wheelhouse, conda-forge tools, the editor,
+    build settings. Import/validate/export. Optional cross-check against a
+    <code>global.conf</code> and a fit-check of pasted profiles.</p>
+  </a>
+
+  <footer>
+    These mirror <code>acorn/config.py</code>, <code>acorn/profile.py</code> and
+    <code>acorn/bundle.py</code>. When they disagree, the tools are right and a
+    page is stale &mdash; <code>tests/test_config_builders.py</code> guards
+    against that. See <a href="DEPLOYMENT.html">DEPLOYMENT.md</a> and
+    <a href="OFFLINE.html">OFFLINE.md</a>.
+  </footer>
+</div>
+</body>
+</html>

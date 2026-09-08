@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACORN global.conf builder</title>
+<!--
+  Standalone authoring aid for acorn-planter/global.conf -- the file an
+  organization edits once to point every user's machine at its own sources.
+
+  Self-contained: no scripts, styles or fonts are fetched, so it works opened
+  straight off a USB stick with file:// on a disconnected machine.
+
+  It writes text you paste into global.conf and mirrors the checks the two
+  installers (install.sh / install.ps1) and acorn/config.py apply. It changes
+  nothing itself. tests/test_config_builders.py keeps the key list and the
+  shared prelude honest.
+-->
+<style>
+/* ==== SHARED PRELUDE (byte-identical across the *-builder.html tools; tests/test_config_builders.py asserts this) ==== */
+:root {
+  --ink:#14261c; --soft:#52796f; --line:#d4e6da; --accent:#1b4332;
+  --raised:#e9f5ec; --raised-2:#f4faf6; --danger:#9c4a3c; --danger-tint:#f7ece9;
+  --ok:#2f6b4f; --page:#fbfdfb; --card:#ffffff;
+  --mono:Consolas,"SF Mono",Monaco,"Courier New",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink:#e7f0ea; --soft:#9db8ae; --line:#2b4038; --accent:#95d5b2;
+    --raised:#16261e; --raised-2:#13201a; --danger:#e59a8c; --danger-tint:#2c1c18;
+    --ok:#7fc9a4; --page:#0e1712; --card:#121d17;
+  }
+}
+* { box-sizing:border-box; }
+html { color-scheme:light dark; }
+body { margin:0; font-family:var(--sans); font-size:15px; line-height:1.55; color:var(--ink); background:var(--page); }
+.wrap { max-width:1180px; margin:0 auto; padding:2rem 1.25rem 6rem; }
+header.masthead { margin-bottom:1.5rem; }
+header.masthead h1 { margin:0 0 .3rem; font-family:Georgia,"Times New Roman",serif; font-size:1.7rem; color:var(--accent); }
+header.masthead p { margin:.2rem 0; color:var(--soft); max-width:64ch; }
+a { color:var(--accent); }
+.nav { font-size:.85rem; margin-bottom:1.2rem; }
+.nav a { margin-right:.9rem; }
+.cols { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
+@media (max-width:900px) { .cols { grid-template-columns:1fr; } }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:1.1rem 1.2rem; margin-bottom:1.1rem; }
+.panel > h2 { margin:0 0 .2rem; font-size:1.15rem; font-family:Georgia,"Times New Roman",serif; color:var(--accent); }
+.panel > .lede { margin:0 0 1rem; color:var(--soft); font-size:.92rem; }
+.step-tag { display:inline-block; font-size:.7rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--soft); margin-bottom:.35rem; }
+.field { margin:0 0 1.15rem; }
+.field:last-child { margin-bottom:0; }
+.field > label.head, .field > .head { display:block; font-weight:700; font-size:.9rem; margin-bottom:.15rem; }
+.field .help { font-size:.84rem; color:var(--soft); margin:.1rem 0 .45rem; }
+code { font-family:var(--mono); font-size:.88em; background:var(--raised); border:1px solid var(--line); border-radius:3px; padding:.04em .32em; }
+input[type=text], textarea, select { width:100%; font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:5px; padding:.42rem .55rem; }
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline:3px solid var(--accent); outline-offset:1px; }
+textarea { resize:vertical; font-family:var(--mono); font-size:.86rem; line-height:1.5; }
+.checks { display:flex; flex-wrap:wrap; gap:.3rem .9rem; }
+.checks.stack { flex-direction:column; gap:.35rem; }
+.checks label { display:flex; align-items:flex-start; gap:.4rem; font-size:.9rem; font-weight:400; }
+.checks label input { margin-top:.2rem; }
+.checks label .sub { display:block; color:var(--soft); font-size:.82rem; }
+.radio-row { display:flex; flex-wrap:wrap; gap:.5rem; }
+.radio-row label { flex:1 1 12rem; border:1px solid var(--line); border-radius:6px; padding:.5rem .6rem; font-size:.88rem; cursor:pointer; }
+.radio-row label.sel { border-color:var(--accent); background:var(--raised); }
+.radio-row label .sub { display:block; color:var(--soft); font-size:.8rem; margin-top:.1rem; }
+.taglist { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.45rem; }
+.taglist:empty { display:none; }
+.tag { display:inline-flex; align-items:center; gap:.3rem; background:var(--raised); border:1px solid var(--line); border-radius:999px; padding:.12rem .3rem .12rem .6rem; font-family:var(--mono); font-size:.82rem; }
+.tag button { border:none; background:none; color:var(--soft); cursor:pointer; font-size:1rem; line-height:1; padding:0 .15rem; }
+.tag button:hover { color:var(--danger); }
+.add-row { display:flex; gap:.4rem; }
+.add-row input { flex:1; }
+button { font:inherit; border-radius:5px; border:1px solid var(--line); background:var(--raised); color:var(--accent); padding:.4rem .8rem; cursor:pointer; }
+button:hover { background:var(--raised-2); }
+button.primary { background:var(--accent); color:var(--page); border-color:var(--accent); }
+button.ghost { background:none; }
+button.tiny { padding:.2rem .5rem; font-size:.82rem; }
+.out-head { display:flex; align-items:baseline; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+.out-head h3 { margin:0; font-size:.95rem; font-family:var(--mono); color:var(--accent); }
+.out-actions { display:flex; gap:.4rem; }
+pre.out { margin:.5rem 0 0; padding:.8rem .9rem; background:var(--raised-2); border:1px solid var(--line); border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:.83rem; line-height:1.5; white-space:pre; tab-size:2; }
+.sticky { position:sticky; top:1rem; }
+.verdict { margin-top:.6rem; font-size:.88rem; }
+.verdict ul { margin:.3rem 0 0; padding-left:1.1rem; }
+.verdict li { margin:.15rem 0; }
+.verdict .bad { color:var(--danger); }
+.verdict .good { color:var(--ok); }
+.pill { display:inline-block; font-size:.72rem; font-weight:700; padding:.08rem .5rem; border-radius:999px; letter-spacing:.04em; }
+.pill.good { background:var(--raised); color:var(--ok); border:1px solid var(--line); }
+.pill.bad { background:var(--danger-tint); color:var(--danger); border:1px solid var(--danger); }
+details.ref { margin-top:1rem; border-top:1px solid var(--line); padding-top:.8rem; }
+details.ref summary { cursor:pointer; font-weight:700; color:var(--accent); }
+details.ref table { border-collapse:collapse; font-size:.85rem; margin-top:.7rem; width:100%; }
+details.ref th, details.ref td { border:1px solid var(--line); padding:.35rem .55rem; text-align:left; vertical-align:top; }
+details.ref th { background:var(--raised); }
+.group { border:1px solid var(--line); border-radius:7px; padding:.9rem; margin-bottom:.9rem; background:var(--raised-2); }
+.group > h3 { margin:0 0 .6rem; font-size:.9rem; font-family:var(--mono); color:var(--accent); }
+.subcard { border:1px dashed var(--line); border-radius:6px; padding:.7rem; margin:.5rem 0; background:var(--card); }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+@media (max-width:560px) { .grid2 { grid-template-columns:1fr; } }
+.hidden { display:none !important; }
+.banner { background:var(--raised); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:4px; padding:.55rem .75rem; font-size:.86rem; color:var(--soft); margin-bottom:1rem; }
+.continue-bar { text-align:center; margin:1.2rem 0; }
+footer.foot { margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--line); font-size:.84rem; color:var(--soft); }
+/* ==== END SHARED PRELUDE ==== */
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <h1>global.conf builder</h1>
+  <p><code>global.conf</code> is where an organization sets, once, where every
+  user's machine gets things from &mdash; the source repo, the package index,
+  the Python mirror, the editor build, a deployment profile. Everyone who
+  installs from your copy inherits these; your users pass no flags and set no
+  environment variables.</p>
+  <p>This fills the file in from a form and runs the checks the two installers
+  and <code>acorn config</code> apply. It changes nothing itself.</p>
+</header>
+
+<nav class="nav">
+  <a href="config-builder.html">&larr; all three builders</a>
+  <a href="global-conf-builder.html"><strong>global.conf</strong></a>
+  <a href="profile-builder.html">profiles</a>
+  <a href="offline-bundle-builder.html">offline bundle</a>
+</nav>
+
+<div class="banner">
+  A standard internet install needs <em>none</em> of this &mdash; the built-in
+  defaults are the public repo and pypi.org. Every field below is optional;
+  set only the ones your deployment changes. Leaving a field blank emits its
+  documented default line (or nothing, in plain mode).
+</div>
+
+<div class="cols">
+  <div>
+    <div class="panel">
+      <h2>Settings</h2>
+      <p class="lede">Grouped the way <code>global.conf</code> itself is.</p>
+
+      <div class="field">
+        <span class="head">Import an existing <code>global.conf</code></span>
+        <p class="help">Paste one to load it into the form. Skip to start fresh.</p>
+        <textarea id="import-src" rows="3" placeholder='# paste global.conf here (optional)'></textarea>
+        <div class="add-row" style="margin-top:.4rem">
+          <button type="button" id="import-btn">Load it</button>
+          <span id="import-msg" class="help" style="margin:0; align-self:center"></span>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--line); margin:1.1rem 0">
+
+      <div class="group">
+        <h3>Source &amp; location</h3>
+        <div class="field">
+          <label class="head" for="ACORN_REPO_URL">ACORN_REPO_URL</label>
+          <p class="help">Where ACORN is installed from and where
+          <code>acorn update-commands</code> fetches updates: a git URL
+          (including self-hosted GitHub/GitLab) <em>or</em> a plain directory
+          path (a copy of this repo on a network drive). Blank = the public
+          GitHub repo.</p>
+          <input type="text" id="ACORN_REPO_URL" placeholder="https://github.example/tools/acorn-planter.git">
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_HOME_DIR">ACORN_HOME_DIR</label>
+          <p class="help">The folder everything ACORN manages lives in.
+          <code>~</code> means the user's home. Put a <code>{user}</code> token
+          in a shared path (<code>C:\acorn\{user}</code>) and each installer
+          expands it to their own login name &mdash; that also records a
+          <code>shared_root</code> and turns on the <code>admin-*</code>
+          commands. Blank = <code>~/acorn</code>.</p>
+          <input type="text" id="ACORN_HOME_DIR" placeholder="~/acorn">
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Default environment (install time)</h3>
+        <div class="field">
+          <span class="head">ACORN_VENV_DEFAULT_PACKAGES</span>
+          <p class="help">Packages installed into every venv <code>acorn venv</code>
+          creates. Blank = <code>ipython, ruff, ipykernel</code>.</p>
+          <div class="taglist" id="pkgs-tags"></div>
+          <div class="add-row">
+            <input type="text" id="pkgs-in" placeholder="ipython" aria-label="package">
+            <button type="button">Add</button>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label class="head" for="ACORN_AUTO_SETUP">ACORN_AUTO_SETUP</label>
+            <p class="help">Install newest Python + a <code>dev</code> venv after
+            ACORN itself. Blank/<code>true</code> = yes.</p>
+            <select id="ACORN_AUTO_SETUP"><option value="">(default: true)</option><option value="true">true</option><option value="false">false</option></select>
+          </div>
+          <div class="field">
+            <label class="head" for="ACORN_AUTO_VSCODE">ACORN_AUTO_VSCODE</label>
+            <p class="help">Also stage the portable VS Code (~300&nbsp;MB) during
+            install. Only applies when AUTO_SETUP is on.</p>
+            <select id="ACORN_AUTO_VSCODE"><option value="">(default: true)</option><option value="true">true</option><option value="false">false</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_POWERSHELL_POLICY">ACORN_POWERSHELL_POLICY <span style="font-weight:400;color:var(--soft)">(Windows)</span></label>
+          <p class="help">What the installer does about PowerShell's execution
+          policy, which must allow local scripts or the <code>acorn</code> shell
+          command never loads in a new terminal. Cannot override a Group Policy
+          or <code>AllSigned</code> either way.</p>
+          <select id="ACORN_POWERSHELL_POLICY">
+            <option value="">(default) ask an interactive install, else print the command</option>
+            <option value="RemoteSigned">RemoteSigned &mdash; set it for the user, no prompt</option>
+            <option value="skip">skip &mdash; never touch or check the policy</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Offline / internal sources</h3>
+        <p class="help" style="margin-top:-.3rem">Blank means "use the internet
+        normally". A directory value is a network share; a URL is an internal
+        mirror. See the offline bundle builder for the air-gapped case.</p>
+        <div class="field">
+          <label class="head" for="ACORN_PYTHON_MIRROR">ACORN_PYTHON_MIRROR</label>
+          <p class="help">Where <code>acorn python</code> gets interpreter builds:
+          a mirror URL or a directory of python-build-standalone archives.</p>
+          <input type="text" id="ACORN_PYTHON_MIRROR" placeholder="S:\tools\python-builds">
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_PACKAGE_INDEX">ACORN_PACKAGE_INDEX</label>
+          <p class="help">Where packages install from: an index URL
+          (Artifactory/Nexus/devpi) or a plain directory of wheels (the internet
+          index is then disabled entirely).</p>
+          <input type="text" id="ACORN_PACKAGE_INDEX" placeholder="https://pypi.example/simple">
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_PACKAGE_UPLOAD_URL">ACORN_PACKAGE_UPLOAD_URL</label>
+          <p class="help">The <em>upload</em> endpoint <code>acorn upload-whls</code>
+          publishes to &mdash; usually a different path from the index above.</p>
+          <input type="text" id="ACORN_PACKAGE_UPLOAD_URL" placeholder="https://pypi.example/api/pypi/pypi-local/">
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_PACKAGE_UPLOAD_TOKEN">ACORN_PACKAGE_UPLOAD_TOKEN</label>
+          <p class="help"><strong>Leave this blank in the copy you distribute.</strong>
+          It's a write credential and every value in this file is seeded into
+          every user's settings &mdash; a token here hands your whole fleet
+          publish rights. Set it only on the publishing machine with
+          <code>acorn config set package_upload_token</code>.</p>
+          <input type="text" id="ACORN_PACKAGE_UPLOAD_TOKEN" placeholder="(leave blank)">
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_CONDA_CHANNEL">ACORN_CONDA_CHANNEL</label>
+          <p class="help">Channel <code>acorn forge-install</code> fetches
+          command-line tools from. Blank = <code>conda-forge</code> (the
+          community channel; ACORN never consults Anaconda's <code>defaults</code>).</p>
+          <input type="text" id="ACORN_CONDA_CHANNEL" placeholder="conda-forge">
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_NATIVE_TLS">ACORN_NATIVE_TLS</label>
+          <p class="help">Trust the OS certificate store for HTTPS &mdash; for
+          internal mirrors signed by a machine-installed corporate CA.
+          Alternatively ship the CA in <code>vendor/certs/</code>.</p>
+          <select id="ACORN_NATIVE_TLS"><option value="">(default: false)</option><option value="true">true</option><option value="false">false</option></select>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Editor</h3>
+        <div class="field">
+          <span class="head">ACORN_VSCODE_FLAVOR</span>
+          <p class="help">A licensing choice. Blank = <code>microsoft</code>.
+          Must match the offline bundle's <code>[editor] flavor</code> if you
+          build one.</p>
+          <div class="radio-row" id="flavor-row">
+            <label data-flavor=""><input type="radio" name="flavor" value="" checked> (default) microsoft
+              <span class="sub">Official VS Code + Marketplace. Restricted redistribution.</span></label>
+            <label data-flavor="microsoft"><input type="radio" name="flavor" value="microsoft"> microsoft (explicit)</label>
+            <label data-flavor="vscodium"><input type="radio" name="flavor" value="vscodium"> vscodium
+              <span class="sub">MIT build + Open VSX. Freely redistributable.</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_EXTENSION_GALLERY">ACORN_EXTENSION_GALLERY</label>
+          <p class="help">Where the editor installs extensions from. Blank = the
+          flavor's own default (Marketplace / Open VSX). Setting this on
+          <code>microsoft</code> rewrites <code>product.json</code> in a
+          proprietary binary &mdash; prefer switching the flavor to
+          <code>vscodium</code>.</p>
+          <input type="text" id="ACORN_EXTENSION_GALLERY" placeholder="https://openvsx.example/vscode">
+        </div>
+        <div class="field">
+          <span class="head">ACORN_VSCODE_EXTENSIONS</span>
+          <p class="help">Extensions in a fresh editor. Blank = the starter kit
+          for the flavor. Add the literal <code>none</code> to install none.</p>
+          <div class="taglist" id="exts-tags"></div>
+          <div class="add-row">
+            <input type="text" id="exts-in" placeholder="ms-python.python" aria-label="extension">
+            <button type="button">Add</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_VSCODE_CONFIG_DIR">ACORN_VSCODE_CONFIG_DIR</label>
+          <p class="help">A folder (relative to this repo copy, or absolute)
+          holding a <code>settings.json</code> / <code>keybindings.json</code>
+          to seed into a fresh editor. Merged over the built-in defaults; only
+          on first install.</p>
+          <input type="text" id="ACORN_VSCODE_CONFIG_DIR" placeholder="vscode-config">
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Profiles &amp; custom commands</h3>
+        <div class="field">
+          <label class="head" for="ACORN_PROFILE">ACORN_PROFILE</label>
+          <p class="help">A deployment profile the installer applies instead of
+          the default single <code>dev</code> venv &mdash; a single
+          <code>.toml</code> file, or the <em>folder</em> of them
+          (<code>installation-profile</code>), each deciding who it reaches.
+          Relative to this repo copy, or absolute. Build these in the
+          <a href="profile-builder.html">profile builder</a>.</p>
+          <input type="text" id="ACORN_PROFILE" placeholder="installation-profile">
+        </div>
+        <div class="field">
+          <label class="head" for="ACORN_CUSTOM_COMMANDS">ACORN_CUSTOM_COMMANDS</label>
+          <p class="help">A TOML file declaring your org's own <code>acorn
+          &lt;name&gt;</code> commands. Relative to this repo copy, or absolute.</p>
+          <input type="text" id="ACORN_CUSTOM_COMMANDS" placeholder="custom-commands.toml">
+        </div>
+        <div class="field">
+          <span class="head">ACORN_STARTUP_COMMANDS</span>
+          <p class="help">Custom command names run automatically in every new
+          shell, in order. Each must be declared in the custom-commands file
+          above. Join with <code>&amp;&amp;</code> in one entry to chain
+          (stops that chain on failure); commas separate independent entries.</p>
+          <div class="taglist" id="startup-tags"></div>
+          <div class="add-row">
+            <input type="text" id="startup-in" placeholder="check-mirror  or  ensure-venv&amp;&amp;sync" aria-label="startup command">
+            <button type="button">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="head">Output style</span>
+        <div class="checks">
+          <label><input type="checkbox" id="opt_comments" checked> with documented comment for each key</label>
+          <label><input type="checkbox" id="opt_all"> include unchanged defaults (a full drop-in file)</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel sticky">
+      <div class="out-head">
+        <h3>global.conf</h3>
+        <div class="out-actions">
+          <button type="button" class="tiny" id="copy-out">Copy</button>
+          <button type="button" class="tiny" id="dl-out">Download</button>
+        </div>
+      </div>
+      <pre class="out" id="conf-out"></pre>
+      <div class="verdict" id="verdict"></div>
+
+      <div class="field" style="margin-top:1rem">
+        <label class="head" for="bundle-src" style="font-size:.82rem">Cross-check against an <code>offline-bundle.toml</code> <span style="font-weight:400;color:var(--soft)">(optional)</span></label>
+        <p class="help">If you also build an offline bundle, paste it to catch
+        the editor mismatch that only shows up when someone opens VS Code on the
+        far side of the air gap.</p>
+        <textarea id="bundle-src" rows="3" placeholder="# paste offline-bundle.toml here"></textarea>
+        <div id="bundle-verdict" class="verdict"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<details class="ref">
+  <summary>Reference &mdash; what reads this file, and what it can't set</summary>
+  <p class="help" style="margin-top:.6rem"><code>install.sh</code> sources it;
+  <code>install.ps1</code> parses it. Both apply it at <strong>install time only</strong>
+  &mdash; a value is copied into the user's <code>settings.json</code> once and
+  never re-read, so changing <code>global.conf</code> later means users run
+  <code>acorn update-commands</code> then re-provision, or set the value with
+  <code>acorn config set</code>. An <code>ACORN_&lt;NAME&gt;</code> environment
+  variable overrides the matching key for one run.</p>
+  <p class="help">Runtime settings that are <em>not</em> in this file
+  (<code>default_base</code>, <code>default_venv</code>, <code>auto_activate</code>,
+  <code>update_source</code>, <code>ca_cert</code>, <code>shared_root</code>) are
+  either recorded automatically at install time or changed later with
+  <code>acorn config set</code>.</p>
+</details>
+
+<footer class="foot">
+  Mirrors <code>acorn/config.py</code> and the two installers. When they
+  disagree, the tools are right and this page is stale &mdash; see
+  <code>docs/DEPLOYMENT.md</code> and <code>tests/test_config_builders.py</code>.
+</footer>
+
+</div>
+
+<script>
+"use strict";
+/* ==== SHARED PRELUDE (byte-identical across the *-builder.html tools; tests/test_config_builders.py asserts this) ==== */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function tomlStr(s){ return '"' + String(s).replace(/\\/g,"\\\\").replace(/"/g,'\\"') + '"'; }
+function tomlArray(items){
+  if(!items.length) return "[]";
+  if(items.length <= 3 && items.join(", ").length < 50) return "[" + items.map(tomlStr).join(", ") + "]";
+  return "[\n" + items.map(function(i){ return "    " + tomlStr(i) + ","; }).join("\n") + "\n]";
+}
+function canonical(name){ return String(name).trim().toLowerCase().replace(/[-_.]+/g,"-"); }
+function requirementName(spec){
+  var s = String(spec);
+  ["[","=",">","<","!","~",";"," "].forEach(function(sep){ s = s.split(sep)[0]; });
+  return canonical(s);
+}
+function pinnedVersion(spec){
+  var m = String(spec).trim().match(/^[^=<>!~\[; ]+\s*==\s*([^,;\s]+)$/);
+  return m ? m[1] : null;
+}
+function copyText(text, btn){
+  var done = function(){ if(btn){ var t = btn.textContent; btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = t; }, 1200); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ legacyCopy(text); done(); });
+  } else { legacyCopy(text); done(); }
+}
+function legacyCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch(e){}
+  document.body.removeChild(ta);
+}
+function download(name, text){
+  var blob = new Blob([text], { type: "text/plain" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function tagWidget(inputId, getArr, onChange){
+  var input = $(inputId), btn = input.nextElementSibling;
+  function add(){
+    var v = input.value.trim();
+    if(v && getArr().indexOf(v) === -1) getArr().push(v);
+    input.value = ""; input.focus(); onChange();
+  }
+  btn.onclick = add;
+  input.onkeydown = function(e){ if(e.key === "Enter"){ e.preventDefault(); add(); } };
+}
+function renderTags(boxId, arr, onChange){
+  var box = $(boxId); box.innerHTML = "";
+  arr.forEach(function(val, i){
+    var span = document.createElement("span"); span.className = "tag";
+    span.appendChild(document.createTextNode(val));
+    var b = document.createElement("button"); b.type = "button"; b.textContent = "×";
+    b.setAttribute("aria-label", "Remove " + val);
+    b.onclick = function(){ arr.splice(i, 1); onChange(); };
+    span.appendChild(b); box.appendChild(span);
+  });
+}
+function parseConf(text){
+  var out = {};
+  String(text || "").split(/\r?\n/).forEach(function(line){
+    var m = line.match(/^\s*([A-Z_]+)\s*=\s*"([^"]*)"\s*$/);
+    if(m) out[m[1]] = m[2];
+  });
+  return out;
+}
+function miniToml(text){
+  var root = {}, cur = root, lines = String(text).split(/\r?\n/), i = 0;
+  function stripComment(s){
+    var o = "", q = false;
+    for(var k = 0; k < s.length; k++){
+      var ch = s[k];
+      if(ch === '"') q = !q;
+      if(ch === "#" && !q) break;
+      o += ch;
+    }
+    return o;
+  }
+  function parseVal(raw){
+    raw = raw.trim();
+    if(raw === "true") return true;
+    if(raw === "false") return false;
+    if(/^-?\d+$/.test(raw)) return parseInt(raw, 10);
+    if(raw[0] === '"') return raw.slice(1, raw.lastIndexOf('"')).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+    if(raw[0] === "["){
+      var inner = raw.slice(1, raw.lastIndexOf("]"));
+      if(!inner.trim()) return [];
+      return inner.split(",").map(function(x){ return x.trim(); }).filter(Boolean).map(function(x){
+        return x[0] === '"' ? x.slice(1, x.lastIndexOf('"')) : x;
+      });
+    }
+    return raw;
+  }
+  for(; i < lines.length; i++){
+    var line = stripComment(lines[i]).trim();
+    if(!line) continue;
+    var th = line.match(/^\[\[?([A-Za-z0-9_.]+)\]\]?$/);
+    if(th){
+      var dbl = line.indexOf("[[") === 0;
+      if(dbl){
+        root[th[1]] = root[th[1]] || [];
+        cur = {}; root[th[1]].push(cur);
+      } else {
+        cur = root[th[1]] = root[th[1]] || {};
+      }
+      continue;
+    }
+    var eq = line.indexOf("=");
+    if(eq === -1) continue;
+    var key = line.slice(0, eq).trim(), val = line.slice(eq + 1).trim();
+    if(val[0] === "[" && val.lastIndexOf("]") === -1){
+      while(i + 1 < lines.length && val.lastIndexOf("]") === -1){ i++; val += " " + stripComment(lines[i]).trim(); }
+    }
+    cur[key] = parseVal(val);
+  }
+  return root;
+}
+/* ==== END SHARED PRELUDE ==== */
+
+/* ---- schema (mirrors acorn/config.py + the installers) ------------------- */
+/* The ACORN_* keys global.conf carries, in file order. */
+var CONF_KEYS = [
+  "ACORN_REPO_URL", "ACORN_HOME_DIR", "ACORN_VENV_DEFAULT_PACKAGES",
+  "ACORN_AUTO_SETUP", "ACORN_AUTO_VSCODE", "ACORN_POWERSHELL_POLICY",
+  "ACORN_PYTHON_MIRROR", "ACORN_PACKAGE_INDEX", "ACORN_PACKAGE_UPLOAD_URL",
+  "ACORN_PACKAGE_UPLOAD_TOKEN", "ACORN_CONDA_CHANNEL", "ACORN_NATIVE_TLS",
+  "ACORN_VSCODE_FLAVOR", "ACORN_EXTENSION_GALLERY", "ACORN_VSCODE_EXTENSIONS",
+  "ACORN_VSCODE_CONFIG_DIR", "ACORN_PROFILE", "ACORN_CUSTOM_COMMANDS",
+  "ACORN_STARTUP_COMMANDS"
+];
+var FLAVORS = ["microsoft", "vscodium"];
+var POLICY_VALUES = ["", "remotesigned", "true", "skip", "false"];
+var DEFAULT_VENV_PACKAGES = ["ipython", "ruff", "ipykernel"];
+var DEFAULTS = {
+  ACORN_REPO_URL: "", ACORN_HOME_DIR: "~/acorn",
+  ACORN_VENV_DEFAULT_PACKAGES: "ipython,ruff,ipykernel",
+  ACORN_AUTO_SETUP: "true", ACORN_AUTO_VSCODE: "true", ACORN_POWERSHELL_POLICY: "",
+  ACORN_PYTHON_MIRROR: "", ACORN_PACKAGE_INDEX: "", ACORN_PACKAGE_UPLOAD_URL: "",
+  ACORN_PACKAGE_UPLOAD_TOKEN: "", ACORN_CONDA_CHANNEL: "conda-forge",
+  ACORN_NATIVE_TLS: "false", ACORN_VSCODE_FLAVOR: "microsoft",
+  ACORN_EXTENSION_GALLERY: "", ACORN_VSCODE_EXTENSIONS: "",
+  ACORN_VSCODE_CONFIG_DIR: "", ACORN_PROFILE: "", ACORN_CUSTOM_COMMANDS: "",
+  ACORN_STARTUP_COMMANDS: ""
+};
+var DOC = {
+  ACORN_REPO_URL: "Where ACORN installs from and where `acorn update-commands` fetches updates. A git URL or a directory path.",
+  ACORN_HOME_DIR: "The folder everything ACORN manages lives in. \"~\" = home; a {user} token gives each user a private folder under a shared root.",
+  ACORN_VENV_DEFAULT_PACKAGES: "Packages installed into every venv `acorn venv` creates.",
+  ACORN_AUTO_SETUP: "After ACORN itself, install newest Python + a \"dev\" venv every shell auto-activates.",
+  ACORN_AUTO_VSCODE: "Also stage the portable VS Code during install (only when AUTO_SETUP is true).",
+  ACORN_POWERSHELL_POLICY: "Windows only. \"\" asks/prints; \"RemoteSigned\" sets it silently; \"skip\" leaves it alone. Cannot override Group Policy or AllSigned.",
+  ACORN_PYTHON_MIRROR: "Where `acorn python` gets interpreter builds: a mirror URL or a directory of python-build-standalone archives.",
+  ACORN_PACKAGE_INDEX: "Where packages install from: an index URL, or a directory of wheels (the internet index is then disabled).",
+  ACORN_PACKAGE_UPLOAD_URL: "The upload endpoint `acorn upload-whls` publishes to. Usually a different path from the index.",
+  ACORN_PACKAGE_UPLOAD_TOKEN: "A WRITE credential. Leave empty in the distributed copy; set it only on the publishing machine with `acorn config set`.",
+  ACORN_CONDA_CHANNEL: "Channel `acorn forge-install` fetches command-line tools from. Default conda-forge.",
+  ACORN_NATIVE_TLS: "Trust the OS certificate store for HTTPS, for a machine-installed corporate CA.",
+  ACORN_VSCODE_FLAVOR: "\"microsoft\" (official, proprietary) or \"vscodium\" (MIT + Open VSX). A licensing choice.",
+  ACORN_EXTENSION_GALLERY: "Extension registry base URL. Empty = the flavor's default. On \"microsoft\" this rewrites product.json.",
+  ACORN_VSCODE_EXTENSIONS: "Extensions in a fresh editor. Empty = the starter kit. \"none\" = install none.",
+  ACORN_VSCODE_CONFIG_DIR: "Folder with settings.json / keybindings.json to seed into a fresh editor (first install only).",
+  ACORN_PROFILE: "A deployment profile (file) or the folder of them the installer applies instead of the default dev venv.",
+  ACORN_CUSTOM_COMMANDS: "TOML file declaring your org's own `acorn <name>` commands.",
+  ACORN_STARTUP_COMMANDS: "Custom command names run automatically in every new shell, in order. && chains within an entry."
+};
+
+/* ---- state ------------------------------------------------------------- */
+var state = {};
+CONF_KEYS.forEach(function(k){ state[k] = ""; });
+state.ACORN_VENV_DEFAULT_PACKAGES = [];
+state.ACORN_VSCODE_EXTENSIONS = [];
+state.ACORN_STARTUP_COMMANDS = [];
+state.comments = true;
+state.all = false;
+
+/* ---- wiring ---------------------------------------------------------------- */
+var TEXT_KEYS = ["ACORN_REPO_URL", "ACORN_HOME_DIR", "ACORN_PYTHON_MIRROR",
+  "ACORN_PACKAGE_INDEX", "ACORN_PACKAGE_UPLOAD_URL", "ACORN_PACKAGE_UPLOAD_TOKEN",
+  "ACORN_CONDA_CHANNEL", "ACORN_EXTENSION_GALLERY", "ACORN_VSCODE_CONFIG_DIR",
+  "ACORN_PROFILE", "ACORN_CUSTOM_COMMANDS"];
+var SELECT_KEYS = ["ACORN_AUTO_SETUP", "ACORN_AUTO_VSCODE", "ACORN_POWERSHELL_POLICY", "ACORN_NATIVE_TLS"];
+
+TEXT_KEYS.forEach(function(k){ $(k).oninput = function(){ state[k] = $(k).value.trim(); regen(); }; });
+SELECT_KEYS.forEach(function(k){ $(k).onchange = function(){ state[k] = $(k).value; regen(); }; });
+
+tagWidget("pkgs-in", function(){ return state.ACORN_VENV_DEFAULT_PACKAGES; }, sync);
+tagWidget("exts-in", function(){ return state.ACORN_VSCODE_EXTENSIONS; }, sync);
+tagWidget("startup-in", function(){ return state.ACORN_STARTUP_COMMANDS; }, sync);
+
+document.querySelectorAll("input[name=flavor]").forEach(function(r){
+  r.onchange = function(){
+    state.ACORN_VSCODE_FLAVOR = r.value;
+    document.querySelectorAll("#flavor-row label").forEach(function(l){
+      l.classList.toggle("sel", l.getAttribute("data-flavor") === r.value);
+    });
+    regen();
+  };
+});
+$("opt_comments").onchange = function(){ state.comments = this.checked; regen(); };
+$("opt_all").onchange = function(){ state.all = this.checked; regen(); };
+$("bundle-src").oninput = crossCheck;
+
+function sync(){
+  renderTags("pkgs-tags", state.ACORN_VENV_DEFAULT_PACKAGES, sync);
+  renderTags("exts-tags", state.ACORN_VSCODE_EXTENSIONS, sync);
+  renderTags("startup-tags", state.ACORN_STARTUP_COMMANDS, sync);
+  regen();
+}
+
+/* ---- emit ------------------------------------------------------------------ */
+function valueOf(key){
+  if(key === "ACORN_VENV_DEFAULT_PACKAGES") return state.ACORN_VENV_DEFAULT_PACKAGES.join(",");
+  if(key === "ACORN_VSCODE_EXTENSIONS") return state.ACORN_VSCODE_EXTENSIONS.join(",");
+  if(key === "ACORN_STARTUP_COMMANDS") return state.ACORN_STARTUP_COMMANDS.join(",");
+  return state[key];
+}
+function isDefault(key){
+  var v = valueOf(key);
+  if(key === "ACORN_VENV_DEFAULT_PACKAGES") return v === "" || v === DEFAULT_VENV_PACKAGES.join(",");
+  return v === "" || v === DEFAULTS[key];
+}
+function wrapComment(text){
+  var words = text.split(" "), lines = [], cur = "#";
+  words.forEach(function(w){
+    if((cur + " " + w).length > 76){ lines.push(cur); cur = "# " + w; }
+    else cur += " " + w;
+  });
+  lines.push(cur);
+  return lines.join("\n");
+}
+function buildConf(){
+  var L = ["# global.conf -- deployment configuration for this copy of ACORN.",
+    "# Written by docs/global-conf-builder.html. KEY=\"value\", one per line.", ""];
+  CONF_KEYS.forEach(function(key){
+    var def = isDefault(key);
+    if(def && !state.all) return;
+    var v = valueOf(key);
+    if(def && state.all) v = (key === "ACORN_VENV_DEFAULT_PACKAGES" && v === "") ? DEFAULT_VENV_PACKAGES.join(",") : (v || DEFAULTS[key]);
+    if(state.comments) L.push(wrapComment(DOC[key]));
+    L.push(key + '="' + v + '"');
+    L.push("");
+  });
+  if(L[L.length - 1] === "") L.pop();
+  var body = L.join("\n").replace(/\n{3,}/g, "\n\n");
+  return body + "\n";
+}
+
+/* ---- validate (mirror the installers + config.py) ------------------------- */
+function validate(){
+  var errs = [], warns = [];
+  var flavor = state.ACORN_VSCODE_FLAVOR.trim().toLowerCase();
+  if(flavor && FLAVORS.indexOf(flavor) === -1) errs.push("ACORN_VSCODE_FLAVOR must be microsoft or vscodium");
+  ["ACORN_AUTO_SETUP", "ACORN_AUTO_VSCODE", "ACORN_NATIVE_TLS"].forEach(function(k){
+    var v = state[k].trim().toLowerCase();
+    if(v && v !== "true" && v !== "false") errs.push(k + " must be true or false");
+  });
+  if(state.ACORN_POWERSHELL_POLICY && POLICY_VALUES.indexOf(state.ACORN_POWERSHELL_POLICY.trim().toLowerCase()) === -1){
+    errs.push('ACORN_POWERSHELL_POLICY must be "", RemoteSigned/true, or skip/false');
+  }
+  if(state.ACORN_PACKAGE_UPLOAD_TOKEN.trim()){
+    warns.push("ACORN_PACKAGE_UPLOAD_TOKEN is set -- every value in this file is seeded into every user's settings, so this hands your whole fleet publish rights. Leave it blank here and set it only on the publishing machine.");
+  }
+  if(state.ACORN_HOME_DIR.indexOf("{user}") > -1){
+    warns.push("ACORN_HOME_DIR has a {user} token -- this is a shared multi-user install; the admin-* teardown commands turn on.");
+  }
+  var explicitMs = flavor === "microsoft" || flavor === "";
+  if(state.ACORN_EXTENSION_GALLERY.trim() && explicitMs){
+    warns.push("ACORN_EXTENSION_GALLERY on the \"microsoft\" flavor rewrites product.json inside a proprietary binary -- prefer ACORN_VSCODE_FLAVOR=\"vscodium\".");
+  }
+  if(state.ACORN_STARTUP_COMMANDS.length && !state.ACORN_CUSTOM_COMMANDS.trim()){
+    warns.push("ACORN_STARTUP_COMMANDS names commands, but ACORN_CUSTOM_COMMANDS is empty -- every startup name must be declared in that file.");
+  }
+  if(state.ACORN_PACKAGE_INDEX.trim() && !/:\/\//.test(state.ACORN_PACKAGE_INDEX) && !state.ACORN_PYTHON_MIRROR.trim()){
+    warns.push("ACORN_PACKAGE_INDEX is a directory (internet disabled) but ACORN_PYTHON_MIRROR is unset -- `acorn python` will still try the internet. See the offline bundle builder.");
+  }
+  return { errs: errs, warns: warns };
+}
+
+function renderVerdict(el, res, okMsg){
+  if(!res.errs.length && !res.warns.length){ el.innerHTML = '<span class="pill good">looks valid</span> ' + (okMsg || ""); return; }
+  var h = res.errs.length ? '<span class="pill bad">' + res.errs.length + (res.errs.length > 1 ? " problems" : " problem") + '</span>' : '<span class="pill good">valid</span>';
+  h += "<ul>";
+  res.errs.forEach(function(m){ h += '<li class="bad">&#10007; ' + esc(m) + '</li>'; });
+  res.warns.forEach(function(m){ h += '<li>&#9888; ' + esc(m) + '</li>'; });
+  el.innerHTML = h + "</ul>";
+}
+
+/* ---- cross-check vs a pasted offline-bundle.toml (mirror bundle.check_conf) */
+function crossCheck(){
+  var el = $("bundle-verdict");
+  var raw = $("bundle-src").value.trim();
+  if(!raw){ el.innerHTML = ""; return; }
+  var b;
+  try { b = miniToml(raw); } catch(e){ el.innerHTML = '<span class="bad">Could not parse that.</span>'; return; }
+  var editor = b.editor || {};
+  var staged = Array.isArray(editor.extensions) ? editor.extensions : (editor.extensions ? [editor.extensions] : []);
+  var bundleFlavor = (editor.flavor || "microsoft").toString().toLowerCase();
+  var problems = [];
+  var flavor = (state.ACORN_VSCODE_FLAVOR || "microsoft").toLowerCase();
+  if(editor.stage !== false && flavor !== bundleFlavor){
+    problems.push("the bundle stages " + JSON.stringify(bundleFlavor) + " but this global.conf sets ACORN_VSCODE_FLAVOR " + JSON.stringify(flavor));
+  }
+  var gallery = state.ACORN_EXTENSION_GALLERY.trim();
+  if(gallery && (editor.gallery || "").toString().trim() !== gallery){
+    problems.push("global.conf points users at gallery " + gallery + ", which the bundle's [editor] gallery doesn't match (" + (editor.gallery || "unset") + ")");
+  }
+  var declared = state.ACORN_VSCODE_EXTENSIONS.filter(function(x){ return x.toLowerCase() !== "none"; });
+  if(declared.length && staged.length){
+    var missing = declared.filter(function(w){ return staged.indexOf(w) === -1; });
+    if(missing.length) problems.push("global.conf asks every machine to install " + missing.join(", ") + ", which the bundle doesn't stage");
+  }
+  renderVerdict(el, { errs: problems, warns: [] }, "global.conf agrees with the bundle.");
+}
+
+/* ---- import ---------------------------------------------------------------- */
+$("import-btn").onclick = function(){
+  var raw = $("import-src").value.trim();
+  var msg = $("import-msg");
+  if(!raw){ msg.textContent = "Paste a file first."; return; }
+  var conf = parseConf(raw);
+  var unknown = Object.keys(conf).filter(function(k){ return CONF_KEYS.indexOf(k) === -1 && ["ACORN_HOME", "ACORN_REPO"].indexOf(k) === -1; });
+  CONF_KEYS.forEach(function(k){
+    var v = conf[k] === undefined ? "" : String(conf[k]);
+    if(k === "ACORN_VENV_DEFAULT_PACKAGES" || k === "ACORN_VSCODE_EXTENSIONS" || k === "ACORN_STARTUP_COMMANDS"){
+      state[k] = v ? v.split(",").map(function(s){ return s.trim(); }).filter(Boolean) : [];
+    } else {
+      state[k] = v;
+    }
+  });
+  syncFormFromState();
+  msg.innerHTML = unknown.length
+    ? '<span style="color:var(--danger)">Loaded. Unknown key(s) ignored: ' + esc(unknown.join(", ")) + '</span>'
+    : '<span style="color:var(--ok)">Loaded into the form.</span>';
+};
+
+function syncFormFromState(){
+  TEXT_KEYS.forEach(function(k){ $(k).value = state[k]; });
+  SELECT_KEYS.forEach(function(k){ $(k).value = ["true", "false", "remotesigned", "skip"].indexOf(state[k].toLowerCase()) > -1 ? matchOption(k, state[k]) : ""; });
+  var f = state.ACORN_VSCODE_FLAVOR.toLowerCase();
+  document.querySelectorAll("input[name=flavor]").forEach(function(r){
+    r.checked = (r.value === f) || (r.value === "" && (f === "" || f === "microsoft"));
+  });
+  document.querySelectorAll("#flavor-row label").forEach(function(l){
+    l.classList.toggle("sel", l.querySelector("input").checked);
+  });
+  sync();
+}
+function matchOption(key, val){
+  var v = val.toLowerCase();
+  var sel = $(key);
+  for(var i = 0; i < sel.options.length; i++){ if(sel.options[i].value.toLowerCase() === v) return sel.options[i].value; }
+  return "";
+}
+
+$("copy-out").onclick = function(){ copyText(buildConf(), this); };
+$("dl-out").onclick = function(){ download("global.conf", buildConf()); };
+
+function regen(){
+  $("conf-out").textContent = buildConf();
+  renderVerdict($("verdict"), validate(), "Drop it in as acorn-planter/global.conf.");
+  crossCheck();
+}
+
+sync();
+</script>
+</body>
+</html>
