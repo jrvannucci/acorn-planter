@@ -17,8 +17,7 @@ import re
 from acorn import bundle as bundle_mod, config
 from acorn import profile as profile_mod
 from acorn.commands import vscode_cmd
-
-from tests.conftest import REPO_ROOT
+from conftest import REPO_ROOT
 
 HTML = (REPO_ROOT / "docs" / "offline-builder.html").read_text(encoding="utf-8")
 
