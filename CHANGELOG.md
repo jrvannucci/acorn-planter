@@ -5,10 +5,22 @@ All notable changes to ACORN are recorded here. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) — while ACORN is
 pre-1.0, a minor bump may carry a breaking command rename.
 
-The version lives in `src/acorn/__init__.py` and nowhere else; `acorn --version` prints it. See [CONTRIBUTING](docs/CONTRIBUTING.md#releasing) for
+The version lives in `acorn-planter/src/acorn/__init__.py` and nowhere else; `acorn --version` prints it. See [CONTRIBUTING](docs/CONTRIBUTING.md#releasing) for
 what a release involves.
 
 ## [Unreleased]
+
+## [0.13.0] - 2026-09-07
+
+### Changed
+
+- Consolidate configuration, profiles, source, installers, examples, and shared
+  offline resources under `acorn-planter/`, with user and administrator launchers
+  in the top-level `GET_STARTED` folders.
+- Update installation, source updates, bundle archives, and resource paths for
+  the shared distribution layout. Resource locations remain configurable.
+- Lead the README and homepage with simplified Python, editor, and tool setup;
+  add an illustrated workflow and animated user walkthrough.
 
 ### Changed (breaking)
 
@@ -19,7 +31,7 @@ what a release involves.
 
 - Rename the entire project and Python package to **ACORN**: imports use
   `acorn`, configuration variables use `ACORN_*`, and the default home is
-  `~/acorn`. The GitHub repository is now `jrvannucci/acorn`. No legacy
+  `~/acorn`. The GitHub repository is now `jrvannucci/acorn-planter`. No legacy
   names, environment-variable fallbacks, or migration aliases are provided.
 - Adopt the project narrative: **Global Python environments and development
   suites, ready when you are.**
