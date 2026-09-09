@@ -192,8 +192,12 @@ footer.foot { margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--li
         <code>ipython</code>, <code>ruff</code>, <code>ipykernel</code> and
         <code>pip</code> are always bundled &mdash; don't list them. PyPI
         <em>applications</em> like <code>spyder</code> or <code>jupyterlab</code>
-        <em>do</em> belong here. Pin with <code>==</code>; several pinned versions
-        of one package are allowed.</p>
+        <em>do</em> belong here. Pin with <code>==</code>. Several pinned versions
+        of one package are allowed &mdash; <code>pandas==2.1.4</code> and
+        <code>pandas==2.2.3</code> sit side by side in the flat wheelhouse, so a
+        fleet split across both installs from one share. (Each extra version is
+        one more <code>pip download</code> pass at build time; pip won't take two
+        constraints on a package in one call.)</p>
         <div class="taglist" id="packages-tags"></div>
         <div class="add-row">
           <input type="text" id="packages-in" placeholder="pandas  or  pandas==2.2.3" aria-label="Package">
@@ -700,7 +704,7 @@ function validate(){
     var specs = names[n];
     var bare = specs.filter(function(s){ return !/[<>=!~ ]/.test(s.replace(/\[[^\]]*\]/, "")); });
     var pinned = specs.filter(function(s){ return pinnedVersion(s); });
-    if(bare.length && pinned.length) warns.push("both " + JSON.stringify(bare[0]) + " and " + pinned.join(", ") + " are listed -- the bare name already lets the wheelhouse hold any version; keep both only if you deliberately want a second pinned copy");
+    if(bare.length && pinned.length) warns.push("packages lists a bare " + JSON.stringify(bare[0]) + " alongside " + pinned.join(", ") + " -- the bare spec also pulls the newest " + n + ", so the bundle ends up with an extra wheel and an extra resolver pass. Drop the bare one, or keep it only if you want that version as well. (Two explicit pins are always fine.)");
   });
   state.pythons.forEach(function(v){ if(!/^\d+\.\d+(\.\d+)?$/.test(v)) warns.push("python " + JSON.stringify(v) + " isn't major.minor"); });
   if(state.editor_stage && state.flavor === "microsoft" && !state.b_accept) warns.push("staging the official VS Code build is redistribution under Microsoft's terms -- set accept_third_party_terms once you hold those rights");
