@@ -12,20 +12,41 @@ built-in list.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
+from pathlib import Path
 
 from .. import config, custom_commands, paths, venv_target
 from . import run_cmd
 
 USAGE = "Usage: acorn custom <name> [args...]"
 
+def _sh_launcher(path: Path) -> list[str]:
+    """Launch shell scripts with Git Bash on Windows when it is available.
+
+    ``sh`` commonly resolves to WSL's forwarding shim on Windows.  That shim
+    cannot run the native Windows paths passed to custom commands.  Git Bash
+    can, so prefer its real executable before using the normal POSIX launcher.
+    """
+    if os.name == "nt":
+        roots = (
+            os.environ.get("ProgramFiles", r"C:\\Program Files"),
+            os.environ.get("ProgramFiles(x86)", r"C:\\Program Files (x86)"),
+        )
+        for root in roots:
+            bash = Path(root) / "Git" / "bin" / "bash.exe"
+            if bash.is_file():
+                return [str(bash), str(path)]
+    return ["sh", str(path)]
+
+
 # Launcher for a script command, by its own extension -- .py runs with
 # acorn-cli's own interpreter (always present, no dependency on a system
 # python3); .sh/.ps1 use the platform's own shell.
 _LAUNCHERS = {
     ".py": lambda path: [sys.executable, str(path)],
-    ".sh": lambda path: ["sh", str(path)],
+    ".sh": _sh_launcher,
     ".ps1": lambda path: ["powershell", "-NoProfile", "-File", str(path)],
 }
 

@@ -15,7 +15,7 @@ Start here if acorn is installed on your own machine, or about to be.
 | | |
 |---|---|
 | **[Using acorn](GUIDE.md)** | How installation works, the folder layout, why `acorn` is a shell function, the update model, uninstalling, and troubleshooting. |
-| **[Command reference](COMMANDS.md)** | All 59 commands in one filterable list — click any one to open its full documentation — plus the per-family breakdowns. |
+| **[Command reference](COMMANDS.md)** | Every command in one filterable list — click any one to open its full documentation — plus the per-family breakdowns. |
 | **[Design and safety](DESIGN.md)** | Why deletion is so defensive, what gets logged, how downloads are verified, and how to run acorn unattended. |
 | **[Scripting & automation](commands/scripting-and-automation.md)** | The machine-facing surface, in one place: `acorn run`, `acorn which`, `--json` on every read command, never blocking on a prompt, and how concurrent commands are serialized. |
 

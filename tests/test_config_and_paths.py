@@ -7,6 +7,16 @@ import os
 from pathlib import Path
 
 from acorn import PUBLIC_REPO, config, paths
+import conftest
+
+
+def test_windows_test_harness_prefers_git_bash_when_available():
+    """WSL's WindowsApps launcher cannot consume the Git-style test paths."""
+    if os.name != "nt":
+        return
+    git_bash = Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "Git" / "bin" / "bash.exe"
+    if git_bash.is_file():
+        assert Path(conftest.BASH).resolve() == git_bash.resolve()
 
 
 def test_defaults_when_no_settings_file(home):

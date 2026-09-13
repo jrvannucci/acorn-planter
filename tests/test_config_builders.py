@@ -142,6 +142,34 @@ def test_profile_editors_are_a_known_set():
     assert set(_js_string_array(PROFILE, "EDITORS")) == {"vscode", "spyder"}
 
 
+def test_profile_builder_preserves_manual_and_empty_profiles():
+    """Neither distribution nor a venv is required by profile.parse().
+
+    These profiles are useful for one-off ``acorn apply path.toml`` use and
+    for editor/tool-only deployments.  Importing them must not turn them into
+    a fleet-wide default profile with a new ``dev`` venv.
+    """
+    assert 'value="manual"' in PROFILE
+    assert 'if(p.dist !== "manual")' in PROFILE
+    assert 'else p.dist = "manual";' in PROFILE
+    assert 'if(!p.venvs.length) p.venvs =' not in PROFILE
+
+
+def test_profile_builder_handles_repo_target_extras_without_comma_splitting():
+    """``install = ["dev[gui,test]"]`` is valid profile TOML."""
+    assert 'placeholder="dev or dev[gui,test]"' in PROFILE
+    assert 'function splitArray(text)' in PROFILE
+    assert 'inner.split(",")' not in PROFILE
+
+
+def test_profile_builder_refuses_lossy_imports():
+    """A newer schema or an unknown strict-parser key must not be dropped."""
+    assert 'function importProblems(d)' in PROFILE
+    assert 'schema " + JSON.stringify(d.schema) + " is not supported' in PROFILE
+    assert 'unknown top-level key' in PROFILE
+    assert 'unknown(d.config, SETTABLE_KEYS, "[config]")' in PROFILE
+
+
 # --- global-conf-builder.html vs global.conf + the installers ---------------
 
 def test_conf_key_list_matches_global_conf():
@@ -164,3 +192,17 @@ def test_powershell_policy_values_are_accepted_by_the_installer():
     raw = re.search(r"var POLICY_VALUES\s*=\s*\[(.*?)\]", GLOBAL_CONF, re.S).group(1)
     offered = {s for s in re.findall(r'"([^"]*)"', raw) if s}
     assert offered <= accepted, f"builder offers policy values the installer rejects: {offered - accepted}"
+
+
+def test_config_builder_has_no_dead_built_docs_links():
+    """The landing page is also opened directly from a USB stick."""
+    assert 'href="DEPLOYMENT.html"' not in INDEX
+    assert 'href="OFFLINE.html"' not in INDEX
+
+
+def test_command_docs_do_not_claim_a_stale_hard_coded_count():
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    documentation = (DOCS / "DOCUMENTATION.md").read_text(encoding="utf-8")
+    explorer_generator = (DOCS / "generate_command_explorer.py").read_text(encoding="utf-8")
+    for text in (readme, documentation, explorer_generator):
+        assert "59 command" not in text

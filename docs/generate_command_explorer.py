@@ -2,7 +2,7 @@
 """Generate _static/command-explorer.html -- the command reference you can
 actually navigate.
 
-It replaces command-map.svg, which put all 59 commands on one page -- the
+It replaces command-map.svg, which put every command on one page -- the
 only way a static diagram can show the whole surface, and exactly why it was
 hard to read: everything at one size, nothing collapsible. Same content,
 interactively -- families as sections, one row per command, click a row to

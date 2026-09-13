@@ -294,11 +294,24 @@ function miniToml(text){
     if(raw[0] === "["){
       var inner = raw.slice(1, raw.lastIndexOf("]"));
       if(!inner.trim()) return [];
-      return inner.split(",").map(function(x){ return x.trim(); }).filter(Boolean).map(function(x){
+      return splitArray(inner).map(function(x){ return x.trim(); }).filter(Boolean).map(function(x){
         return x[0] === '"' ? x.slice(1, x.lastIndexOf('"')) : x;
       });
     }
     return raw;
+  }
+  function splitArray(text){
+    var out = [], part = "", quoted = false, escaped = false;
+    for(var j = 0; j < text.length; j++){
+      var ch = text[j];
+      if(quoted && escaped){ escaped = false; part += ch; continue; }
+      if(quoted && ch === "\\"){ escaped = true; part += ch; continue; }
+      if(ch === '"') quoted = !quoted;
+      if(ch === "," && !quoted){ out.push(part); part = ""; }
+      else part += ch;
+    }
+    out.push(part);
+    return out;
   }
   for(; i < lines.length; i++){
     var line = stripComment(lines[i]).trim();
@@ -456,6 +469,7 @@ function cardHtml(p, pi){
     '  <div class="radio-row">',
     '    <label><input type="radio" name="d' + pi + '" value="default"' + (p.dist === "default" ? " checked" : "") + '> everyone <span class="sub">default = true</span></label>',
     '    <label><input type="radio" name="d' + pi + '" value="users"' + (p.dist === "users" ? " checked" : "") + '> named users <span class="sub">opt-in, on top of the default</span></label>',
+    '    <label><input type="radio" name="d' + pi + '" value="manual"' + (p.dist === "manual" ? " checked" : "") + '> only when named <span class="sub">no [distribution]</span></label>',
     '  </div>',
     p.dist === "users"
       ? '<div class="add-row" style="margin-top:.5rem"><input type="text" data-f="user-in" placeholder="alice"><button type="button">Add user</button></div><div class="taglist">' + tagsHtml(p.users, "users") + '</div>'
@@ -537,8 +551,10 @@ function repoHtml(r, ri, p){
     '  <input type="text" data-rf="url" value="' + esc(r.url) + '" placeholder="https://git.example/team/app.git">',
     '  <label class="head" style="font-size:.78rem;margin-top:.4rem">install into</label>',
     '  <div class="checks">' + (venvNames.length
-        ? venvNames.map(function(n){ return '<label><input type="checkbox" data-rv="' + esc(n) + '"' + (r.install.indexOf(n) > -1 ? " checked" : "") + '> ' + esc(n) + '</label>'; }).join("")
+        ? venvNames.map(function(n){ return '<label><input type="checkbox" data-rv="' + esc(n) + '"' + (r.install.some(function(t){ return String(t).split("[")[0] === n; }) ? " checked" : "") + '> ' + esc(n) + '</label>'; }).join("")
         : '<span class="help" style="margin:0">add a venv first</span>') + '</div>',
+    '  <div class="taglist">' + r.install.map(function(t, ti){ return '<span class="tag">' + esc(t) + '<button type="button" data-rmtarget="' + ti + '" aria-label="remove target">x</button></span>'; }).join("") + '</div>',
+    '  <div class="add-row" style="margin-top:.4rem"><input type="text" data-rf="target" placeholder="dev or dev[gui,test]"><button type="button" data-ract="add-target">Add target</button></div>',
     '  <button type="button" class="tiny ghost" data-ract="del" style="margin-top:.3rem">remove repo</button>',
     '</div>'
   ].join("\n");
@@ -618,11 +634,16 @@ function wire(card, p, pi){
     rc.querySelectorAll("[data-rv]").forEach(function(cb){
       cb.onchange = function(){
         var n = cb.getAttribute("data-rv");
-        if(cb.checked){ if(r.install.indexOf(n) === -1) r.install.push(n); }
-        else r.install = r.install.filter(function(x){ return x !== n; });
-        scheduleRegen();
+        if(cb.checked){ if(!r.install.some(function(x){ return String(x).split("[")[0] === n; })) r.install.push(n); }
+        else r.install = r.install.filter(function(x){ return String(x).split("[")[0] !== n; });
+        render();
       };
     });
+    rc.querySelectorAll("[data-rmtarget]").forEach(function(b){ b.onclick = function(){ r.install.splice(+b.getAttribute("data-rmtarget"), 1); render(); }; });
+    var target = rc.querySelector('[data-rf="target"]');
+    var addTarget = function(){ var value = target.value.trim(); if(value && r.install.indexOf(value) === -1) r.install.push(value); target.value = ""; render(); };
+    rc.querySelector('[data-ract="add-target"]').onclick = addTarget;
+    target.onkeydown = function(e){ if(e.key === "Enter"){ e.preventDefault(); addTarget(); } };
     rc.querySelector('[data-ract="del"]').onclick = function(){ p.repos.splice(ri, 1); render(); };
   });
 
@@ -660,9 +681,11 @@ function buildToml(p){
   if(p.pythons.length){ L.push(""); L.push("python = " + tomlArray(p.pythons)); }
   if(p.editors.length){ L.push(""); L.push(p.editors.length === 1 ? "editor = " + tomlStr(p.editors[0]) : "editor = " + tomlArray(p.editors)); }
   if(p.tools.length){ L.push(""); L.push("tools = " + tomlArray(p.tools)); }
-  L.push(""); L.push("[distribution]");
-  if(p.dist === "default") L.push("default = true");
-  else L.push("users = " + tomlArray(p.users));
+  if(p.dist !== "manual"){
+    L.push(""); L.push("[distribution]");
+    if(p.dist === "default") L.push("default = true");
+    else L.push("users = " + tomlArray(p.users));
+  }
   var cfgKeys = Object.keys(p.config);
   if(cfgKeys.length){
     L.push(""); L.push("[config]");
@@ -706,7 +729,7 @@ function validate(p){
     if(v.python && !/^\d/.test(v.python)) warns.push("venv " + JSON.stringify(v.name) + ": python should be a base tag like \"312\"");
   });
   if(defaults > 1) errs.push("only one venv may be default");
-  if(!p.venvs.length) warns.push("no [[venv]] -- the profile installs no environment");
+  if(!p.venvs.length) warns.push("no [[venv]] -- valid for an editor-, tool-, or repo-only profile");
   p.repos.forEach(function(r){
     r.install.forEach(function(v){
       var name = r.install && r.install.length ? String(v).split("[")[0] : v;
@@ -722,6 +745,7 @@ function validate(p){
   if(p.config.vscode_flavor !== undefined && ["microsoft", "vscodium"].indexOf(String(p.config.vscode_flavor).toLowerCase()) === -1){
     errs.push("[config] vscode_flavor must be microsoft or vscodium");
   }
+  p.editors.forEach(function(editor){ if(EDITORS.indexOf(editor) === -1) errs.push("editor = " + JSON.stringify(editor) + " is not a bundled editor"); });
   return { errs: errs, warns: warns };
 }
 
@@ -826,14 +850,17 @@ $("import-btn").onclick = function(){
   if(!raw){ msg.textContent = "Paste a profile first."; return; }
   var d;
   try { d = miniToml(raw); } catch(e){ msg.innerHTML = '<span style="color:var(--danger)">Could not parse that.</span>'; return; }
+  var problems = importProblems(d);
+  if(problems.length){ msg.innerHTML = '<span style="color:var(--danger)">Not loaded: ' + esc(problems.join("; ")) + '</span>'; return; }
   var p = newProfile(($("import-name").value || "profile").trim());
   p.venvs = [];
   p.pythons = arr(d.python);
   p.tools = arr(d.tools);
   p.editors = arr(d.editor).map(function(x){ return x.toLowerCase(); });
   var dist = d.distribution || {};
-  if(dist.users){ p.dist = "users"; p.users = arr(dist.users); }
-  else { p.dist = "default"; }
+  if(dist.default === true) p.dist = "default";
+  else if(Object.prototype.hasOwnProperty.call(dist, "users")){ p.dist = "users"; p.users = arr(dist.users); }
+  else p.dist = "manual";
   (d.venv || []).forEach(function(v){
     p.venvs.push({
       name: String(v.name || "venv"), python: v.python ? String(v.python) : "",
@@ -841,7 +868,6 @@ $("import-btn").onclick = function(){
       defpkgs: v.default_packages === true ? "true" : (v.default_packages === false ? "false" : "inherit")
     });
   });
-  if(!p.venvs.length) p.venvs = [{ name: "dev", python: "", packages: [], isdefault: true, defpkgs: "inherit" }];
   (d.repo || []).forEach(function(r){
     p.repos.push({ url: String(r.url || ""), install: arr(r.install).map(String) });
   });
@@ -853,6 +879,18 @@ $("import-btn").onclick = function(){
   render();
 };
 function arr(v){ return Array.isArray(v) ? v.map(String) : (typeof v === "string" && v ? [v] : []); }
+
+function importProblems(d){
+  var problems = [], known = {schema:true,python:true,venv:true,repo:true,tools:true,editor:true,config:true,distribution:true};
+  Object.keys(d).forEach(function(k){ if(!known[k]) problems.push("unknown top-level key " + k); });
+  if(d.schema !== undefined && d.schema !== 1) problems.push("schema " + JSON.stringify(d.schema) + " is not supported by this builder");
+  function unknown(table, keys, where){ if(!table || typeof table !== "object") return; Object.keys(table).forEach(function(k){ if(keys.indexOf(k) === -1) problems.push(where + ": unknown key " + k); }); }
+  unknown(d.distribution, ["default", "users"], "[distribution]");
+  unknown(d.config, SETTABLE_KEYS, "[config]");
+  arr(d.venv).forEach(function(v){ unknown(v, ["name", "python", "packages", "default", "default_packages"], "[[venv]]"); });
+  arr(d.repo).forEach(function(r){ unknown(r, ["url", "install"], "[[repo]]"); });
+  return problems;
+}
 
 $("add-profile").onclick = function(){ profiles.push(newProfile("profile" + (profiles.length + 1))); render(); };
 

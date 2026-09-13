@@ -472,11 +472,24 @@ function miniToml(text){
     if(raw[0] === "["){
       var inner = raw.slice(1, raw.lastIndexOf("]"));
       if(!inner.trim()) return [];
-      return inner.split(",").map(function(x){ return x.trim(); }).filter(Boolean).map(function(x){
+      return splitArray(inner).map(function(x){ return x.trim(); }).filter(Boolean).map(function(x){
         return x[0] === '"' ? x.slice(1, x.lastIndexOf('"')) : x;
       });
     }
     return raw;
+  }
+  function splitArray(text){
+    var out = [], part = "", quoted = false, escaped = false;
+    for(var j = 0; j < text.length; j++){
+      var ch = text[j];
+      if(quoted && escaped){ escaped = false; part += ch; continue; }
+      if(quoted && ch === "\\"){ escaped = true; part += ch; continue; }
+      if(ch === '"') quoted = !quoted;
+      if(ch === "," && !quoted){ out.push(part); part = ""; }
+      else part += ch;
+    }
+    out.push(part);
+    return out;
   }
   for(; i < lines.length; i++){
     var line = stripComment(lines[i]).trim();

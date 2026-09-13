@@ -211,7 +211,28 @@ def make_base_python(home: Path, tag: str, dirname: str) -> Path:
 # ---------------------------------------------------------------------------
 UV = shutil.which("uv")
 GIT = shutil.which("git")
-BASH = shutil.which("bash")
+
+
+def _find_bash() -> str | None:
+    """Prefer Git Bash over WSL's ``bash.exe`` on Windows.
+
+    Installer and shell-template tests intentionally pass Git-style paths such
+    as ``C:/...`` to bash. On a machine with both WSL and Git for Windows,
+    ``shutil.which("bash")`` can select the WindowsApps WSL launcher first;
+    WSL then treats those as relative paths and makes otherwise-valid tests
+    fail. CI already has Git Bash, and so should local Windows runs.
+    """
+    if os.name == "nt":
+        roots = [os.environ.get("ProgramFiles", r"C:\Program Files"),
+                 os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")]
+        for root in roots:
+            candidate = Path(root) / "Git" / "bin" / "bash.exe"
+            if candidate.is_file():
+                return str(candidate)
+    return shutil.which("bash")
+
+
+BASH = _find_bash()
 POWERSHELL = shutil.which("powershell")
 PWSH = shutil.which("pwsh")
 

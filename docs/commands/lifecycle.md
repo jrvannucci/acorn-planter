@@ -220,7 +220,7 @@ either way. Open a new terminal afterward to pick up the fresh environment.
 
 If **no `update_source` is recorded** (uncommon — every install origin records
 one; mainly if you cleared it with `acorn config unset update_source`), it asks
-whether to reinstall from the public repo (`github.com/jrvannucci/acorn`) and
+whether to reinstall from the public repo (`github.com/jrvannucci/acorn-planter`) and
 aborts *without deleting anything* if you decline — set a source first with
 `acorn config set update_source <git-url-or-directory>`.
 

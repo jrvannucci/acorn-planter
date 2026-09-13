@@ -83,8 +83,8 @@ opens the bundled editor, `acorn repo-clone <url>` pulls a project into
 Names are predictable: a bare noun does the thing (`python` installs, `venv`
 creates), `noun-list` shows them, and **anything that deletes is `remove-*`**.
 
-🔎 **[Browse every command](docs/COMMANDS.md)** — all 59 in one filterable
-list; click any one to open its full documentation.
+🔎 **[Browse every command](docs/COMMANDS.md)** — one filterable list; click
+any command to open its full documentation.
 
 ### It changes only when you ask
 
